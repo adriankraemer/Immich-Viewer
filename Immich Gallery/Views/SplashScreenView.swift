@@ -33,6 +33,11 @@ struct WhatsNewView: View {
     
     private let changelogContent = """
     
+    VERSION|1.1.5
+    
+    IMPROVEMENT| Performance Optimizations
+    - Hopefully better video player. 
+    
     VERSION|1.1.4
 
     IMPROVEMENT| Performance Optimizations

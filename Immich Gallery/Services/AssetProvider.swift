@@ -42,48 +42,25 @@ protocol AssetProvider {
 }
 
 class AlbumAssetProvider: AssetProvider {
-    private let albumService: AlbumService
     private let assetService: AssetService
     private let albumId: String
-    private var cachedAlbum: ImmichAlbum?
-    
-    init(albumService: AlbumService, assetService: AssetService, albumId: String) {
-        self.albumService = albumService
+
+    init(albumService _: AlbumService, assetService: AssetService, albumId: String) {
         self.assetService = assetService
         self.albumId = albumId
     }
     
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
-        print("fetching assets")
-        if page == 1 {
-            let album = try await albumService.getAlbumInfo(albumId: albumId, withoutAssets: false)
-            cachedAlbum = album
-            
-            let totalAssets = album.assets.count
-            let endIndex = min(limit, totalAssets)
-            let pageAssets = Array(album.assets.prefix(endIndex))
-            
-            let nextPage = totalAssets > limit ? "2" : nil
-            return SearchResult(assets: pageAssets, total: album.assets.count, nextPage: nextPage)
-        } else {
-            guard let album = cachedAlbum else {
-                let album = try await albumService.getAlbumInfo(albumId: albumId, withoutAssets: false)
-                cachedAlbum = album
-                return try await fetchAssets(page: page, limit: limit)
-            }
-            
-            let startIndex = (page - 1) * limit
-            let endIndex = min(startIndex + limit, album.assets.count)
-            
-            guard startIndex < album.assets.count else {
-                return SearchResult(assets: [], total: album.assets.count, nextPage: nil)
-            }
-            
-            let pageAssets = Array(album.assets[startIndex..<endIndex])
-            let nextPage = endIndex < album.assets.count ? String(page + 1) : nil
-            
-            return SearchResult(assets: pageAssets, total: album.assets.count, nextPage: nextPage)
-        }
+        return try await assetService.fetchAssets(
+            page: page,
+            limit: limit,
+            albumId: albumId,
+            personId: nil,
+            tagId: nil,
+            city: nil,
+            isAllPhotos: false,
+            isFavorite: false
+        )
     }
     
     func fetchRandomAssets(limit: Int) async throws -> SearchResult {
@@ -147,4 +124,3 @@ class GeneralAssetProvider: AssetProvider {
         }
     }
 }
-

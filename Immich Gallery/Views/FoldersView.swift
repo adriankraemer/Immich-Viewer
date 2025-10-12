@@ -1,76 +1,85 @@
 //
-//  TagsGridView.swift
+//  FoldersView.swift
 //  Immich Gallery
+//
+//  Created by Codex on 2025-09-12.
 //
 
 import SwiftUI
 
-struct TagsGridView: View {
-    @ObservedObject var tagService: TagService
-    @ObservedObject var authService: AuthenticationService
+struct FoldersView: View {
+    @ObservedObject var folderService: FolderService
     @ObservedObject var assetService: AssetService
-    @State private var tags: [Tag] = []
-    @State private var selectedTag: Tag?
+    @ObservedObject var authService: AuthenticationService
+    
+    @State private var folders: [ImmichFolder] = []
+    @State private var selectedFolder: ImmichFolder?
     @State private var isLoading = false
     @State private var errorMessage: String?
     
-    private var thumbnailProvider: TagThumbnailProvider {
-        TagThumbnailProvider(assetService: assetService)
+    private var thumbnailProvider: FolderThumbnailProvider {
+        FolderThumbnailProvider(assetService: assetService)
     }
     
     var body: some View {
         SharedGridView(
-            items: tags,
-            config: .tagsStyle,
+            items: folders,
+            config: .foldersStyle,
             thumbnailProvider: thumbnailProvider,
             isLoading: isLoading,
             errorMessage: errorMessage,
-            onItemSelected: { tag in
-                selectedTag = tag
+            onItemSelected: { folder in
+                selectedFolder = folder
             },
             onRetry: {
                 Task {
-                    await loadTags()
+                    await loadFolders()
                 }
             }
         )
-        .fullScreenCover(item: $selectedTag) { tag in
-            TagDetailView(tag: tag, assetService: assetService, authService: authService)
+        .fullScreenCover(item: $selectedFolder) { folder in
+            FolderDetailView(folder: folder, assetService: assetService, authService: authService)
         }
         .onAppear {
-            if tags.isEmpty {
+            if folders.isEmpty {
                 Task {
-                    await loadTags()
+                    await loadFolders()
                 }
             }
         }
     }
     
-    private func loadTags() async {
-        isLoading = true
-        errorMessage = nil
+    private func loadFolders() async {
+        await MainActor.run {
+            isLoading = true
+            errorMessage = nil
+        }
         
         do {
-            let fetchedTags = try await tagService.fetchTags()
+            let fetchedFolders = try await folderService.fetchUniquePaths()
             await MainActor.run {
-                self.tags = fetchedTags
+                let uniqueFolders = Array(Set(fetchedFolders))
+                self.folders = uniqueFolders.sorted { $0.path.localizedCaseInsensitiveCompare($1.path) == .orderedAscending }
                 self.isLoading = false
             }
         } catch {
             await MainActor.run {
-                self.errorMessage = "Failed to load tags: \(error.localizedDescription)"
+                self.errorMessage = "Failed to load folders: \(error.localizedDescription)"
                 self.isLoading = false
             }
         }
     }
 }
 
-
-struct TagDetailView: View {
-    let tag: Tag
+struct FolderDetailView: View {
+    let folder: ImmichFolder
     @ObservedObject var assetService: AssetService
     @ObservedObject var authService: AuthenticationService
     @Environment(\.dismiss) private var dismiss
+    
+    private var folderTitle: String {
+        folder.primaryTitle.isEmpty ? folder.path : folder.primaryTitle
+    }
     
     var body: some View {
         NavigationView {
@@ -81,18 +90,19 @@ struct TagDetailView: View {
                 AssetGridView(assetService: assetService,
                               authService: authService,
                               assetProvider: AssetProviderFactory.createProvider(
-                                tagId: tag.id,
+                                folderPath: folder.path,
                                 assetService: assetService
                               ),
-                              albumId: nil, personId: nil,
-                              tagId: tag.id,
+                              albumId: nil,
+                              personId: nil,
+                              tagId: nil,
                               city: nil,
                               isAllPhotos: false,
                               isFavorite: false,
                               onAssetsLoaded: nil,
                               deepLinkAssetId: nil)
             }
-            .navigationTitle(tag.name)
+            .navigationTitle(folderTitle)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
@@ -105,7 +115,7 @@ struct TagDetailView: View {
 }
 
 #Preview {
-    let (_, _, authService, assetService, _, _, tagService, _) =
+    let (_, _, authService, assetService, _, _, _, folderService) =
     MockServiceFactory.createMockServices()
-    TagsGridView(tagService: tagService, authService: authService, assetService: assetService)
+    return FoldersView(folderService: folderService, assetService: assetService, authService: authService)
 }

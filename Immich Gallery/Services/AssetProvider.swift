@@ -15,6 +15,7 @@ struct AssetProviderFactory {
         city: String? = nil,
         isAllPhotos: Bool = false,
         isFavorite: Bool = false,
+        folderPath: String? = nil,
         assetService: AssetService,
         albumService: AlbumService? = nil,
         config: SlideshowConfig? = nil
@@ -30,6 +31,7 @@ struct AssetProviderFactory {
                 city: city,
                 isAllPhotos: isAllPhotos,
                 isFavorite: isFavorite,
+                folderPath: folderPath,
                 config: config
             )
         }
@@ -81,8 +83,9 @@ class GeneralAssetProvider: AssetProvider {
     private let isAllPhotos: Bool
     private let isFavorite: Bool
     private let config: SlideshowConfig?
+    private let folderPath: String?
     
-    init(assetService: AssetService, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false, config: SlideshowConfig? = nil) {
+    init(assetService: AssetService, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false, folderPath: String? = nil, config: SlideshowConfig? = nil) {
         self.assetService = assetService
         self.personId = personId
         self.tagId = tagId
@@ -90,6 +93,7 @@ class GeneralAssetProvider: AssetProvider {
         self.isAllPhotos = isAllPhotos
         self.isFavorite = isFavorite
         self.config = config
+        self.folderPath = folderPath
     }
     
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
@@ -105,7 +109,8 @@ class GeneralAssetProvider: AssetProvider {
                 tagId: tagId,
                 city: city,
                 isAllPhotos: isAllPhotos,
-                isFavorite: isFavorite
+                isFavorite: isFavorite,
+                folderPath: folderPath
             )
         }
     }
@@ -119,6 +124,7 @@ class GeneralAssetProvider: AssetProvider {
                 albumIds: nil,
                 personIds: personId != nil ? [personId!] : nil,
                 tagIds: tagId != nil ? [tagId!] : nil,
+                folderPath: folderPath,
                 limit: limit
             )
         }

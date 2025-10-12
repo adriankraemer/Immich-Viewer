@@ -14,7 +14,7 @@ class AssetService: ObservableObject {
         self.networkService = networkService
     }
 
-    func fetchAssets(page: Int = 1, limit: Int? = nil, albumId: String? = nil, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false) async throws -> SearchResult {
+    func fetchAssets(page: Int = 1, limit: Int? = nil, albumId: String? = nil, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false, folderPath: String? = nil) async throws -> SearchResult {
         // Use separate sort order for All Photos tab vs everything else
         let sortOrder = isAllPhotos 
             ? UserDefaults.standard.allPhotosSortOrder
@@ -44,6 +44,11 @@ class AssetService: ObservableObject {
         }
         if let city = city {
             searchRequest["city"] = city
+        }
+        if let folderPath = folderPath, !folderPath.isEmpty {
+            searchRequest["originalPath"] = folderPath
+            searchRequest["path"] = folderPath
+            searchRequest["originalPathPrefix"] = folderPath
         }
         let result: SearchResponse = try await networkService.makeRequest(
             endpoint: "/api/search/metadata",
@@ -179,7 +184,7 @@ class AssetService: ObservableObject {
         return url
     }
     
-    func fetchRandomAssets(albumIds: [String]? = nil, personIds: [String]? = nil, tagIds: [String]? = nil, limit: Int = 50) async throws -> SearchResult {
+    func fetchRandomAssets(albumIds: [String]? = nil, personIds: [String]? = nil, tagIds: [String]? = nil, folderPath: String? = nil, limit: Int = 50) async throws -> SearchResult {
         var searchRequest: [String: Any] = [
             "size": limit,
             "withPeople": true,
@@ -194,6 +199,11 @@ class AssetService: ObservableObject {
         }
         if let tagIds = tagIds {
             searchRequest["tagIds"] = tagIds
+        }
+        if let folderPath = folderPath, !folderPath.isEmpty {
+            searchRequest["originalPath"] = folderPath
+            searchRequest["path"] = folderPath
+            searchRequest["originalPathPrefix"] = folderPath
         }
         
         let assets: [ImmichAsset] = try await networkService.makeRequest(

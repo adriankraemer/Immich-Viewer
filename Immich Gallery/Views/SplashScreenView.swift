@@ -32,7 +32,12 @@ struct WhatsNewView: View {
     @State private var opacity: Double = 0
     
     private let changelogContent = """
+
+    VERSION|1.1.5
     
+    NEW_FEATURE| Folders Tab
+    - New opt-in Folders tab allows you to view folders from your external library.
+
     VERSION|1.1.4
 
     IMPROVEMENT| Performance Optimizations

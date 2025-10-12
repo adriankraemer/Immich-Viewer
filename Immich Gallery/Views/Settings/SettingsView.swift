@@ -68,6 +68,7 @@ struct SettingsView: View {
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "white"
     @AppStorage("showTagsTab") private var showTagsTab = false
+    @AppStorage("showFoldersTab") private var showFoldersTab = false
     @AppStorage("defaultStartupTab") private var defaultStartupTab = "photos"
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("use24HourClock") private var use24HourClock = true
@@ -277,6 +278,13 @@ struct SettingsView: View {
                                         isOn: showTagsTab
                                     )
                                     SettingsRow(
+                                        icon: "folder.fill",
+                                        title: "Show Folders Tab",
+                                        subtitle: "Enable the folders tab in the main navigation",
+                                        content: AnyView(Toggle("", isOn: $showFoldersTab).labelsHidden()),
+                                        isOn: showFoldersTab
+                                    )
+                                    SettingsRow(
                                         icon: "play.rectangle.on.rectangle",
                                         title: "Enable Thumbnail Animation",
                                         subtitle: "Animate thumbnails in Albums, People, and Tags views(I recommend disabling this for larger libraries for significantly better performance).",
@@ -295,6 +303,9 @@ struct SettingsView: View {
                                                 Text("People").tag("people")
                                                 if showTagsTab {
                                                     Text("Tags").tag("tags")
+                                                }
+                                                if showFoldersTab {
+                                                    Text("Folders").tag("folders")
                                                 }
                                                 Text("Explore").tag("explore")
                                             }
@@ -621,6 +632,13 @@ struct SettingsView: View {
                     Text("Are you sure you want to delete this user?")
                 }
             }
+            .onChange(of: showFoldersTab) { _, newValue in
+                if !newValue && defaultStartupTab == "folders" {
+                    defaultStartupTab = "photos"
+                }
+                
+                NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
+            }
             .onAppear {
                 userManager.loadUsers()
                 thumbnailCache.refreshCacheStatistics()
@@ -757,5 +775,3 @@ struct SettingsView: View {
     
     return SettingsView(authService: authService, userManager: userManager)
 }
-
-

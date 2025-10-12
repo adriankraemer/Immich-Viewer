@@ -12,9 +12,10 @@ enum TabName: Int, CaseIterable {
     case albums = 1
     case people = 2
     case tags = 3
-    case explore = 4
-    case search = 5
-    case settings = 6
+    case folders = 4
+    case explore = 5
+    case search = 6
+    case settings = 7
     
     var title: String {
         switch self {
@@ -22,6 +23,7 @@ enum TabName: Int, CaseIterable {
         case .albums: return "Albums"
         case .people: return "People"
         case .tags: return "Tags"
+        case .folders: return "Folders"
         case .explore: return "Explore"
         case .search: return "Search"
         case .settings: return "Settings"
@@ -34,6 +36,7 @@ enum TabName: Int, CaseIterable {
         case .albums: return "folder"
         case .people: return "person.crop.circle"
         case .tags: return "tag"
+        case .folders: return "folder.fill"
         case .explore: return "globe"
         case .search: return "magnifyingglass"
         case .settings: return "gear"
@@ -57,12 +60,14 @@ struct ContentView: View {
     @StateObject private var albumService: AlbumService
     @StateObject private var peopleService: PeopleService
     @StateObject private var tagService: TagService
+    @StateObject private var folderService: FolderService
     @StateObject private var exploreService: ExploreService
     @StateObject private var searchService: SearchService
     @State private var selectedTab = 0
     @State private var refreshTrigger = UUID()
     @State private var showWhatsNew = false
     @AppStorage(UserDefaultsKeys.showTagsTab) private var showTagsTab = false
+    @AppStorage(UserDefaultsKeys.showFoldersTab) private var showFoldersTab = false
     @AppStorage(UserDefaultsKeys.defaultStartupTab) private var defaultStartupTab = "photos"
     @AppStorage(UserDefaultsKeys.lastSeenVersion) private var lastSeenVersion = ""
     @State private var searchTabHighlighted = false
@@ -78,6 +83,7 @@ struct ContentView: View {
         _albumService = StateObject(wrappedValue: AlbumService(networkService: networkService))
         _peopleService = StateObject(wrappedValue: PeopleService(networkService: networkService))
         _tagService = StateObject(wrappedValue: TagService(networkService: networkService))
+        _folderService = StateObject(wrappedValue: FolderService(networkService: networkService))
         _exploreService = StateObject(wrappedValue: ExploreService(networkService: networkService))
         _searchService = StateObject(wrappedValue: SearchService(networkService: networkService))
     }
@@ -135,6 +141,16 @@ struct ContentView: View {
                                 }
                                 .tag(TabName.tags.rawValue)
                         }
+
+                        if showFoldersTab {
+                            FoldersView(folderService: folderService, assetService: assetService, authService: authService)
+                                .errorBoundary(context: "Folders Tab")
+                                .tabItem {
+                                    Image(systemName: TabName.folders.iconName)
+                                    Text(TabName.folders.title)
+                                }
+                                .tag(TabName.folders.rawValue)
+                        }
                         
                         ExploreView(exploreService: exploreService, assetService: assetService, authService: authService, userManager: userManager)
                             .errorBoundary(context: "Explore Tab")
@@ -171,6 +187,13 @@ struct ContentView: View {
                     }
                     .onChange(of: autoSlideshowTimeout) { _, _ in
                         startInactivityTimer()
+                    }
+                    .onChange(of: showFoldersTab) { _, enabled in
+                        if !enabled && selectedTab == TabName.folders.rawValue {
+                            selectedTab = TabName.photos.rawValue
+                        } else if enabled && defaultStartupTab == "folders" {
+                            selectedTab = TabName.folders.rawValue
+                        }
                     }
                     .id(refreshTrigger) // Force refresh when user switches
                     // .accentColor(.blue)
@@ -252,6 +275,8 @@ struct ContentView: View {
     
     private func setDefaultTab() {
         switch defaultStartupTab {
+        case "photos":
+            selectedTab = TabName.photos.rawValue
         case "albums":
             selectedTab = TabName.albums.rawValue
         case "people":
@@ -262,9 +287,19 @@ struct ContentView: View {
             } else {
                 selectedTab = TabName.photos.rawValue // Default to photos if tags tab is disabled
             }
+        case "folders":
+            if showFoldersTab {
+                selectedTab = TabName.folders.rawValue
+            } else {
+                selectedTab = TabName.photos.rawValue
+            }
         case "explore":
             selectedTab = TabName.explore.rawValue
-        default: // "photos"
+        case "search":
+            selectedTab = TabName.search.rawValue
+        case "settings":
+            selectedTab = TabName.settings.rawValue
+        default:
             selectedTab = TabName.photos.rawValue
         }
     }

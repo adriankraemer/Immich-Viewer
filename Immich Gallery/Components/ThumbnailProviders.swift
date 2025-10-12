@@ -126,3 +126,42 @@ class TagThumbnailProvider: ThumbnailProvider {
         }
     }
 }
+
+// MARK: - Folder Thumbnail Provider
+class FolderThumbnailProvider: ThumbnailProvider {
+    private let assetService: AssetService
+    private let thumbnailCache = ThumbnailCache.shared
+    
+    init(assetService: AssetService) {
+        self.assetService = assetService
+    }
+    
+    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+        guard let folder = item as? ImmichFolder else { return [] }
+        
+        do {
+            let searchResult = try await assetService.fetchAssets(page: 1, limit: 10, folderPath: folder.path)
+            let imageAssets = searchResult.assets.filter { $0.type == .image }
+            
+            var loadedThumbnails: [UIImage] = []
+            
+            for asset in imageAssets.prefix(10) {
+                do {
+                    let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
+                        try await self.assetService.loadImage(asset: asset, size: "thumbnail")
+                    }
+                    if let thumbnail = thumbnail {
+                        loadedThumbnails.append(thumbnail)
+                    }
+                } catch {
+                    print("Failed to load thumbnail for asset \(asset.id): \(error)")
+                }
+            }
+            
+            return loadedThumbnails
+        } catch {
+            print("Failed to fetch assets for folder \(folder.path): \(error)")
+            return []
+        }
+    }
+}

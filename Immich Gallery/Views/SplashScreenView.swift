@@ -38,6 +38,9 @@ struct WhatsNewView: View {
     NEW_FEATURE| Folders Tab
     - New opt-in Folders tab allows you to view folders from your external library.
 
+    BUGFIX| Sorting order
+    - We are once again respecting the sorting order selected in settings.
+
     VERSION|1.1.4
 
     IMPROVEMENT| Performance Optimizations

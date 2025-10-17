@@ -25,6 +25,7 @@ struct UserDefaultsKeys {
     static let autoSlideshowTimeout = "autoSlideshowTimeout" // in minutes, 0 = off
     static let slideshowBackgroundColor = "slideshowBackgroundColor"
     static let showTagsTab = "showTagsTab"
+    static let showFoldersTab = "showFoldersTab"
     static let use24HourClock = "use24HourClock"
     static let enableReflectionsInSlideshow = "enableReflectionsInSlideshow"
     static let enableKenBurnsEffect = "enableKenBurnsEffect"

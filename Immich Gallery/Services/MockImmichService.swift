@@ -232,6 +232,21 @@ class MockTagService: TagService {
     }
 }
 
+// MARK: - Mock folder service
+class MockFolderService: FolderService {
+    override init(networkService: NetworkService) {
+        super.init(networkService: networkService)
+    }
+    
+    override func fetchUniquePaths() async throws -> [ImmichFolder] {
+        return [
+            ImmichFolder(path: "/mock/photos"),
+            ImmichFolder(path: "/mock/photos/vacation"),
+            ImmichFolder(path: "/mock/photos/family")
+        ]
+    }
+}
+
 // MARK: - Mock People Service
 class MockPeopleService: PeopleService {
     override init(networkService: NetworkService) {
@@ -276,7 +291,7 @@ class MockPeopleService: PeopleService {
 
 // MARK: - Convenience Factory
 class MockServiceFactory {
-    static func createMockServices() -> (NetworkService, UserManager, AuthenticationService, AssetService, AlbumService, PeopleService, TagService) {
+    static func createMockServices() -> (NetworkService, UserManager, AuthenticationService, AssetService, AlbumService, PeopleService, TagService, FolderService) {
         let userManager = UserManager()
         let networkService = MockNetworkService(userManager: userManager)
         let authService = MockAuthenticationService(networkService: networkService, userManager: userManager)
@@ -284,7 +299,8 @@ class MockServiceFactory {
         let albumService = MockAlbumService(networkService: networkService)
         let peopleService = MockPeopleService(networkService: networkService)
         let tagService = MockTagService(networkService: networkService)
+        let folderService = MockFolderService(networkService: networkService)
         
-        return (networkService, userManager, authService, assetService, albumService, peopleService, tagService)
+        return (networkService, userManager, authService, assetService, albumService, peopleService, tagService, folderService)
     }
 } 

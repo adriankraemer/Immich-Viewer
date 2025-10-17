@@ -15,6 +15,7 @@ struct AssetProviderFactory {
         city: String? = nil,
         isAllPhotos: Bool = false,
         isFavorite: Bool = false,
+        folderPath: String? = nil,
         assetService: AssetService,
         albumService: AlbumService? = nil,
         config: SlideshowConfig? = nil
@@ -30,6 +31,7 @@ struct AssetProviderFactory {
                 city: city,
                 isAllPhotos: isAllPhotos,
                 isFavorite: isFavorite,
+                folderPath: folderPath,
                 config: config
             )
         }
@@ -42,48 +44,25 @@ protocol AssetProvider {
 }
 
 class AlbumAssetProvider: AssetProvider {
-    private let albumService: AlbumService
     private let assetService: AssetService
     private let albumId: String
-    private var cachedAlbum: ImmichAlbum?
-    
-    init(albumService: AlbumService, assetService: AssetService, albumId: String) {
-        self.albumService = albumService
+
+    init(albumService _: AlbumService, assetService: AssetService, albumId: String) {
         self.assetService = assetService
         self.albumId = albumId
     }
     
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
-        print("fetching assets")
-        if page == 1 {
-            let album = try await albumService.getAlbumInfo(albumId: albumId, withoutAssets: false)
-            cachedAlbum = album
-            
-            let totalAssets = album.assets.count
-            let endIndex = min(limit, totalAssets)
-            let pageAssets = Array(album.assets.prefix(endIndex))
-            
-            let nextPage = totalAssets > limit ? "2" : nil
-            return SearchResult(assets: pageAssets, total: album.assets.count, nextPage: nextPage)
-        } else {
-            guard let album = cachedAlbum else {
-                let album = try await albumService.getAlbumInfo(albumId: albumId, withoutAssets: false)
-                cachedAlbum = album
-                return try await fetchAssets(page: page, limit: limit)
-            }
-            
-            let startIndex = (page - 1) * limit
-            let endIndex = min(startIndex + limit, album.assets.count)
-            
-            guard startIndex < album.assets.count else {
-                return SearchResult(assets: [], total: album.assets.count, nextPage: nil)
-            }
-            
-            let pageAssets = Array(album.assets[startIndex..<endIndex])
-            let nextPage = endIndex < album.assets.count ? String(page + 1) : nil
-            
-            return SearchResult(assets: pageAssets, total: album.assets.count, nextPage: nextPage)
-        }
+        return try await assetService.fetchAssets(
+            page: page,
+            limit: limit,
+            albumId: albumId,
+            personId: nil,
+            tagId: nil,
+            city: nil,
+            isAllPhotos: false,
+            isFavorite: false
+        )
     }
     
     func fetchRandomAssets(limit: Int) async throws -> SearchResult {
@@ -104,8 +83,9 @@ class GeneralAssetProvider: AssetProvider {
     private let isAllPhotos: Bool
     private let isFavorite: Bool
     private let config: SlideshowConfig?
+    private let folderPath: String?
     
-    init(assetService: AssetService, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false, config: SlideshowConfig? = nil) {
+    init(assetService: AssetService, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false, folderPath: String? = nil, config: SlideshowConfig? = nil) {
         self.assetService = assetService
         self.personId = personId
         self.tagId = tagId
@@ -113,6 +93,7 @@ class GeneralAssetProvider: AssetProvider {
         self.isAllPhotos = isAllPhotos
         self.isFavorite = isFavorite
         self.config = config
+        self.folderPath = folderPath
     }
     
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
@@ -128,7 +109,8 @@ class GeneralAssetProvider: AssetProvider {
                 tagId: tagId,
                 city: city,
                 isAllPhotos: isAllPhotos,
-                isFavorite: isFavorite
+                isFavorite: isFavorite,
+                folderPath: folderPath
             )
         }
     }
@@ -142,9 +124,9 @@ class GeneralAssetProvider: AssetProvider {
                 albumIds: nil,
                 personIds: personId != nil ? [personId!] : nil,
                 tagIds: tagId != nil ? [tagId!] : nil,
+                folderPath: folderPath,
                 limit: limit
             )
         }
     }
 }
-

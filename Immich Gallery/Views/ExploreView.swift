@@ -360,7 +360,7 @@ struct FirstRowItem: View {
                         .stroke(isCurrentlyFocused ? Color.white : Color.clear, lineWidth: isCurrentlyFocused ? 4 : 0)
                 )
                 .scaleEffect(isCurrentlyFocused ? 1.1 : 1.0)
-                .animation(.easeIn(duration: 2), value: isCurrentlyFocused)
+                .animation(.easeIn(duration: 0.5), value: isCurrentlyFocused)
             }
         }
         .padding(.top, 100)
@@ -573,7 +573,7 @@ struct BackgroundImageView: View {
                         }
                     }
                     .opacity(opacity)
-                    .animation(.easeIn(duration: 2), value: opacity)
+                    .animation(.easeIn(duration: 0.3), value: opacity)
                 }
                 .overlay {
                     Rectangle()
@@ -618,7 +618,7 @@ struct BackgroundImageView: View {
         animationTask = Task {
             do {
                 // Wait 1 second, but check if task is cancelled
-                try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                try await Task.sleep(nanoseconds: 1_000_000_00) // 1 second
                 
                 // Check if this is still the current pending item and task wasn't cancelled
                 guard !Task.isCancelled, pendingItem?.id == selectedItem.id else {
@@ -632,7 +632,7 @@ struct BackgroundImageView: View {
                 }
                 
                 // Wait for fade out animation to complete
-                try await Task.sleep(nanoseconds: 2000_000_000) // 0.5 seconds
+                try await Task.sleep(nanoseconds: 1_000_000_00) // 0.5 seconds
                 
                 // Check if still valid
                 guard !Task.isCancelled, pendingItem?.id == selectedItem.id else {

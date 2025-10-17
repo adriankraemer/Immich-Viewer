@@ -42,8 +42,9 @@ struct FullScreenImageView: View {
             
             if currentAsset.type == .video {
                 if showingVideoPlayer {
-                    // Use VideoPlayerView for videos when user clicked play
-                    VideoPlayerView(asset: currentAsset, assetService: assetService, authenticationService: authenticationService)
+                    // Use simplified video player when user clicks play
+                    SimpleVideoPlayerView(asset: currentAsset, assetService: assetService, authenticationService: authenticationService)
+                        .id(currentAsset.id)
                 } else {
                     // Show video thumbnail with play button overlay
                     VideoThumbnailView(

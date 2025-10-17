@@ -329,6 +329,44 @@ struct GridConfig {
         emptyStateText: "No Tags Found",
         emptyStateDescription: "Your tags will appear here"
     )
+    
+    static let foldersStyle = GridConfig(
+        columns: [
+            GridItem(.fixed(500), spacing: 20),
+            GridItem(.fixed(500), spacing: 20),
+            GridItem(.fixed(500), spacing: 20)
+        ],
+        itemWidth: 490,
+        itemHeight: 360,
+        spacing: 80,
+        loadingText: "Loading folders...",
+        emptyStateText: "No Folders Found",
+        emptyStateDescription: "Folders with indexed assets will appear here"
+    )
+}
+
+// MARK: - Folder Model
+struct ImmichFolder: GridDisplayable, Equatable, Hashable {
+    let path: String
+    
+    var id: String { path }
+    var primaryTitle: String {
+        let trimmed = path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        if trimmed.isEmpty {
+            return path
+        }
+        return trimmed.components(separatedBy: "/").last ?? trimmed
+    }
+    var secondaryTitle: String? { path }
+    var description: String? { nil }
+    var thumbnailId: String? { nil }
+    var itemCount: Int? { nil }
+    var gridCreatedAt: String? { nil }
+    var isFavorite: Bool? { nil }
+    var isShared: Bool? { nil }
+    var sharingText: String? { nil }
+    var iconName: String { "folder.fill" }
+    var gridColor: Color? { Color.blue.opacity(0.5) }
 }
 
 

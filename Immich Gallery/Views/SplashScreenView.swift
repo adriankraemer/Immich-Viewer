@@ -34,13 +34,16 @@ struct WhatsNewView: View {
     private let changelogContent = """
 
     VERSION|1.1.5
-    
+
     NEW_FEATURE| Folders Tab
     - New opt-in Folders tab allows you to view folders from your external library.
 
     BUGFIX| Sorting order
     - We are once again respecting the sorting order selected in settings.
-
+    
+    IMPROVEMENT| Performance Optimizations
+    - Hopefully better video player. 
+    
     VERSION|1.1.4
 
     IMPROVEMENT| Performance Optimizations

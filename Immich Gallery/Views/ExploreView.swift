@@ -179,7 +179,7 @@ struct ExploreView: View {
                 //                )
             }
         }
-        .sheet(isPresented: $showingStats) {
+        .fullScreenCover(isPresented: $showingStats) {
             StatsView(statsService: createStatsService())
         }
         .fullScreenCover(item: $selectedExploreItem) { exploreItem in

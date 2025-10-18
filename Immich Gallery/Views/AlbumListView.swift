@@ -177,10 +177,10 @@ struct AlbumDetailView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
-                        dismiss()
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle")
+                            .foregroundColor(.white)
                     }
-                    .foregroundColor(.white)
                 }
             }
         }

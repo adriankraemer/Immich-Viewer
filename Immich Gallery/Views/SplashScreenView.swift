@@ -32,6 +32,17 @@ struct WhatsNewView: View {
     @State private var opacity: Double = 0
     
     private let changelogContent = """
+    
+    VERSION|1.1.6
+
+    NEW_FEATURE| ✨✨New Icon✨✨
+    - The Icon has been a placeholder for too long. 
+
+    BUGFIX| Fix shared album content. Discussion#81
+    - Thank you for reporting @madasus. Issue has been fixed.
+    
+    BUGFIX| The overlay windows were broken on TvOS 26. Add user/whats new etc.Part of issue #75
+    - Thanks for reporting @rmayergfx. This should fix that issue.
 
     VERSION|1.1.5
 

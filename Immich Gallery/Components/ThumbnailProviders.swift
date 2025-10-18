@@ -22,7 +22,7 @@ class AlbumThumbnailProvider: ThumbnailProvider {
         guard let album = item as? ImmichAlbum else { return [] }
         
         do {
-            let albumProvider = AlbumAssetProvider(albumService: albumService, assetService: assetService, albumId: album.id)
+            let albumProvider = AlbumAssetProvider(albumService: albumService, albumId: album.id)
             let searchResult = try await albumProvider.fetchAssets(page: 1, limit: 10)
             let imageAssets = searchResult.assets.filter { $0.type == .image }
             

@@ -590,10 +590,10 @@ struct SettingsView: View {
                     .padding()
                 }
             }
-            .sheet(isPresented: $showingSignIn) {
+            .fullScreenCover(isPresented: $showingSignIn) {
                 SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
             }
-            .sheet(isPresented: $showingWhatsNew) {
+            .fullScreenCover(isPresented: $showingWhatsNew) {
                 WhatsNewView(onDismiss: {
                     showingWhatsNew = false
                 })

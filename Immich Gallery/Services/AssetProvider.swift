@@ -22,7 +22,7 @@ struct AssetProviderFactory {
     ) -> AssetProvider {
         
         if let albumId = albumId, let albumService = albumService {
-            return AlbumAssetProvider(albumService: albumService, assetService: assetService, albumId: albumId)
+            return AlbumAssetProvider(albumService: albumService, albumId: albumId)
         } else {
             return GeneralAssetProvider(
                 assetService: assetService,
@@ -44,33 +44,65 @@ protocol AssetProvider {
 }
 
 class AlbumAssetProvider: AssetProvider {
-    private let assetService: AssetService
+    private let albumService: AlbumService
     private let albumId: String
+    private var cachedAssets: [ImmichAsset]?
 
-    init(albumService _: AlbumService, assetService: AssetService, albumId: String) {
-        self.assetService = assetService
+    init(albumService: AlbumService, albumId: String) {
+        self.albumService = albumService
         self.albumId = albumId
+    }
+
+    private func loadAlbumAssets() async throws -> [ImmichAsset] {
+        if let cachedAssets {
+            return cachedAssets
+        }
+
+        // Fetch the album with full asset list; Immich includes assets unless withoutAssets is true
+        let album = try await albumService.getAlbumInfo(albumId: albumId, withoutAssets: false)
+        cachedAssets = album.assets
+        return album.assets
     }
     
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
-        return try await assetService.fetchAssets(
-            page: page,
-            limit: limit,
-            albumId: albumId,
-            personId: nil,
-            tagId: nil,
-            city: nil,
-            isAllPhotos: false,
-            isFavorite: false
+        let assets = try await loadAlbumAssets()
+        guard !assets.isEmpty else {
+            return SearchResult(assets: [], total: 0, nextPage: nil)
+        }
+
+        let pageSize = max(limit, 1)
+        let startIndex = max((page - 1) * pageSize, 0)
+        let endIndex = min(startIndex + pageSize, assets.count)
+
+        let pageAssets: [ImmichAsset]
+        if startIndex < endIndex {
+            pageAssets = Array(assets[startIndex..<endIndex])
+        } else {
+            pageAssets = []
+        }
+
+        let nextPage: String? = endIndex < assets.count ? String(page + 1) : nil
+
+        return SearchResult(
+            assets: pageAssets,
+            total: assets.count,
+            nextPage: nextPage
         )
     }
     
     func fetchRandomAssets(limit: Int) async throws -> SearchResult {
-        return try await assetService.fetchRandomAssets(
-            albumIds: [albumId],
-            personIds: nil,
-            tagIds: nil,
-            limit: limit
+        let assets = try await loadAlbumAssets()
+        guard !assets.isEmpty else {
+            return SearchResult(assets: [], total: 0, nextPage: nil)
+        }
+
+        let sampleCount = min(limit, assets.count)
+        let shuffledAssets = Array(assets.shuffled().prefix(sampleCount))
+
+        return SearchResult(
+            assets: shuffledAssets,
+            total: assets.count,
+            nextPage: nil
         )
     }
 }

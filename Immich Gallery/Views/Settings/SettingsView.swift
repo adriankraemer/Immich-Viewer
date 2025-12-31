@@ -63,7 +63,6 @@ struct SettingsView: View {
     @State private var showingDeleteUserAlert = false
     @State private var userToDelete: SavedUser?
     @State private var showingSignIn = false
-    @State private var showingWhatsNew = false
     @AppStorage("hideImageOverlay") private var hideImageOverlay = true
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "white"
@@ -82,9 +81,6 @@ struct SettingsView: View {
     @AppStorage("topShelfStyle", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfStyle = "carousel"
     @AppStorage("topShelfImageSelection", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfImageSelection = "recent"
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0 // 0 = off
-    @AppStorage("artModeLevel") private var artModeLevel = "off"
-    @AppStorage("artModeDayStart") private var artModeDayStart = 7
-    @AppStorage("artModeNightStart") private var artModeNightStart = 20
     @FocusState private var isMinusFocused: Bool
     @FocusState private var isPlusFocused: Bool
     @FocusState private var focusedColor: String?
@@ -235,25 +231,6 @@ struct SettingsView: View {
             }
             .buttonStyle(CardButtonStyle())
         }
-    }
-    
-    private var footerSection: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 4) {
-                Text("Powered by")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text("Maple Syrup")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                
-                Text("🍁")
-                    .font(.caption)
-            }
-        }
-        .padding(.vertical, 20)
     }
     
     var body: some View {
@@ -438,163 +415,6 @@ struct SettingsView: View {
                             })
                         }
                         
-                        // Art Mode Settings Section
-                        SettingsSection(title: "") {
-                            AnyView(VStack(spacing: 12) {
-                                HStack{Badge("Experimental", color: Color.red, minWidth: 200)
-                                    Spacer()
-                                }
-                                SettingsRow(
-                                    icon: "paintbrush",
-                                    title: "Dim Level",
-                                    subtitle: "Apply a transparent overlay to dim slideshow images. Best used with black slideshow background color",
-                                    content: AnyView(
-                                        Picker("Dim Level", selection: $artModeLevel) {
-                                            ForEach(ArtModeLevel.allCases, id: \.self) { level in
-                                                Text(level.displayName).tag(level.rawValue)
-                                            }
-                                        }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 400, alignment: .trailing)
-                                    ),
-                                    isOn: artModeLevel != "off"
-                                )
-                                
-                                if artModeLevel == "automatic" {
-                                    SettingsRow(
-                                        icon: "sun.max",
-                                        title: "Day Mode Start",
-                                        subtitle: "Hour when low dimming begins (0-23)",
-                                        content: AnyView(
-                                            Picker("Day Start", selection: $artModeDayStart) {
-                                                ForEach(0..<24, id: \.self) { hour in
-                                                    Text(String(format: "%02d:00", hour)).tag(hour)
-                                                }
-                                            }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 250, alignment: .trailing)
-                                        )
-                                    )
-                                    
-                                    SettingsRow(
-                                        icon: "moon.stars",
-                                        title: "Night Mode Start",
-                                        subtitle: "Hour when high dimming begins (0-23)",
-                                        content: AnyView(
-                                            Picker("Night Start", selection: $artModeNightStart) {
-                                                ForEach(0..<24, id: \.self) { hour in
-                                                    Text(String(format: "%02d:00", hour)).tag(hour)
-                                                }
-                                            }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 250, alignment: .trailing)
-                                        )
-                                    )
-                                }
-                                
-                                SettingsRow(
-                                    icon: "gearshape.fill",
-                                    title: "Auto Start Slideshow customization",
-                                    subtitle: "No setting available here, to customize which **album**, **person**, or **both** are used, create an empty album with **0 photos** and set its description as shown below.\nname: \(AppConstants.configAlbumName)\nDescription: albumIds:[\"album uuid 1\"] | personIds:[\"personUuid 1\"] ",
-                                    content: AnyView(Text("")),
-                                    isOn: artModeLevel != "off"
-                                )
-                            })
-                        }
-                        
-                        // Help Section
-                        SettingsSection(title: "Help & Tips") {
-                            AnyView(VStack(spacing: 12) {
-                                SettingsRow(
-                                    icon: "play.circle",
-                                    title: "Start Slideshow",
-                                    subtitle: "Press play anywhere in the photo grid to start slideshow from the highlighted image",
-                                    content: AnyView(
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "play.fill")
-                                                .font(.title3)
-                                            Text("Play/Pause")
-                                                .font(.caption)
-                                        }
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color.blue.opacity(0.1))
-                                            .cornerRadius(8)
-                                    )
-                                )
-                                
-                                SettingsRow(
-                                    icon: "arrow.up.and.down.and.arrow.left.and.right",
-                                    title: "Navigate Photos",
-                                    subtitle: "Swipe left or right to navigate. Swipe up and down to show hide image details in the fullscreen view",
-                                    content: AnyView(
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "arrow.left")
-                                                .foregroundColor(.gray)
-                                                .font(.caption)
-                                            Image(systemName: "arrow.right")
-                                                .foregroundColor(.gray)
-                                                .font(.caption)
-                                            Image(systemName: "arrow.up")
-                                                .foregroundColor(.gray)
-                                                .font(.caption)
-                                            Image(systemName: "arrow.down")
-                                                .foregroundColor(.gray)
-                                                .font(.caption)
-                                        }
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color.gray.opacity(0.1))
-                                            .cornerRadius(8)
-                                    )
-                                )
-                                
-                                Button(action: {
-                                    showingWhatsNew = true
-                                }) {
-                                    SettingsRow(
-                                        icon: "doc.text",
-                                        title: "What's New",
-                                        subtitle: "View changelog and latest features",
-                                        content: AnyView(
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "chevron.right")
-                                                    .foregroundColor(.blue)
-                                                    .font(.caption)
-                                            }
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 6)
-                                                .background(Color.blue.opacity(0.1))
-                                                .cornerRadius(8)
-                                        )
-                                    )
-                                }
-                                .buttonStyle(CardButtonStyle())
-                                
-                                Button(action: {
-                                    requestAppStoreReview()
-                                }) {
-                                    SettingsRow(
-                                        icon: "star",
-                                        title: "Rate App",
-                                        subtitle: "Leave a review on the App Store",
-                                        content: AnyView(
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "chevron.right")
-                                                    .foregroundColor(.blue)
-                                                    .font(.caption)
-                                            }
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 6)
-                                                .background(Color.blue.opacity(0.1))
-                                                .cornerRadius(8)
-                                        )
-                                    )
-                                }
-                                .buttonStyle(CardButtonStyle())
-                            })
-                        }
-                        
                         // Cache Section (Debug only)
                         
 #if DEBUG
@@ -603,19 +423,12 @@ struct SettingsView: View {
                             showingClearCacheAlert: $showingClearCacheAlert
                         )
 #endif
-                        
-                        footerSection
                     }
                     .padding()
                 }
             }
             .fullScreenCover(isPresented: $showingSignIn) {
                 SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
-            }
-            .fullScreenCover(isPresented: $showingWhatsNew) {
-                WhatsNewView(onDismiss: {
-                    showingWhatsNew = false
-                })
             }
             .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -742,13 +555,6 @@ struct SettingsView: View {
                 print("❌ Failed to refresh server connection: \(error)")
                 // You could add an alert here to show the error to the user
             }
-        }
-    }
-    
-    private func requestAppStoreReview() {
-        let appStoreID = "id6748482378"
-        if let url = URL(string: "itms-apps://itunes.apple.com/app/id\(appStoreID)?action=write-review") {
-            UIApplication.shared.open(url)
         }
     }
 }

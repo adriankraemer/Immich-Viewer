@@ -119,9 +119,7 @@ struct AlbumListView: View {
             do {
                 let fetchedAlbums = try await albumService.fetchAlbums()
                 await MainActor.run {
-                    // Filter out the config album from the display
-                    let configAlbumName = AppConstants.configAlbumName
-                    self.albums = fetchedAlbums.filter { $0.albumName !=  configAlbumName }
+                    self.albums = fetchedAlbums
                     self.isLoading = false
                 }
             } catch {

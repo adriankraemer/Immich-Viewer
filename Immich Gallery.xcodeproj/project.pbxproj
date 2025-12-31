@@ -553,9 +553,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Immich Gallery/Preview Content\"";
+				DEVELOPMENT_TEAM = B92392R73Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Immich-Gallery-Info.plist";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -563,7 +565,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1.7;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sanketh.dev.Immich-Gallery";
+				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -581,9 +583,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Immich Gallery/Preview Content\"";
+				DEVELOPMENT_TEAM = B92392R73Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Immich-Gallery-Info.plist";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Automatic;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -591,7 +595,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1.7;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sanketh.dev.Immich-Gallery";
+				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -673,42 +677,46 @@
 				CODE_SIGN_ENTITLEMENTS = TopShelfExtension/TopShelfExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = B92392R73Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TopShelfExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = TopShelfExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.1.7;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sanketh.dev.Immich-Gallery.TopShelfExtension";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 3;
-			};
-			name = Debug;
+			MARKETING_VERSION = 1.1.7;
+			PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
+			PRODUCT_NAME = "$(TARGET_NAME)";
+			SKIP_INSTALL = YES;
+			SWIFT_EMIT_LOC_STRINGS = YES;
+			SWIFT_VERSION = 5.0;
+			TARGETED_DEVICE_FAMILY = 3;
 		};
-		2F28630A2E4971C90032B966 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = TopShelfExtension/TopShelfExtension.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = TopShelfExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = TopShelfExtension;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.1.7;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.sanketh.dev.Immich-Gallery.TopShelfExtension";
+		name = Debug;
+	};
+	2F28630A2E4971C90032B966 /* Release */ = {
+		isa = XCBuildConfiguration;
+		buildSettings = {
+			CODE_SIGN_ENTITLEMENTS = TopShelfExtension/TopShelfExtension.entitlements;
+			CODE_SIGN_STYLE = Automatic;
+			CURRENT_PROJECT_VERSION = 1;
+			DEVELOPMENT_TEAM = B92392R73Z;
+			GENERATE_INFOPLIST_FILE = YES;
+			INFOPLIST_FILE = TopShelfExtension/Info.plist;
+			INFOPLIST_KEY_CFBundleDisplayName = TopShelfExtension;
+			INFOPLIST_KEY_NSHumanReadableCopyright = "";
+			INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
+			LD_RUNPATH_SEARCH_PATHS = (
+				"$(inherited)",
+				"@executable_path/Frameworks",
+				"@executable_path/../../Frameworks",
+			);
+			MARKETING_VERSION = 1.1.7;
+			PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;

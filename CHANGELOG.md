@@ -1,3 +1,34 @@
+# VERSION|1.1.7
+
+NEW_FEATURE| Tabs vs Sidebar
+- Pick your style in Settings → Interface. Tabs for the classics, Sidebar for the minimal.
+
+BUGFIX| Sort Order & album cover
+- Fixed the sort order again.
+- If thumbnail animation is disabled, we now show album cover of the album.
+
+# VERSION|1.1.6
+
+NEW_FEATURE| ✨✨New Icon✨✨
+- The Icon has been a placeholder for too long. 
+
+BUGFIX| Fix shared album content. Discussion#81
+- Thank you for reporting @madasus. Issue has been fixed.
+
+BUGFIX| The overlay windows were broken on TvOS 26. Add user/whats new etc.Part of issue #75
+- Thanks for reporting @rmayergfx. This should fix that issue.
+
+# VERSION|1.1.5
+
+NEW_FEATURE| Folders Tab
+- New opt-in Folders tab allows you to view folders from your external library.
+
+BUGFIX| Sorting order
+- We are once again respecting the sorting order selected in settings.
+
+IMPROVEMENT| Performance Optimizations
+- Hopefully better video player. 
+
 # VERSION|1.1.4
 
 IMPROVEMENT| Performance Optimizations

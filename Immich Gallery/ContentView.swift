@@ -14,8 +14,9 @@ enum TabName: Int, CaseIterable {
     case tags = 3
     case folders = 4
     case explore = 5
-    case search = 6
-    case settings = 7
+    case worldMap = 6
+    case search = 7
+    case settings = 8
     
     var title: String {
         switch self {
@@ -25,6 +26,7 @@ enum TabName: Int, CaseIterable {
         case .tags: return "Tags"
         case .folders: return "Folders"
         case .explore: return "Explore"
+        case .worldMap: return "WorldMap"
         case .search: return "Search"
         case .settings: return "Settings"
         }
@@ -38,6 +40,7 @@ enum TabName: Int, CaseIterable {
         case .tags: return "tag"
         case .folders: return "folder.fill"
         case .explore: return "globe"
+        case .worldMap: return "map"
         case .search: return "magnifyingglass"
         case .settings: return "gear"
         }
@@ -62,6 +65,7 @@ struct ContentView: View {
     @StateObject private var tagService: TagService
     @StateObject private var folderService: FolderService
     @StateObject private var exploreService: ExploreService
+    @StateObject private var mapService: MapService
     @StateObject private var searchService: SearchService
     @State private var selectedTab = 0
     @State private var refreshTrigger = UUID()
@@ -85,6 +89,7 @@ struct ContentView: View {
         _tagService = StateObject(wrappedValue: TagService(networkService: networkService))
         _folderService = StateObject(wrappedValue: FolderService(networkService: networkService))
         _exploreService = StateObject(wrappedValue: ExploreService(networkService: networkService))
+        _mapService = StateObject(wrappedValue: MapService(networkService: networkService))
         _searchService = StateObject(wrappedValue: SearchService(networkService: networkService))
     }
     
@@ -165,6 +170,14 @@ struct ContentView: View {
                                 Text(TabName.explore.title)
                             }
                             .tag(TabName.explore.rawValue)
+                        
+                        WorldMapView(mapService: mapService, assetService: assetService, authService: authService)
+                            .errorBoundary(context: "WorldMap Tab")
+                            .tabItem {
+                                Image(systemName: TabName.worldMap.iconName)
+                                Text(TabName.worldMap.title)
+                            }
+                            .tag(TabName.worldMap.rawValue)
                         
                         SearchView(searchService: searchService, assetService: assetService, authService: authService)
                             .errorBoundary(context: "Search Tab")
@@ -306,6 +319,8 @@ struct ContentView: View {
             }
         case "explore":
             selectedTab = TabName.explore.rawValue
+        case "worldmap":
+            selectedTab = TabName.worldMap.rawValue
         case "search":
             selectedTab = TabName.search.rawValue
         case "settings":

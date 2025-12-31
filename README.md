@@ -436,7 +436,7 @@ When reporting issues, please include:
 
 ## License
 
-[Add license information if applicable]
+This project is licensed under the GNU General Public License v3.0 (GPL-3.0). See the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 

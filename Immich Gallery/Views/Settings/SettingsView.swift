@@ -82,9 +82,6 @@ struct SettingsView: View {
     @AppStorage("topShelfStyle", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfStyle = "carousel"
     @AppStorage("topShelfImageSelection", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfImageSelection = "recent"
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0 // 0 = off
-    @AppStorage("artModeLevel") private var artModeLevel = "off"
-    @AppStorage("artModeDayStart") private var artModeDayStart = 7
-    @AppStorage("artModeNightStart") private var artModeNightStart = 20
     @FocusState private var isMinusFocused: Bool
     @FocusState private var isPlusFocused: Bool
     @FocusState private var focusedColor: String?
@@ -235,25 +232,6 @@ struct SettingsView: View {
             }
             .buttonStyle(CardButtonStyle())
         }
-    }
-    
-    private var footerSection: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 4) {
-                Text("Powered by")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text("Maple Syrup")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.primary)
-                
-                Text("🍁")
-                    .font(.caption)
-            }
-        }
-        .padding(.vertical, 20)
     }
     
     var body: some View {
@@ -438,62 +416,6 @@ struct SettingsView: View {
                             })
                         }
                         
-                        // Art Mode Settings Section
-                        SettingsSection(title: "") {
-                            AnyView(VStack(spacing: 12) {
-                                HStack{Badge("Experimental", color: Color.red, minWidth: 200)
-                                    Spacer()
-                                }
-                                SettingsRow(
-                                    icon: "paintbrush",
-                                    title: "Dim Level",
-                                    subtitle: "Apply a transparent overlay to dim slideshow images. Best used with black slideshow background color",
-                                    content: AnyView(
-                                        Picker("Dim Level", selection: $artModeLevel) {
-                                            ForEach(ArtModeLevel.allCases, id: \.self) { level in
-                                                Text(level.displayName).tag(level.rawValue)
-                                            }
-                                        }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 400, alignment: .trailing)
-                                    ),
-                                    isOn: artModeLevel != "off"
-                                )
-                                
-                                if artModeLevel == "automatic" {
-                                    SettingsRow(
-                                        icon: "sun.max",
-                                        title: "Day Mode Start",
-                                        subtitle: "Hour when low dimming begins (0-23)",
-                                        content: AnyView(
-                                            Picker("Day Start", selection: $artModeDayStart) {
-                                                ForEach(0..<24, id: \.self) { hour in
-                                                    Text(String(format: "%02d:00", hour)).tag(hour)
-                                                }
-                                            }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 250, alignment: .trailing)
-                                        )
-                                    )
-                                    
-                                    SettingsRow(
-                                        icon: "moon.stars",
-                                        title: "Night Mode Start",
-                                        subtitle: "Hour when high dimming begins (0-23)",
-                                        content: AnyView(
-                                            Picker("Night Start", selection: $artModeNightStart) {
-                                                ForEach(0..<24, id: \.self) { hour in
-                                                    Text(String(format: "%02d:00", hour)).tag(hour)
-                                                }
-                                            }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 250, alignment: .trailing)
-                                        )
-                                    )
-                                }
-                            })
-                        }
-                        
                         // Help Section
                         SettingsSection(title: "Help & Tips") {
                             AnyView(VStack(spacing: 12) {
@@ -595,8 +517,6 @@ struct SettingsView: View {
                             showingClearCacheAlert: $showingClearCacheAlert
                         )
 #endif
-                        
-                        footerSection
                     }
                     .padding()
                 }

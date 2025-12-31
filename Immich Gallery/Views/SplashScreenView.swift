@@ -93,11 +93,6 @@ struct WhatsNewView: View {
     - Performance improvements to the all photos tab.
     - Changes to settings page as usual. 
     
-     EXPERIMENTAL| Dimmed Slideshow
-    - Add support for dimmed slideshow in settings.
-    - Time based dim level
-    - How good does it work is a matter of personal opinion/s. Try it out and let me know. Yes, I'm talking to you specifically. 
-    
     
     VERSION|1.1.2
     

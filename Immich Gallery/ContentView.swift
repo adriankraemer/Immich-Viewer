@@ -67,6 +67,7 @@ struct ContentView: View {
     @State private var refreshTrigger = UUID()
     @AppStorage(UserDefaultsKeys.showTagsTab) private var showTagsTab = false
     @AppStorage(UserDefaultsKeys.showFoldersTab) private var showFoldersTab = false
+    @AppStorage(UserDefaultsKeys.showAlbumsTab) private var showAlbumsTab = true
     @AppStorage(UserDefaultsKeys.defaultStartupTab) private var defaultStartupTab = "photos"
     @AppStorage(UserDefaultsKeys.navigationStyle) private var navigationStyle = NavigationStyle.tabs.rawValue
     @State private var searchTabHighlighted = false
@@ -119,13 +120,15 @@ struct ContentView: View {
                         }
                         .tag(TabName.photos.rawValue)
                         
-                        AlbumListView(albumService: albumService, authService: authService, assetService: assetService, userManager: userManager)
-                            .errorBoundary(context: "Albums Tab")
-                            .tabItem {
-                                Image(systemName: TabName.albums.iconName)
-                                Text(TabName.albums.title)
-                            }
-                            .tag(TabName.albums.rawValue)
+                        if showAlbumsTab {
+                            AlbumListView(albumService: albumService, authService: authService, assetService: assetService, userManager: userManager)
+                                .errorBoundary(context: "Albums Tab")
+                                .tabItem {
+                                    Image(systemName: TabName.albums.iconName)
+                                    Text(TabName.albums.title)
+                                }
+                                .tag(TabName.albums.rawValue)
+                        }
                         
                         PeopleGridView(peopleService: peopleService, authService: authService, assetService: assetService)
                             .errorBoundary(context: "People Tab")
@@ -190,6 +193,13 @@ struct ContentView: View {
                     }
                     .onChange(of: autoSlideshowTimeout) { _, _ in
                         startInactivityTimer()
+                    }
+                    .onChange(of: showAlbumsTab) { _, enabled in
+                        if !enabled && selectedTab == TabName.albums.rawValue {
+                            selectedTab = TabName.photos.rawValue
+                        } else if enabled && defaultStartupTab == "albums" {
+                            selectedTab = TabName.albums.rawValue
+                        }
                     }
                     .onChange(of: showFoldersTab) { _, enabled in
                         if !enabled && selectedTab == TabName.folders.rawValue {
@@ -275,7 +285,11 @@ struct ContentView: View {
         case "photos":
             selectedTab = TabName.photos.rawValue
         case "albums":
-            selectedTab = TabName.albums.rawValue
+            if showAlbumsTab {
+                selectedTab = TabName.albums.rawValue
+            } else {
+                selectedTab = TabName.photos.rawValue
+            }
         case "people":
             selectedTab = TabName.people.rawValue
         case "tags":

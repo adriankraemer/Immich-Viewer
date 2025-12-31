@@ -43,6 +43,11 @@ extension UserDefaults {
         set { set(newValue, forKey: UserDefaultsKeys.showFoldersTab) }
     }
     
+    var showAlbumsTab: Bool {
+        get { bool(forKey: UserDefaultsKeys.showAlbumsTab) }
+        set { set(newValue, forKey: UserDefaultsKeys.showAlbumsTab) }
+    }
+    
     var use24HourClock: Bool {
         get { bool(forKey: UserDefaultsKeys.use24HourClock) }
         set { set(newValue, forKey: UserDefaultsKeys.use24HourClock) }

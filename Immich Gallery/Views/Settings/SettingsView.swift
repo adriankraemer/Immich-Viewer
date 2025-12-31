@@ -68,6 +68,7 @@ struct SettingsView: View {
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "white"
     @AppStorage("showTagsTab") private var showTagsTab = false
     @AppStorage("showFoldersTab") private var showFoldersTab = false
+    @AppStorage("showAlbumsTab") private var showAlbumsTab = true
     @AppStorage("defaultStartupTab") private var defaultStartupTab = "photos"
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("use24HourClock") private var use24HourClock = true
@@ -256,6 +257,13 @@ struct SettingsView: View {
                                         isOn: showTagsTab
                                     )
                                     SettingsRow(
+                                        icon: "folder",
+                                        title: "Show Albums Tab",
+                                        subtitle: "Enable the albums tab in the main navigation",
+                                        content: AnyView(Toggle("", isOn: $showAlbumsTab).labelsHidden()),
+                                        isOn: showAlbumsTab
+                                    )
+                                    SettingsRow(
                                         icon: "folder.fill",
                                         title: "Show Folders Tab",
                                         subtitle: "Enable the folders tab in the main navigation",
@@ -277,7 +285,9 @@ struct SettingsView: View {
                                         content: AnyView(
                                             Picker("Default Tab", selection: $defaultStartupTab) {
                                                 Text("All Photos").tag("photos")
-                                                Text("Albums").tag("albums")
+                                                if showAlbumsTab {
+                                                    Text("Albums").tag("albums")
+                                                }
                                                 Text("People").tag("people")
                                                 if showTagsTab {
                                                     Text("Tags").tag("tags")
@@ -463,6 +473,13 @@ struct SettingsView: View {
                 } else {
                     Text("Are you sure you want to delete this user?")
                 }
+            }
+            .onChange(of: showAlbumsTab) { _, newValue in
+                if !newValue && defaultStartupTab == "albums" {
+                    defaultStartupTab = "photos"
+                }
+                
+                NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
             }
             .onChange(of: showFoldersTab) { _, newValue in
                 if !newValue && defaultStartupTab == "folders" {

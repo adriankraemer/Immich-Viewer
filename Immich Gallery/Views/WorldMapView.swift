@@ -79,81 +79,69 @@ struct WorldMapView: View {
                     .mapStyle(.standard(elevation: .realistic))
                     #endif
                     
-                    // Navigation legend overlay
+                    // Brief navigation legend
                     VStack {
                         Spacer()
                         HStack {
                             Spacer()
-                            VStack(alignment: .trailing, spacing: 10) {
-                                HStack(spacing: 10) {
-                                    Image(systemName: "arrow.left.arrow.right")
-                                        .font(.title3)
-                                        .foregroundColor(.white)
-                                    Text("Left/Right: Pan")
-                                        .font(.subheadline)
-                                        .foregroundColor(.white)
+                            VStack(alignment: .trailing, spacing: 6) {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "hand.draw")
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
+                                    Text("Touchpad: Pan")
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                                .background(Color.black.opacity(0.75))
-                                .cornerRadius(10)
-                                
-                                HStack(spacing: 10) {
-                                    Image(systemName: "arrow.up.arrow.down")
-                                        .font(.title3)
-                                        .foregroundColor(.white)
-                                    Text("Up/Down: Zoom")
-                                        .font(.subheadline)
-                                        .foregroundColor(.white)
+                                HStack(spacing: 6) {
+                                    Image(systemName: "playpause.fill")
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
+                                    Text("Play/Pause: Zoom In")
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                                .background(Color.black.opacity(0.75))
-                                .cornerRadius(10)
-                                
-                                HStack(spacing: 10) {
+                                HStack(spacing: 6) {
                                     Image(systemName: "hand.tap")
-                                        .font(.title3)
-                                        .foregroundColor(.white)
-                                    Text("Select: View Photos")
-                                        .font(.subheadline)
-                                        .foregroundColor(.white)
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
+                                    Text("Long Press: Zoom Out")
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.8))
                                 }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                                .background(Color.black.opacity(0.75))
-                                .cornerRadius(10)
                             }
-                            .padding(.trailing, 40)
-                            .padding(.bottom, 40)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(Color.black.opacity(0.6))
+                            .cornerRadius(8)
+                            .padding(.trailing, 30)
+                            .padding(.bottom, 30)
                         }
                     }
                 }
+                .background(
+                    MapPanGestureView { direction in
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.pan(direction: direction)
+                        }
+                    }
+                )
                 .focusable()
-                .onMoveCommand { direction in
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        switch direction {
-                        case .up:
-                            viewModel.zoomIn()
-                        case .down:
-                            viewModel.zoomOut()
-                        case .left:
-                            viewModel.pan(direction: .left)
-                        case .right:
-                            viewModel.pan(direction: .right)
-                        @unknown default:
-                            break
-                        }
-                    }
-                }
                 .onPlayPauseCommand {
-                    // Pan north/south with play/pause
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        // Alternate between up and down on each press
-                        // This is a simple way to pan vertically
-                        viewModel.pan(direction: .up)
+                    // Zoom in with play/pause
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        viewModel.zoomIn()
                     }
                 }
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 1.0)
+                        .onEnded { _ in
+                            // Zoom out with long press (1 second) on touchpad
+                            withAnimation(.easeInOut(duration: 0.3)) {
+                                viewModel.zoomOut()
+                            }
+                        }
+                )
             }
         }
         .fullScreenCover(isPresented: $showingClusterDetail) {
@@ -320,4 +308,5 @@ struct ClusterDetailView: View {
         authService: authService
     )
 }
+
 

@@ -491,14 +491,6 @@ struct SettingsView: View {
                                         )
                                     )
                                 }
-                                
-                                SettingsRow(
-                                    icon: "gearshape.fill",
-                                    title: "Auto Start Slideshow customization",
-                                    subtitle: "No setting available here, to customize which **album**, **person**, or **both** are used, create an empty album with **0 photos** and set its description as shown below.\nname: \(AppConstants.configAlbumName)\nDescription: albumIds:[\"album uuid 1\"] | personIds:[\"personUuid 1\"] ",
-                                    content: AnyView(Text("")),
-                                    isOn: artModeLevel != "off"
-                                )
                             })
                         }
                         

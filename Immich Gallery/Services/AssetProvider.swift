@@ -17,8 +17,7 @@ struct AssetProviderFactory {
         isFavorite: Bool = false,
         folderPath: String? = nil,
         assetService: AssetService,
-        albumService: AlbumService? = nil,
-        config: SlideshowConfig? = nil
+        albumService: AlbumService? = nil
     ) -> AssetProvider {
         
         if let albumId = albumId, let albumService = albumService {
@@ -31,8 +30,7 @@ struct AssetProviderFactory {
                 city: city,
                 isAllPhotos: isAllPhotos,
                 isFavorite: isFavorite,
-                folderPath: folderPath,
-                config: config
+                folderPath: folderPath
             )
         }
     }
@@ -296,51 +294,39 @@ class GeneralAssetProvider: AssetProvider {
     private let city: String?
     private let isAllPhotos: Bool
     private let isFavorite: Bool
-    private let config: SlideshowConfig?
     private let folderPath: String?
     
-    init(assetService: AssetService, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false, folderPath: String? = nil, config: SlideshowConfig? = nil) {
+    init(assetService: AssetService, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false, folderPath: String? = nil) {
         self.assetService = assetService
         self.personId = personId
         self.tagId = tagId
         self.city = city
         self.isAllPhotos = isAllPhotos
         self.isFavorite = isFavorite
-        self.config = config
         self.folderPath = folderPath
     }
     
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
-        // If config is provided, use it; otherwise fall back to individual parameters
-        if let config = config {
-            return try await assetService.fetchAssets(config: config, page: page, limit: limit, isAllPhotos: isAllPhotos)
-        } else {
-            return try await assetService.fetchAssets(
-                page: page,
-                limit: limit,
-                albumId: nil,
-                personId: personId,
-                tagId: tagId,
-                city: city,
-                isAllPhotos: isAllPhotos,
-                isFavorite: isFavorite,
-                folderPath: folderPath
-            )
-        }
+        return try await assetService.fetchAssets(
+            page: page,
+            limit: limit,
+            albumId: nil,
+            personId: personId,
+            tagId: tagId,
+            city: city,
+            isAllPhotos: isAllPhotos,
+            isFavorite: isFavorite,
+            folderPath: folderPath
+        )
     }
     
     func fetchRandomAssets(limit: Int) async throws -> SearchResult {
-        // If config is provided, use it; otherwise fall back to individual parameters
-        if let config = config {
-            return try await assetService.fetchRandomAssets(config: config, limit: limit)
-        } else {
-            return try await assetService.fetchRandomAssets(
-                albumIds: nil,
-                personIds: personId != nil ? [personId!] : nil,
-                tagIds: tagId != nil ? [tagId!] : nil,
-                folderPath: folderPath,
-                limit: limit
-            )
-        }
+        return try await assetService.fetchRandomAssets(
+            albumIds: nil,
+            personIds: personId != nil ? [personId!] : nil,
+            tagIds: tagId != nil ? [tagId!] : nil,
+            folderPath: folderPath,
+            limit: limit
+        )
     }
 }

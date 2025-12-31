@@ -61,7 +61,6 @@ Immich Gallery/
 │   ├── NetworkService.swift
 │   ├── PeopleService.swift
 │   ├── SearchService.swift
-│   ├── SlideshowConfigService.swift
 │   ├── StatsService.swift
 │   ├── TagService.swift
 │   ├── ThumbnailCache.swift

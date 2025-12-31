@@ -21,9 +21,8 @@ struct SlideshowView: View {
     private let assetService: AssetService
     private let albumService: AlbumService?
     
-    // Asset provider created using factory - will be recreated with config if needed
+    // Asset provider created using factory
     @State private var assetProvider: AssetProvider?
-    @State private var slideshowConfig: SlideshowConfig?
 
     init(albumId: String? = nil, personId: String? = nil, tagId: String? = nil, city: String? = nil, startingIndex: Int = 0, isFavorite: Bool = false) {
         self.albumId = albumId
@@ -39,7 +38,7 @@ struct SlideshowView: View {
         self.assetService = AssetService(networkService: networkService)
         self.albumService = AlbumService(networkService: networkService)
 
-        // Initial asset provider - will be replaced if config is fetched
+        // Initial asset provider
         let initialProvider = AssetProviderFactory.createProvider(
             albumId: albumId,
             personId: personId,
@@ -48,8 +47,7 @@ struct SlideshowView: View {
             isAllPhotos: false, // Slideshow doesn't use "All Photos" mode
             isFavorite: isFavorite,
             assetService: assetService,
-            albumService: albumService,
-            config: nil
+            albumService: albumService
         )
         _assetProvider = State(initialValue: initialProvider)
     }
@@ -344,63 +342,10 @@ struct SlideshowView: View {
 
     private func initializeSlideshow() {
         loadAssetsTask = Task {
-            // Always fetch config first
-            await fetchConfigAndUpdateProvider()
             await checkIfAlbumIsShared()
             await loadInitialAssets()
             await loadInitialImages()
             await showFirstImage()
-        }
-    }
-    
-    private func fetchConfigAndUpdateProvider() async {
-        guard let albumService = albumService else { 
-            // No album service, use fallback provider
-            await MainActor.run {
-                self.assetProvider = AssetProviderFactory.createProvider(
-                    albumId: albumId,
-                    personId: personId,
-                    tagId: tagId,
-                    city: city,
-                    isAllPhotos: false,
-                    isFavorite: isFavorite,
-                    assetService: assetService,
-                    albumService: albumService
-                )
-            }
-            return 
-        }
-        
-        let configService = SlideshowConfigService(albumService: albumService)
-        let config = await configService.fetchSlideshowConfig()
-        
-        await MainActor.run {
-            self.slideshowConfig = config
-            
-            // If config has values, use it; otherwise fallback to original parameters
-            if !config.albumIds.isEmpty || !config.personIds.isEmpty {
-                self.assetProvider = AssetProviderFactory.createProvider(
-                    albumId: nil, // Use config instead of individual IDs
-                    personId: nil,
-                    tagId: nil,
-                    isAllPhotos: false,
-                    isFavorite: isFavorite,
-                    assetService: assetService,
-                    albumService: albumService,
-                    config: config
-                )
-            } else {
-                self.assetProvider = AssetProviderFactory.createProvider(
-                    albumId: albumId,
-                    personId: personId,
-                    tagId: tagId,
-                    city: city,
-                    isAllPhotos: false,
-                    isFavorite: isFavorite,
-                    assetService: assetService,
-                    albumService: albumService
-                )
-            }
         }
     }
 

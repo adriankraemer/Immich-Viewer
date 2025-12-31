@@ -93,11 +93,6 @@ struct WhatsNewView: View {
     - Performance improvements to the all photos tab.
     - Changes to settings page as usual. 
     
-    EXPERIMENTAL| Auto Slideshow Configuration (experimental only)
-    - This may go away if I can't convince myself this is good.
-    - Create empty album named "immich-gallery-config" with specific description format. Check settings for more info on setup. 
-    - Support for both album and person-based slideshow configuration
-
      EXPERIMENTAL| Dimmed Slideshow
     - Add support for dimmed slideshow in settings.
     - Time based dim level

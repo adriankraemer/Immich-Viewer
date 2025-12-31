@@ -193,3 +193,93 @@ class FolderThumbnailProvider: ThumbnailProvider {
         }
     }
 }
+
+// MARK: - Continent Thumbnail Provider
+class ContinentThumbnailProvider: ThumbnailProvider {
+    private let assetService: AssetService
+    private let thumbnailCache = ThumbnailCache.shared
+    
+    init(assetService: AssetService) {
+        self.assetService = assetService
+    }
+    
+    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+        guard let continent = item as? Continent else { return [] }
+        
+        // Collect representative assets from all countries in the continent
+        var allAssets: [ImmichAsset] = []
+        
+        for country in continent.countries {
+            // Get representative asset from country or from its assets
+            if let countryAsset = country.representativeAsset {
+                allAssets.append(countryAsset)
+            } else if let firstAsset = country.assets.first(where: { $0.type == .image }) {
+                allAssets.append(firstAsset)
+            }
+        }
+        
+        // If we have a continent representative asset, use it first
+        if let continentAsset = continent.representativeAsset {
+            allAssets.insert(continentAsset, at: 0)
+        }
+        
+        // Load thumbnails from collected assets
+        var loadedThumbnails: [UIImage] = []
+        let imageAssets = allAssets.filter { $0.type == .image }.prefix(10)
+        
+        for asset in imageAssets {
+            do {
+                let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
+                    try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
+                }
+                if let thumbnail = thumbnail {
+                    loadedThumbnails.append(thumbnail)
+                }
+            } catch {
+                print("Failed to load thumbnail for continent asset \(asset.id): \(error)")
+            }
+        }
+        
+        return loadedThumbnails
+    }
+}
+
+// MARK: - Country Thumbnail Provider
+class CountryThumbnailProvider: ThumbnailProvider {
+    private let assetService: AssetService
+    private let thumbnailCache = ThumbnailCache.shared
+    
+    init(assetService: AssetService) {
+        self.assetService = assetService
+    }
+    
+    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+        guard let country = item as? Country else { return [] }
+        
+        var allAssets = country.assets
+        
+        // If we have a representative asset, use it first
+        if let countryAsset = country.representativeAsset {
+            allAssets.insert(countryAsset, at: 0)
+        }
+        
+        // Load thumbnails from country assets
+        var loadedThumbnails: [UIImage] = []
+        let imageAssets = allAssets.filter { $0.type == .image }.prefix(10)
+        
+        for asset in imageAssets {
+            do {
+                let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
+                    try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
+                }
+                if let thumbnail = thumbnail {
+                    loadedThumbnails.append(thumbnail)
+                }
+            } catch {
+                print("Failed to load thumbnail for country asset \(asset.id): \(error)")
+            }
+        }
+        
+        return loadedThumbnails
+    }
+}

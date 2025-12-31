@@ -1,4 +1,4 @@
-![Build Status](https://github.com/mensadilabs/Immich-Gallery/actions/workflows/objective-c-xcode.yml/badge.svg?branch=main) ![Platform](https://img.shields.io/badge/platform-TvOS-blue) ![Language](https://img.shields.io/github/languages/top/mensadilabs/Immich-Gallery)
+![Build Status](https://github.com/cyyberwolf93/Immich-AppleTV/actions/workflows/objective-c-xcode.yml/badge.svg?branch=main) ![Platform](https://img.shields.io/badge/platform-TvOS-blue) ![Language](https://img.shields.io/github/languages/top/cyyberwolf93/Immich-AppleTV)
 
 # Immich Gallery for Apple TV
 
@@ -39,9 +39,9 @@ A native Apple TV app for browsing your self-hosted Immich photo library with a 
 
 > [!NOTE]
 >
-> - Stuck on "Data couldn't read because its missing"? Update Immich and retry: https://github.com/mensadilabs/Immich-Gallery/issues/67
-> - OAuth / OIDC sign-in needs server-side changes (tracked in https://github.com/mensadilabs/Immich-Gallery/issues/77). Use an Immich API key instead.
-> - FaceID / PIN locking is currently out of scope. https://github.com/mensadilabs/Immich-Gallery/issues/64
+> - Stuck on "Data couldn't read because its missing"? Update Immich and retry: https://github.com/cyyberwolf93/Immich-AppleTV/issues/67
+> - OAuth / OIDC sign-in needs server-side changes (tracked in https://github.com/cyyberwolf93/Immich-AppleTV/issues/77). Use an Immich API key instead.
+> - FaceID / PIN locking is currently out of scope. https://github.com/cyyberwolf93/Immich-AppleTV/issues/64
 
 ### Building from Source
 
@@ -335,8 +335,8 @@ https://github.com/user-attachments/assets/78987a7a-ef62-497c-828f-f7b99851ffb3
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/mensadilabs/Immich-Gallery.git
-   cd Immich-Gallery
+   git clone https://github.com/cyyberwolf93/Immich-AppleTV.git
+   cd Immich-AppleTV
    ```
 
 2. Open the project:
@@ -374,7 +374,7 @@ https://github.com/user-attachments/assets/78987a7a-ef62-497c-828f-f7b99851ffb3
 
 #### "Data couldn't read because its missing"
 - **Solution**: Update your Immich server to the latest version
-- **Reference**: https://github.com/mensadilabs/Immich-Gallery/issues/67
+- **Reference**: https://github.com/cyyberwolf93/Immich-AppleTV/issues/67
 
 #### Top Shelf Not Showing Photos
 - Check that Top Shelf is enabled in Settings
@@ -401,9 +401,9 @@ https://github.com/user-attachments/assets/78987a7a-ef62-497c-828f-f7b99851ffb3
 ### Known Limitations
 
 - **OAuth/OIDC**: Not currently supported (use API keys instead)
-  - Tracked in: https://github.com/mensadilabs/Immich-Gallery/issues/77
+  - Tracked in: https://github.com/cyyberwolf93/Immich-AppleTV/issues/77
 - **FaceID/PIN Locking**: Not implemented
-  - Tracked in: https://github.com/mensadilabs/Immich-Gallery/issues/64
+  - Tracked in: https://github.com/cyyberwolf93/Immich-AppleTV/issues/64
 - **Video Playback**: Limited to formats supported by tvOS AVPlayer
 
 ## Contributing
@@ -447,4 +447,4 @@ When reporting issues, please include:
 
 ![Alt](https://repobeats.axiom.co/api/embed/3fea253de89fc88824c16adb77a456f7e7d657b7.svg "Repobeats analytics image")
 
-[![Star History Chart](https://api.star-history.com/svg?repos=mensadilabs/Immich-Gallery&type=Timeline)](https://www.star-history.com/#mensadilabs/Immich-Gallery&Timeline)
+[![Star History Chart](https://api.star-history.com/svg?repos=cyyberwolf93/Immich-AppleTV&type=Timeline)](https://www.star-history.com/#cyyberwolf93/Immich-AppleTV&Timeline)

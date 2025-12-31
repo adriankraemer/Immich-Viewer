@@ -174,6 +174,121 @@ class AlbumAssetProvider: AssetProvider {
     }
 }
 
+class CountryAssetProvider: AssetProvider {
+    private let assets: [ImmichAsset]
+    
+    private enum SortOrder {
+        case newestFirst
+        case oldestFirst
+    }
+    
+    private static let isoFormatterWithFractional: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+    
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+    
+    init(assets: [ImmichAsset]) {
+        self.assets = assets
+    }
+    
+    func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
+        let sortedAssets = sortAssets(assets)
+        guard !assets.isEmpty else {
+            return SearchResult(assets: [], total: 0, nextPage: nil)
+        }
+
+        let pageSize = max(limit, 1)
+        let startIndex = max((page - 1) * pageSize, 0)
+        let endIndex = min(startIndex + pageSize, sortedAssets.count)
+
+        let pageAssets: [ImmichAsset]
+        if startIndex < endIndex {
+            pageAssets = Array(sortedAssets[startIndex..<endIndex])
+        } else {
+            pageAssets = []
+        }
+
+        let nextPage: String? = endIndex < sortedAssets.count ? String(page + 1) : nil
+
+        return SearchResult(
+            assets: pageAssets,
+            total: sortedAssets.count,
+            nextPage: nextPage
+        )
+    }
+    
+    func fetchRandomAssets(limit: Int) async throws -> SearchResult {
+        guard !assets.isEmpty else {
+            return SearchResult(assets: [], total: 0, nextPage: nil)
+        }
+
+        let sampleCount = min(limit, assets.count)
+        let shuffledAssets = Array(assets.shuffled().prefix(sampleCount))
+
+        return SearchResult(
+            assets: shuffledAssets,
+            total: assets.count,
+            nextPage: nil
+        )
+    }
+    
+    private func sortAssets(_ assets: [ImmichAsset]) -> [ImmichAsset] {
+        let sortOrder = currentSortOrder()
+        return assets.sorted { lhs, rhs in
+            let lhsDate = captureDate(for: lhs)
+            let rhsDate = captureDate(for: rhs)
+            
+            if lhsDate == rhsDate {
+                return lhs.id < rhs.id
+            }
+            
+            switch sortOrder {
+            case .newestFirst:
+                return lhsDate > rhsDate
+            case .oldestFirst:
+                return lhsDate < rhsDate
+            }
+        }
+    }
+    
+    private func currentSortOrder() -> SortOrder {
+        let storedValue = UserDefaults.standard.string(forKey: UserDefaultsKeys.assetSortOrder) ?? "desc"
+        return storedValue.lowercased() == "asc" ? .oldestFirst : .newestFirst
+    }
+    
+    private func captureDate(for asset: ImmichAsset) -> Date {
+        if let date = parseDate(asset.exifInfo?.dateTimeOriginal) {
+            return date
+        }
+        if let date = parseDate(asset.fileCreatedAt) {
+            return date
+        }
+        if let date = parseDate(asset.fileModifiedAt) {
+            return date
+        }
+        if let date = parseDate(asset.updatedAt) {
+            return date
+        }
+        
+        return .distantPast
+    }
+    
+    private func parseDate(_ value: String?) -> Date? {
+        guard let value = value else { return nil }
+        if let date = CountryAssetProvider.isoFormatterWithFractional.date(from: value) {
+            return date
+        }
+        return CountryAssetProvider.isoFormatter.date(from: value)
+    }
+}
+
 class GeneralAssetProvider: AssetProvider {
     private let assetService: AssetService
     private let personId: String?

@@ -18,8 +18,8 @@ struct Continent: GridDisplayable, Identifiable, Hashable {
     var primaryTitle: String { name }
     var secondaryTitle: String? { "\(countries.count) \(countries.count == 1 ? "country" : "countries")" }
     var description: String? {
-        let totalCities = countries.reduce(0) { $0 + $1.cities.count }
-        return "\(totalCities) \(totalCities == 1 ? "city" : "cities")"
+        let totalPhotos = countries.reduce(0) { $0 + ($1.itemCount ?? 0) }
+        return "\(totalPhotos) \(totalPhotos == 1 ? "photo" : "photos")"
     }
     var thumbnailId: String? { representativeAsset?.id }
     var itemCount: Int? {
@@ -58,17 +58,15 @@ struct Continent: GridDisplayable, Identifiable, Hashable {
 struct Country: GridDisplayable, Identifiable, Hashable {
     let name: String
     let continent: String
-    let cities: [City]
+    let assets: [ImmichAsset]
     let representativeAsset: ImmichAsset?
     
     var id: String { name }
     var primaryTitle: String { name }
     var secondaryTitle: String? { continent }
-    var description: String? { "\(cities.count) \(cities.count == 1 ? "city" : "cities")" }
+    var description: String? { "\(assets.count) \(assets.count == 1 ? "photo" : "photos")" }
     var thumbnailId: String? { representativeAsset?.id }
-    var itemCount: Int? {
-        cities.reduce(0) { $0 + ($1.itemCount ?? 0) }
-    }
+    var itemCount: Int? { assets.count }
     var gridCreatedAt: String? { nil }
     var isFavorite: Bool? { nil }
     var isShared: Bool? { false }
@@ -86,72 +84,81 @@ struct Country: GridDisplayable, Identifiable, Hashable {
     }
 }
 
-// MARK: - City Model
-struct City: GridDisplayable, Identifiable, Hashable {
-    let name: String
-    let country: String
-    let continent: String
-    let assets: [ImmichAsset]
-    let representativeAsset: ImmichAsset?
-    
-    var id: String { "\(name)_\(country)" }
-    var primaryTitle: String { name }
-    var secondaryTitle: String? { country }
-    var description: String? { nil }
-    var thumbnailId: String? { representativeAsset?.id }
-    var itemCount: Int? { assets.count }
-    var gridCreatedAt: String? { nil }
-    var isFavorite: Bool? { nil }
-    var isShared: Bool? { false }
-    var sharingText: String? { nil }
-    var iconName: String { "building.2" }
-    var gridColor: Color? { nil }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(name)
-        hasher.combine(country)
-    }
-    
-    static func == (lhs: City, rhs: City) -> Bool {
-        lhs.name == rhs.name && lhs.country == rhs.country
-    }
-}
-
 // MARK: - Country to Continent Mapping
 struct ContinentMapper {
     static func getContinent(for country: String) -> String {
-        let normalizedCountry = country.lowercased().trimmingCharacters(in: .whitespaces)
+        // Normalize country name: lowercase, trim, and handle special characters
+        var normalizedCountry = country.lowercased().trimmingCharacters(in: .whitespaces)
+        
+        // Handle common special character variations
+        normalizedCountry = normalizedCountry
+            .replacingOccurrences(of: "ü", with: "u")
+            .replacingOccurrences(of: "ö", with: "o")
+            .replacingOccurrences(of: "ä", with: "a")
+            .replacingOccurrences(of: "é", with: "e")
+            .replacingOccurrences(of: "è", with: "e")
+            .replacingOccurrences(of: "ê", with: "e")
+            .replacingOccurrences(of: "ë", with: "e")
+            .replacingOccurrences(of: "á", with: "a")
+            .replacingOccurrences(of: "à", with: "a")
+            .replacingOccurrences(of: "â", with: "a")
+            .replacingOccurrences(of: "ã", with: "a")
+            .replacingOccurrences(of: "ç", with: "c")
+            .replacingOccurrences(of: "ñ", with: "n")
+            .replacingOccurrences(of: "í", with: "i")
+            .replacingOccurrences(of: "î", with: "i")
+            .replacingOccurrences(of: "ï", with: "i")
+            .replacingOccurrences(of: "ó", with: "o")
+            .replacingOccurrences(of: "ô", with: "o")
+            .replacingOccurrences(of: "õ", with: "o")
+            .replacingOccurrences(of: "ú", with: "u")
+            .replacingOccurrences(of: "û", with: "u")
         
         // Comprehensive country to continent mapping
         let mapping: [String: String] = [
             // Asia
-            "china": "Asia", "japan": "Asia", "india": "Asia", "south korea": "Asia",
-            "north korea": "Asia", "thailand": "Asia", "vietnam": "Asia", "indonesia": "Asia",
-            "philippines": "Asia", "malaysia": "Asia", "singapore": "Asia", "taiwan": "Asia",
-            "hong kong": "Asia", "macau": "Asia", "macao": "Asia", "bangladesh": "Asia",
-            "pakistan": "Asia", "afghanistan": "Asia", "iran": "Asia", "iraq": "Asia",
-            "saudi arabia": "Asia", "uae": "Asia", "united arab emirates": "Asia",
-            "israel": "Asia", "turkey": "Asia", "russia": "Asia", "kazakhstan": "Asia",
-            "mongolia": "Asia", "nepal": "Asia", "sri lanka": "Asia", "myanmar": "Asia",
-            "cambodia": "Asia", "laos": "Asia", "brunei": "Asia", "kyrgyzstan": "Asia",
-            "tajikistan": "Asia", "uzbekistan": "Asia", "turkmenistan": "Asia",
-            "azerbaijan": "Asia", "georgia": "Asia", "armenia": "Asia", "lebanon": "Asia",
-            "jordan": "Asia", "syria": "Asia", "yemen": "Asia", "oman": "Asia",
-            "kuwait": "Asia", "qatar": "Asia", "bahrain": "Asia", "cyprus": "Asia",
+            "china": "Asia", "peoples republic of china": "Asia", "prc": "Asia", "japan": "Asia", "india": "Asia", "south korea": "Asia", "republic of korea": "Asia", "korea": "Asia",
+            "north korea": "Asia", "democratic peoples republic of korea": "Asia", "dprk": "Asia", "thailand": "Asia", "vietnam": "Asia", "indonesia": "Asia",
+            "philippines": "Asia", "malaysia": "Asia", "singapore": "Asia", "taiwan": "Asia", "republic of china": "Asia",
+            "hong kong": "Asia", "hongkong": "Asia", "macau": "Asia", "macao": "Asia", "bangladesh": "Asia",
+            "pakistan": "Asia", "afghanistan": "Asia", "iran": "Asia", "islamic republic of iran": "Asia", "iraq": "Asia",
+            "saudi arabia": "Asia", "kingdom of saudi arabia": "Asia", "uae": "Asia", "united arab emirates": "Asia",
+            "israel": "Asia", "state of israel": "Asia", "turkey": "Asia", "turkiye": "Asia", "turkish": "Asia", "republic of turkey": "Asia",
+            "russia": "Asia", "russian federation": "Asia", "kazakhstan": "Asia", "republic of kazakhstan": "Asia",
+            "mongolia": "Asia", "nepal": "Asia", "sri lanka": "Asia", "srilanka": "Asia", "myanmar": "Asia", "burma": "Asia",
+            "cambodia": "Asia", "kingdom of cambodia": "Asia", "laos": "Asia", "lao peoples democratic republic": "Asia",
+            "brunei": "Asia", "brunei darussalam": "Asia", "kyrgyzstan": "Asia", "kyrgyz republic": "Asia",
+            "tajikistan": "Asia", "republic of tajikistan": "Asia", "uzbekistan": "Asia", "republic of uzbekistan": "Asia",
+            "turkmenistan": "Asia", "azerbaijan": "Asia", "republic of azerbaijan": "Asia",
+            "georgia": "Asia", "armenia": "Asia", "republic of armenia": "Asia", "lebanon": "Asia", "lebanese republic": "Asia",
+            "jordan": "Asia", "hashemite kingdom of jordan": "Asia", "syria": "Asia", "syrian arab republic": "Asia",
+            "yemen": "Asia", "republic of yemen": "Asia", "oman": "Asia", "sultanate of oman": "Asia",
+            "kuwait": "Asia", "state of kuwait": "Asia", "qatar": "Asia", "state of qatar": "Asia",
+            "bahrain": "Asia", "kingdom of bahrain": "Asia", "cyprus": "Asia", "republic of cyprus": "Asia",
             
             // Europe
-            "united kingdom": "Europe", "uk": "Europe", "great britain": "Europe",
-            "france": "Europe", "germany": "Europe", "italy": "Europe", "spain": "Europe",
-            "portugal": "Europe", "greece": "Europe", "netherlands": "Europe", "belgium": "Europe",
-            "switzerland": "Europe", "austria": "Europe", "poland": "Europe", "czech republic": "Europe",
-            "hungary": "Europe", "romania": "Europe", "bulgaria": "Europe", "croatia": "Europe",
-            "serbia": "Europe", "slovakia": "Europe", "slovenia": "Europe", "denmark": "Europe",
-            "sweden": "Europe", "norway": "Europe", "finland": "Europe", "iceland": "Europe",
-            "ireland": "Europe", "luxembourg": "Europe", "malta": "Europe", "estonia": "Europe",
-            "latvia": "Europe", "lithuania": "Europe", "albania": "Europe", "macedonia": "Europe",
-            "bosnia": "Europe", "montenegro": "Europe", "moldova": "Europe", "ukraine": "Europe",
-            "belarus": "Europe", "monaco": "Europe", "liechtenstein": "Europe", "andorra": "Europe",
-            "san marino": "Europe", "vatican": "Europe", "vatican city": "Europe",
+            "united kingdom": "Europe", "uk": "Europe", "great britain": "Europe", "britain": "Europe", "england": "Europe", "scotland": "Europe", "wales": "Europe",
+            "france": "Europe", "french republic": "Europe", "germany": "Europe", "federal republic of germany": "Europe", "deutschland": "Europe",
+            "italy": "Europe", "italian republic": "Europe", "spain": "Europe", "kingdom of spain": "Europe", "espana": "Europe",
+            "portugal": "Europe", "portuguese republic": "Europe", "greece": "Europe", "hellenic republic": "Europe",
+            "netherlands": "Europe", "holland": "Europe", "kingdom of the netherlands": "Europe", "belgium": "Europe", "kingdom of belgium": "Europe",
+            "switzerland": "Europe", "swiss confederation": "Europe", "austria": "Europe", "republic of austria": "Europe",
+            "poland": "Europe", "republic of poland": "Europe", "czech republic": "Europe", "czechia": "Europe",
+            "hungary": "Europe", "romania": "Europe", "bulgaria": "Europe", "republic of bulgaria": "Europe",
+            "croatia": "Europe", "republic of croatia": "Europe", "serbia": "Europe", "republic of serbia": "Europe",
+            "slovakia": "Europe", "slovak republic": "Europe", "slovenia": "Europe", "republic of slovenia": "Europe",
+            "denmark": "Europe", "kingdom of denmark": "Europe", "sweden": "Europe", "kingdom of sweden": "Europe",
+            "norway": "Europe", "kingdom of norway": "Europe", "finland": "Europe", "republic of finland": "Europe",
+            "iceland": "Europe", "republic of iceland": "Europe", "ireland": "Europe", "republic of ireland": "Europe", "eire": "Europe",
+            "luxembourg": "Europe", "grand duchy of luxembourg": "Europe", "malta": "Europe", "republic of malta": "Europe",
+            "estonia": "Europe", "republic of estonia": "Europe", "latvia": "Europe", "republic of latvia": "Europe",
+            "lithuania": "Europe", "republic of lithuania": "Europe", "albania": "Europe", "republic of albania": "Europe",
+            "macedonia": "Europe", "north macedonia": "Europe", "republic of north macedonia": "Europe",
+            "bosnia": "Europe", "bosnia and herzegovina": "Europe", "montenegro": "Europe", "moldova": "Europe", "republic of moldova": "Europe",
+            "ukraine": "Europe", "belarus": "Europe", "republic of belarus": "Europe",
+            "monaco": "Europe", "principality of monaco": "Europe", "liechtenstein": "Europe", "principality of liechtenstein": "Europe",
+            "andorra": "Europe", "principality of andorra": "Europe", "san marino": "Europe", "republic of san marino": "Europe",
+            "vatican": "Europe", "vatican city": "Europe", "holy see": "Europe",
             
             // North America
             "united states": "North America", "usa": "North America", "us": "North America",
@@ -212,64 +219,150 @@ struct ContinentMapper {
         return "Unknown"
     }
     
+    // Normalize country name for grouping (same normalization as getContinent)
+    private static func normalizeCountryName(_ country: String) -> String {
+        var normalized = country.lowercased().trimmingCharacters(in: .whitespaces)
+        
+        // Handle common special character variations
+        normalized = normalized
+            .replacingOccurrences(of: "ü", with: "u")
+            .replacingOccurrences(of: "ö", with: "o")
+            .replacingOccurrences(of: "ä", with: "a")
+            .replacingOccurrences(of: "é", with: "e")
+            .replacingOccurrences(of: "è", with: "e")
+            .replacingOccurrences(of: "ê", with: "e")
+            .replacingOccurrences(of: "ë", with: "e")
+            .replacingOccurrences(of: "á", with: "a")
+            .replacingOccurrences(of: "à", with: "a")
+            .replacingOccurrences(of: "â", with: "a")
+            .replacingOccurrences(of: "ã", with: "a")
+            .replacingOccurrences(of: "ç", with: "c")
+            .replacingOccurrences(of: "ñ", with: "n")
+            .replacingOccurrences(of: "í", with: "i")
+            .replacingOccurrences(of: "î", with: "i")
+            .replacingOccurrences(of: "ï", with: "i")
+            .replacingOccurrences(of: "ó", with: "o")
+            .replacingOccurrences(of: "ô", with: "o")
+            .replacingOccurrences(of: "õ", with: "o")
+            .replacingOccurrences(of: "ú", with: "u")
+            .replacingOccurrences(of: "û", with: "u")
+        
+        return normalized
+    }
+    
+    // Get canonical country name from normalized name (for display)
+    private static func getCanonicalCountryName(from normalized: String, original: String) -> String {
+        // Map of normalized names to canonical display names
+        let canonicalMap: [String: String] = [
+            "turkey": "Turkey", "turkiye": "Turkey", "turkish": "Turkey",
+            "united states": "United States", "usa": "United States", "us": "United States",
+            "united kingdom": "United Kingdom", "uk": "United Kingdom", "great britain": "United Kingdom", "britain": "United Kingdom",
+            "england": "United Kingdom", "scotland": "United Kingdom", "wales": "United Kingdom",
+            "netherlands": "Netherlands", "holland": "Netherlands",
+            "czech republic": "Czech Republic", "czechia": "Czech Republic",
+            "south korea": "South Korea", "republic of korea": "South Korea", "korea": "South Korea",
+            "north korea": "North Korea", "democratic peoples republic of korea": "North Korea", "dprk": "North Korea",
+            "russia": "Russia", "russian federation": "Russia",
+            "hong kong": "Hong Kong", "hongkong": "Hong Kong",
+            "macau": "Macau", "macao": "Macau",
+            "sri lanka": "Sri Lanka", "srilanka": "Sri Lanka",
+            "myanmar": "Myanmar", "burma": "Myanmar",
+            "bosnia": "Bosnia and Herzegovina", "bosnia and herzegovina": "Bosnia and Herzegovina",
+            "macedonia": "North Macedonia", "north macedonia": "North Macedonia", "republic of north macedonia": "North Macedonia",
+            "ivory coast": "Ivory Coast",
+            "cape verde": "Cape Verde",
+            "sao tome and principe": "São Tomé and Príncipe", "são tomé and príncipe": "São Tomé and Príncipe",
+            "papua new guinea": "Papua New Guinea",
+            "marshall islands": "Marshall Islands",
+            "solomon islands": "Solomon Islands",
+            "trinidad and tobago": "Trinidad and Tobago",
+            "puerto rico": "Puerto Rico",
+            "costa rica": "Costa Rica",
+            "el salvador": "El Salvador",
+            "south africa": "South Africa",
+            "new zealand": "New Zealand",
+            "french guiana": "French Guiana",
+            "french polynesia": "French Polynesia",
+            "new caledonia": "New Caledonia",
+            "central african republic": "Central African Republic",
+            "democratic republic of the congo": "Democratic Republic of the Congo",
+            "burkina faso": "Burkina Faso",
+            "sierra leone": "Sierra Leone",
+            "guinea-bissau": "Guinea-Bissau",
+            "equatorial guinea": "Equatorial Guinea",
+            "saint helena": "Saint Helena"
+        ]
+        
+        // Check if we have a canonical name
+        if let canonical = canonicalMap[normalized] {
+            return canonical
+        }
+        
+        // Otherwise, capitalize the original properly (title case)
+        return original.split(separator: " ")
+            .map { $0.prefix(1).uppercased() + $0.dropFirst().lowercased() }
+            .joined(separator: " ")
+    }
+    
     static func organizeAssets(assets: [ImmichAsset]) -> [Continent] {
-        // Group assets by continent -> country -> city
-        var continentMap: [String: [String: [String: [ImmichAsset]]]] = [:]
+        // Group assets by continent -> country (using normalized country names)
+        var continentMap: [String: [String: [ImmichAsset]]] = [:]
+        // Track original country names for each normalized name (to get the best display name)
+        var countryNameMap: [String: [String: String]] = [:] // [continent: [normalizedCountry: originalCountry]]
         
         for asset in assets {
             guard let exifInfo = asset.exifInfo,
-                  let country = exifInfo.country,
-                  !country.isEmpty else {
+                  let originalCountry = exifInfo.country,
+                  !originalCountry.isEmpty else {
                 continue
             }
             
-            let continent = getContinent(for: country)
-            let city = exifInfo.city ?? "Unknown City"
+            let continent = getContinent(for: originalCountry)
+            let normalizedCountry = normalizeCountryName(originalCountry)
             
             if continentMap[continent] == nil {
                 continentMap[continent] = [:]
+                countryNameMap[continent] = [:]
             }
-            if continentMap[continent]![country] == nil {
-                continentMap[continent]![country] = [:]
+            if continentMap[continent]![normalizedCountry] == nil {
+                continentMap[continent]![normalizedCountry] = []
             }
-            if continentMap[continent]![country]![city] == nil {
-                continentMap[continent]![country]![city] = []
+            continentMap[continent]![normalizedCountry]!.append(asset)
+            
+            // Track the original country name (keep the first one we see, or prefer shorter/more common names)
+            if let existing = countryNameMap[continent]?[normalizedCountry] {
+                // Prefer shorter names or common variations
+                if originalCountry.count < existing.count || 
+                   (originalCountry.count == existing.count && originalCountry < existing) {
+                    countryNameMap[continent]?[normalizedCountry] = originalCountry
+                }
+            } else {
+                countryNameMap[continent]?[normalizedCountry] = originalCountry
             }
-            continentMap[continent]![country]![city]!.append(asset)
         }
         
         // Convert to hierarchical models
         var continents: [Continent] = []
         
-        for (continentName, countriesMap) in continentMap.sorted(by: { $0.key < $1.key }) {
+        for (continentName, countriesMap) in continentMap.sorted(by: { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }) {
             var countries: [Country] = []
             
-            for (countryName, citiesMap) in countriesMap.sorted(by: { $0.key < $1.key }) {
-                var cities: [City] = []
+            for (normalizedCountryName, countryAssets) in countriesMap.sorted(by: { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }) {
+                // Get the canonical display name for this country
+                let originalCountryName = countryNameMap[continentName]?[normalizedCountryName] ?? normalizedCountryName
+                let displayCountryName = getCanonicalCountryName(from: normalizedCountryName, original: originalCountryName)
                 
-                for (cityName, cityAssets) in citiesMap.sorted(by: { $0.key < $1.key }) {
-                    let representativeAsset = cityAssets.first { $0.type == .image } ?? cityAssets.first
-                    let city = City(
-                        name: cityName,
-                        country: countryName,
-                        continent: continentName,
-                        assets: cityAssets,
-                        representativeAsset: representativeAsset
-                    )
-                    cities.append(city)
-                }
-                
-                let representativeAsset = cities.first?.representativeAsset ?? cities.first?.assets.first { $0.type == .image }
+                let representativeAsset = countryAssets.first { $0.type == .image } ?? countryAssets.first
                 let country = Country(
-                    name: countryName,
+                    name: displayCountryName,
                     continent: continentName,
-                    cities: cities,
+                    assets: countryAssets,
                     representativeAsset: representativeAsset
                 )
                 countries.append(country)
             }
             
-            let representativeAsset = countries.first?.representativeAsset ?? countries.first?.cities.first?.representativeAsset
+            let representativeAsset = countries.first?.representativeAsset ?? countries.first?.assets.first { $0.type == .image }
             let continent = Continent(
                 name: continentName,
                 countries: countries,

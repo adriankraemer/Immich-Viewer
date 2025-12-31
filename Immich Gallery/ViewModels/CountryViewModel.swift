@@ -11,7 +11,7 @@ import SwiftUI
 @MainActor
 class CountryViewModel: ObservableObject {
     // MARK: - Published Properties
-    @Published var cities: [City] = []
+    @Published var assets: [ImmichAsset] = []
     @Published var isLoading = false
     @Published var errorMessage: String?
     
@@ -23,7 +23,7 @@ class CountryViewModel: ObservableObject {
     init(country: Country, assetService: AssetService) {
         self.country = country
         self.assetService = assetService
-        self.cities = country.cities
+        self.assets = country.assets
     }
     
     // MARK: - Computed Properties
@@ -35,8 +35,12 @@ class CountryViewModel: ObservableObject {
         country.continent
     }
     
-    var totalCities: Int {
-        cities.count
+    var totalPhotos: Int {
+        assets.count
+    }
+    
+    func createAssetProvider() -> AssetProvider {
+        return CountryAssetProvider(assets: assets)
     }
 }
 

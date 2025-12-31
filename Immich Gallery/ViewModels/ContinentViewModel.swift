@@ -35,8 +35,8 @@ class ContinentViewModel: ObservableObject {
         countries.count
     }
     
-    var totalCities: Int {
-        countries.reduce(0) { $0 + $1.cities.count }
+    var totalPhotos: Int {
+        countries.reduce(0) { $0 + ($1.itemCount ?? 0) }
     }
 }
 

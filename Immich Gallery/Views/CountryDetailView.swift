@@ -2,7 +2,7 @@
 //  CountryDetailView.swift
 //  Immich Gallery
 //
-//  View showing cities within a country
+//  View showing photos within a country
 //
 
 import SwiftUI
@@ -12,7 +12,8 @@ struct CountryDetailView: View {
     @ObservedObject var assetService: AssetService
     @ObservedObject var authService: AuthenticationService
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedCity: City?
+    @State private var countryAssets: [ImmichAsset] = []
+    @State private var slideshowTrigger: Bool = false
     
     init(country: Country, assetService: AssetService, authService: AuthenticationService) {
         _viewModel = StateObject(wrappedValue: CountryViewModel(country: country, assetService: assetService))
@@ -23,37 +24,62 @@ struct CountryDetailView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                SharedGradientBackground()
+                Color.black
+                    .ignoresSafeArea()
                 
-                SharedGridView(
-                    items: viewModel.cities,
-                    config: GridConfig.peopleStyle,
-                    thumbnailProvider: CityThumbnailProvider(assetService: assetService),
-                    isLoading: viewModel.isLoading,
-                    errorMessage: viewModel.errorMessage,
-                    onItemSelected: { city in
-                        selectedCity = city as? City
+                AssetGridView(
+                    assetService: assetService,
+                    authService: authService,
+                    assetProvider: viewModel.createAssetProvider(),
+                    albumId: nil,
+                    personId: nil,
+                    tagId: nil,
+                    city: nil,
+                    isAllPhotos: false,
+                    isFavorite: false,
+                    onAssetsLoaded: { loadedAssets in
+                        self.countryAssets = loadedAssets
                     },
-                    onRetry: {
-                        Task {
-                            // Cities are already loaded from country, no retry needed
-                        }
-                    }
+                    deepLinkAssetId: nil
                 )
             }
             .navigationTitle(viewModel.countryName)
             .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: startSlideshow) {
+                        Image(systemName: "play.rectangle")
+                            .foregroundColor(.white)
+                    }
+                    .disabled(countryAssets.isEmpty)
+                }
+                
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Back") {
+                    Button("Done") {
                         dismiss()
                     }
                     .foregroundColor(.white)
                 }
             }
         }
-        .fullScreenCover(item: $selectedCity) { city in
-            ExploreDetailView(city: city.name, assetService: assetService, authService: authService)
+        .fullScreenCover(isPresented: $slideshowTrigger) {
+            SlideshowView(
+                albumId: nil,
+                personId: nil,
+                tagId: nil,
+                city: nil,
+                startingIndex: 0,
+                isFavorite: false
+            )
         }
+        .onAppear {
+            print("Country detail view for country: \(viewModel.countryName)")
+        }
+    }
+    
+    private func startSlideshow() {
+        // Stop auto-slideshow timer before starting slideshow
+        NotificationCenter.default.post(name: NSNotification.Name("stopAutoSlideshowTimer"), object: nil)
+        slideshowTrigger = true
     }
 }
 

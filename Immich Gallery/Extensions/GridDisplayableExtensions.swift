@@ -2,7 +2,7 @@
 //  GridDisplayableExtensions.swift
 //  Immich Gallery
 //
-//  Created by mensadi-labs on 2025-09-04.
+//  Created by Adrian Kraemer on 2025-09-04.
 //
 
 import SwiftUI

@@ -2,7 +2,7 @@
 //  ProfileImageView.swift
 //  Immich Gallery
 //
-//  Created by mensadi-labs on 2025-08-31.
+//  Created by Adrian Kraemer on 2025-08-31.
 //
 
 import SwiftUI

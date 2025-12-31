@@ -2,7 +2,7 @@
 //  UniversalErrorHandler.swift
 //  Immich Gallery
 //
-//  Created by mensadi-labs on 2025-07-13
+//  Created by Adrian Kraemer on 2025-07-13
 //
 
 import SwiftUI

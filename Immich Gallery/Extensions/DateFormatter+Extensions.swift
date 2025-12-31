@@ -2,7 +2,7 @@
 //  DateFormatter+Extensions.swift
 //  Immich Gallery
 //
-//  Created by mensadi-labs on 2025-07-26.
+//  Created by Adrian Kraemer on 2025-07-26.
 //
 
 import Foundation

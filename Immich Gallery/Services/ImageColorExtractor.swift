@@ -2,7 +2,7 @@
 //  ImageColorExtractor.swift
 //  Immich Gallery
 //
-//  Created by mensadi-labs on 2025-09-02.
+//  Created by Adrian Kraemer on 2025-09-02.
 //
 
 import SwiftUI

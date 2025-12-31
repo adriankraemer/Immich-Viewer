@@ -2,7 +2,7 @@
 //  ExploreDetailView.swift
 //  Immich Gallery
 //
-//  Created by mensadi-labs on 2025-09-06.
+//  Created by Adrian Kraemer on 2025-09-06.
 //
 
 import SwiftUI

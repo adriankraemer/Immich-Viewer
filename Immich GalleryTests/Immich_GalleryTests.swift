@@ -2,7 +2,7 @@
 //  Immich_GalleryTests.swift
 //  Immich GalleryTests
 //
-//  Created by mensadi-labs on 2025-06-29.
+//  Created by Adrian Kraemer on 2025-06-29.
 //
 
 import Testing

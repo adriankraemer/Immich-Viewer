@@ -2,7 +2,7 @@
 //  KeychainTokenStorage.swift
 //  Immich Gallery
 //
-//  Created by mensadi-labs on 2025-08-31
+//  Created by Adrian Kraemer on 2025-08-31
 //
 
 import Foundation
@@ -12,7 +12,7 @@ import Security
 class KeychainTokenStorage {
     private let service: String
     
-    init(service: String = "com.mensadi-labs.immich-gallery") {
+    init(service: String = "app.immich.photo") {
         self.service = service
     }
     

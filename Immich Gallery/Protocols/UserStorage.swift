@@ -2,7 +2,7 @@
 //  UserStorage.swift
 //  Immich Gallery
 //
-//  Created by mensadi-labs on 2025-08-30
+//  Created by Adrian Kraemer on 2025-08-30
 //
 
 import Foundation

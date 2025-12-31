@@ -2,7 +2,7 @@
 //  ContentProvider.swift
 //  TopShelfExtension
 //
-//  Created by mensadi-labs on 2025-08-11.
+//  Created by Adrian Kraemer on 2025-08-11.
 //
 
 import TVServices

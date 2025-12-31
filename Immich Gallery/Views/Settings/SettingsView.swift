@@ -63,7 +63,6 @@ struct SettingsView: View {
     @State private var showingDeleteUserAlert = false
     @State private var userToDelete: SavedUser?
     @State private var showingSignIn = false
-    @State private var showingWhatsNew = false
     @AppStorage("hideImageOverlay") private var hideImageOverlay = true
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "white"
@@ -416,99 +415,6 @@ struct SettingsView: View {
                             })
                         }
                         
-                        // Help Section
-                        SettingsSection(title: "Help & Tips") {
-                            AnyView(VStack(spacing: 12) {
-                                SettingsRow(
-                                    icon: "play.circle",
-                                    title: "Start Slideshow",
-                                    subtitle: "Press play anywhere in the photo grid to start slideshow from the highlighted image",
-                                    content: AnyView(
-                                        HStack(spacing: 8) {
-                                            Image(systemName: "play.fill")
-                                                .font(.title3)
-                                            Text("Play/Pause")
-                                                .font(.caption)
-                                        }
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color.blue.opacity(0.1))
-                                            .cornerRadius(8)
-                                    )
-                                )
-                                
-                                SettingsRow(
-                                    icon: "arrow.up.and.down.and.arrow.left.and.right",
-                                    title: "Navigate Photos",
-                                    subtitle: "Swipe left or right to navigate. Swipe up and down to show hide image details in the fullscreen view",
-                                    content: AnyView(
-                                        HStack(spacing: 4) {
-                                            Image(systemName: "arrow.left")
-                                                .foregroundColor(.gray)
-                                                .font(.caption)
-                                            Image(systemName: "arrow.right")
-                                                .foregroundColor(.gray)
-                                                .font(.caption)
-                                            Image(systemName: "arrow.up")
-                                                .foregroundColor(.gray)
-                                                .font(.caption)
-                                            Image(systemName: "arrow.down")
-                                                .foregroundColor(.gray)
-                                                .font(.caption)
-                                        }
-                                            .padding(.horizontal, 12)
-                                            .padding(.vertical, 6)
-                                            .background(Color.gray.opacity(0.1))
-                                            .cornerRadius(8)
-                                    )
-                                )
-                                
-                                Button(action: {
-                                    showingWhatsNew = true
-                                }) {
-                                    SettingsRow(
-                                        icon: "doc.text",
-                                        title: "What's New",
-                                        subtitle: "View changelog and latest features",
-                                        content: AnyView(
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "chevron.right")
-                                                    .foregroundColor(.blue)
-                                                    .font(.caption)
-                                            }
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 6)
-                                                .background(Color.blue.opacity(0.1))
-                                                .cornerRadius(8)
-                                        )
-                                    )
-                                }
-                                .buttonStyle(CardButtonStyle())
-                                
-                                Button(action: {
-                                    requestAppStoreReview()
-                                }) {
-                                    SettingsRow(
-                                        icon: "star",
-                                        title: "Rate App",
-                                        subtitle: "Leave a review on the App Store",
-                                        content: AnyView(
-                                            HStack(spacing: 8) {
-                                                Image(systemName: "chevron.right")
-                                                    .foregroundColor(.blue)
-                                                    .font(.caption)
-                                            }
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 6)
-                                                .background(Color.blue.opacity(0.1))
-                                                .cornerRadius(8)
-                                        )
-                                    )
-                                }
-                                .buttonStyle(CardButtonStyle())
-                            })
-                        }
-                        
                         // Cache Section (Debug only)
                         
 #if DEBUG
@@ -523,11 +429,6 @@ struct SettingsView: View {
             }
             .fullScreenCover(isPresented: $showingSignIn) {
                 SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
-            }
-            .fullScreenCover(isPresented: $showingWhatsNew) {
-                WhatsNewView(onDismiss: {
-                    showingWhatsNew = false
-                })
             }
             .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -654,13 +555,6 @@ struct SettingsView: View {
                 print("❌ Failed to refresh server connection: \(error)")
                 // You could add an alert here to show the error to the user
             }
-        }
-    }
-    
-    private func requestAppStoreReview() {
-        let appStoreID = "id6748482378"
-        if let url = URL(string: "itms-apps://itunes.apple.com/app/id\(appStoreID)?action=write-review") {
-            UIApplication.shared.open(url)
         }
     }
 }

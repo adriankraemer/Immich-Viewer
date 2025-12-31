@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2901EDF02F0559CE0035114F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 2901EDEF2F0559CE0035114F /* README.md */; };
 		2F2863002E4971C90032B966 /* TVServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F2862FF2E4971C90032B966 /* TVServices.framework */; };
 		2F2863072E4971C90032B966 /* TopShelfExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 2F2862FD2E4971C90032B966 /* TopShelfExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -50,6 +51,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2901EDEF2F0559CE0035114F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		2F23BA6D2E1234C8005C563C /* Immich Gallery.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Immich Gallery.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F23BA7D2E1234CA005C563C /* Immich GalleryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Immich GalleryTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F23BA872E1234CA005C563C /* Immich GalleryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Immich GalleryUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -166,6 +168,7 @@
 		2F23BA642E1234C8005C563C = {
 			isa = PBXGroup;
 			children = (
+				2901EDEF2F0559CE0035114F /* README.md */,
 				2FDBDAF32E4AC9D200344677 /* Shared */,
 				2F23BA6F2E1234C8005C563C /* Immich Gallery */,
 				2F23BA802E1234CA005C563C /* Immich GalleryTests */,
@@ -344,6 +347,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2901EDF02F0559CE0035114F /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -688,35 +692,35 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-			MARKETING_VERSION = 1.1.7;
-			PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
-			PRODUCT_NAME = "$(TARGET_NAME)";
-			SKIP_INSTALL = YES;
-			SWIFT_EMIT_LOC_STRINGS = YES;
-			SWIFT_VERSION = 5.0;
-			TARGETED_DEVICE_FAMILY = 3;
+				MARKETING_VERSION = 1.1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 3;
+			};
+			name = Debug;
 		};
-		name = Debug;
-	};
-	2F28630A2E4971C90032B966 /* Release */ = {
-		isa = XCBuildConfiguration;
-		buildSettings = {
-			CODE_SIGN_ENTITLEMENTS = TopShelfExtension/TopShelfExtension.entitlements;
-			CODE_SIGN_STYLE = Automatic;
-			CURRENT_PROJECT_VERSION = 1;
-			DEVELOPMENT_TEAM = B92392R73Z;
-			GENERATE_INFOPLIST_FILE = YES;
-			INFOPLIST_FILE = TopShelfExtension/Info.plist;
-			INFOPLIST_KEY_CFBundleDisplayName = TopShelfExtension;
-			INFOPLIST_KEY_NSHumanReadableCopyright = "";
-			INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
-			LD_RUNPATH_SEARCH_PATHS = (
-				"$(inherited)",
-				"@executable_path/Frameworks",
-				"@executable_path/../../Frameworks",
-			);
-			MARKETING_VERSION = 1.1.7;
-			PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
+		2F28630A2E4971C90032B966 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = TopShelfExtension/TopShelfExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = B92392R73Z;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TopShelfExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TopShelfExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_UIRequiredDeviceCapabilities = arm64;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1.7;
+				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;

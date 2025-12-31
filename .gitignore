@@ -1,8 +1,2 @@
-# macOS metadata files
 ._*
-CLAUDE.local.md
-.vscode/**
-.kiro/**
-ios/**
-.claude/**
 .DS_Store

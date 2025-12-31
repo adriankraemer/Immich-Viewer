@@ -1,5 +1,3 @@
-![Build Status](https://github.com/cyyberwolf93/Immich-AppleTV/actions/workflows/objective-c-xcode.yml/badge.svg?branch=main) ![Platform](https://img.shields.io/badge/platform-TvOS-blue) ![Language](https://img.shields.io/github/languages/top/cyyberwolf93/Immich-AppleTV)
-
 # Immich Gallery for Apple TV
 
 A native Apple TV app for browsing your self-hosted Immich photo library with a TV-optimized interface.
@@ -22,8 +20,6 @@ A native Apple TV app for browsing your self-hosted Immich photo library with a 
 - 🔒 **Privacy First**: Pure client, keeps credentials local in secure storage
 - 🎯 **Customizable Navigation**: Choose between Tabs or Sidebar navigation style
 
-  <a href="https://www.buymeacoffee.com/zzpr69dnqtr" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-
 ## Requirements
 
 - Apple TV (4th generation or later)
@@ -37,18 +33,6 @@ A native Apple TV app for browsing your self-hosted Immich photo library with a 
 2. **Enter credentials** - Provide the server URL (e.g., `https://your-immich-server.com`) plus either email & password or an Immich API key
 3. **Browse your photos** - Navigate using the Apple TV remote or Siri Remote
 
-> [!NOTE]
->
-> - Stuck on "Data couldn't read because its missing"? Update Immich and retry: https://github.com/cyyberwolf93/Immich-AppleTV/issues/67
-> - OAuth / OIDC sign-in needs server-side changes (tracked in https://github.com/cyyberwolf93/Immich-AppleTV/issues/77). Use an Immich API key instead.
-> - FaceID / PIN locking is currently out of scope. https://github.com/cyyberwolf93/Immich-AppleTV/issues/64
-
-### Building from Source
-
-1. Clone the repository
-2. Open `Immich Gallery.xcodeproj` in Xcode
-3. Select Apple TV target device
-4. Build and run
 
 ## Architecture
 
@@ -304,25 +288,6 @@ The app supports deep linking via custom URL scheme:
 - Published properties updated on main thread
 - Proper cleanup of timers and observers
 
-<img width="3840" height="2160" alt="Simulator Screenshot - Apple TV 4K (3rd generation) - 2025-08-11 at 18 23 16" src="https://github.com/user-attachments/assets/c802a515-e775-4068-af4c-0f90879cf41b" />
-<img width="1515" height="849" alt="image" src="https://github.com/user-attachments/assets/be1bcc49-2086-4a6f-9070-d3c62cb1be8a" />
-
-https://github.com/user-attachments/assets/78987a7a-ef62-497c-828f-f7b99851ffb3
-
-<img width="1527" height="857" alt="image" src="https://github.com/user-attachments/assets/f109e3b9-a617-49bd-815a-de452cb30f70" />
-
-<img width="1530" height="863" alt="image" src="https://github.com/user-attachments/assets/3fdcb427-33f7-4538-bced-62ceaab0e609" />
-
-![Full screen view with people](https://github.com/user-attachments/assets/16b56fc4-ee74-4506-984a-46884bc65228)
-
-![Album tab](https://github.com/user-attachments/assets/1dafee22-a04d-43c3-b0fc-a6ff01036b60)
-
-<img width="1917" alt="image" src="https://github.com/user-attachments/assets/7a8eb077-0811-4101-8e7c-69b34b03a536" />
-
-<img width="3840" height="2160" alt="Simulator Screenshot - Apple TV 4K (3rd generation) - 2025-07-29 at 16 59 04" src="https://github.com/user-attachments/assets/f156ade2-1e59-4c00-ac15-6f05205ddb7a" />
-
-<img width="3840" height="2160" alt="Simulator Screenshot - Apple TV 4K (3rd generation) - 2025-07-29 at 17 00 05" src="https://github.com/user-attachments/assets/3f646593-e310-4d39-827c-c4d02179d45f" />
-
 ## Development
 
 ### Prerequisites
@@ -370,69 +335,7 @@ https://github.com/user-attachments/assets/78987a7a-ef62-497c-828f-f7b99851ffb3
 
 ## Troubleshooting
 
-### Common Issues
-
-#### "Data couldn't read because its missing"
-- **Solution**: Update your Immich server to the latest version
-- **Reference**: https://github.com/cyyberwolf93/Immich-AppleTV/issues/67
-
-#### Top Shelf Not Showing Photos
-- Check that Top Shelf is enabled in Settings
-- Verify user credentials are accessible (check App Group sharing)
-- Ensure network connectivity to Immich server
-- Check Console logs for TopShelf extension errors
-
-#### Authentication Failures
-- Verify server URL is correct (include `https://`)
-- Check API key has required scopes (if using API key auth)
-- Ensure server is accessible from Apple TV network
-- Try clearing cookies: Settings → Remove User → Re-add
-
-#### Performance Issues with Large Libraries
-- Disable thumbnail animation in Settings
-- Reduce slideshow interval
-- Report crashes with library size details
-
-#### RAW Images Not Displaying
-- RAW formats require server-side conversion
-- App automatically uses preview size for RAW images
-- Ensure Immich server supports RAW conversion
-
-### Known Limitations
-
-- **OAuth/OIDC**: Not currently supported (use API keys instead)
-  - Tracked in: https://github.com/cyyberwolf93/Immich-AppleTV/issues/77
-- **FaceID/PIN Locking**: Not implemented
-  - Tracked in: https://github.com/cyyberwolf93/Immich-AppleTV/issues/64
-- **Video Playback**: Limited to formats supported by tvOS AVPlayer
-
-## Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Follow code style**: Match existing Swift/SwiftUI patterns
-4. **Test thoroughly**: Test on real Apple TV hardware when possible
-5. **Submit a pull request**: Include description of changes
-
-### Code Style
-
-- Use SwiftUI for all UI
-- Follow existing service-oriented architecture
-- Use async/await for asynchronous operations
-- Maintain thread safety (MainActor for UI updates)
-- Add logging for debugging (use `print()` statements)
-
-### Reporting Issues
-
-When reporting issues, please include:
-- tvOS version
-- App version
-- Immich server version
-- Steps to reproduce
-- Expected vs actual behavior
-- Console logs (if applicable)
+### Known Errors
 
 ## License
 
@@ -440,11 +343,6 @@ This project is licensed under the GNU General Public License v3.0 (GPL-3.0). Se
 
 ## Acknowledgments
 
-- Built for the [Immich](https://immich.app) self-hosted photo management system
+- Built for the [Immich] (https://immich.app) self-hosted media management system
+- Forked from https://github.com/mensadilabs/Immich-Gallery
 - Community feedback and contributions
-
-## Stats
-
-![Alt](https://repobeats.axiom.co/api/embed/3fea253de89fc88824c16adb77a456f7e7d657b7.svg "Repobeats analytics image")
-
-[![Star History Chart](https://api.star-history.com/svg?repos=cyyberwolf93/Immich-AppleTV&type=Timeline)](https://www.star-history.com/#cyyberwolf93/Immich-AppleTV&Timeline)

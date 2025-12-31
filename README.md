@@ -2,6 +2,10 @@
 
 A native Apple TV app for browsing your self-hosted Immich photo library with a TV-optimized interface.
 
+## Beta Testing
+
+Join the beta test on TestFlight: [https://testflight.apple.com/join/7nGMT7cz](https://testflight.apple.com/join/7nGMT7cz)
+
 ## Features
 
 - 🖼️ **Browse Photos**: Fast, infinite-scrolling grid view of your entire photo library

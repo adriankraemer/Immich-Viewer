@@ -65,11 +65,9 @@ struct ContentView: View {
     @StateObject private var searchService: SearchService
     @State private var selectedTab = 0
     @State private var refreshTrigger = UUID()
-    @State private var showWhatsNew = false
     @AppStorage(UserDefaultsKeys.showTagsTab) private var showTagsTab = false
     @AppStorage(UserDefaultsKeys.showFoldersTab) private var showFoldersTab = false
     @AppStorage(UserDefaultsKeys.defaultStartupTab) private var defaultStartupTab = "photos"
-    @AppStorage(UserDefaultsKeys.lastSeenVersion) private var lastSeenVersion = ""
     @AppStorage(UserDefaultsKeys.navigationStyle) private var navigationStyle = NavigationStyle.tabs.rawValue
     @State private var searchTabHighlighted = false
     @State private var deepLinkAssetId: String?
@@ -184,7 +182,6 @@ struct ContentView: View {
                     .tabNavigationStyle(currentNavigationStyle)
                     .onAppear {
                         setDefaultTab()
-                        checkForAppUpdate()
                         startInactivityTimer()
                     }
                     .onChange(of: selectedTab) { oldValue, newValue in
@@ -239,12 +236,6 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("restartAutoSlideshowTimer"))) { _ in
             print("ContentView: Restarting auto-slideshow timer")
             resetInactivityTimer()
-        }
-        .fullScreenCover(isPresented: $showWhatsNew) {
-            WhatsNewView(onDismiss: {
-                showWhatsNew = false
-                lastSeenVersion = getCurrentAppVersion()
-            })
         }
     }
     
@@ -308,24 +299,6 @@ struct ContentView: View {
         default:
             selectedTab = TabName.photos.rawValue
         }
-    }
-    
-    private func checkForAppUpdate() {
-        let currentVersion = getCurrentAppVersion()
-        
-        // Show What's New if this is first launch or version changed
-        if lastSeenVersion.isEmpty || lastSeenVersion != currentVersion {
-            // Delay showing to ensure app is fully loaded
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                showWhatsNew = true
-            }
-        }
-    }
-    
-    private func getCurrentAppVersion() -> String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "\(version).\(build)"
     }
 }
 

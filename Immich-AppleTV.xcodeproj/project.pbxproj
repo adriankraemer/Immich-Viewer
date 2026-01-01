@@ -547,12 +547,13 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = "Immich-AppleTV/Immich-AppleTV.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 105;
 				DEVELOPMENT_ASSET_PATHS = "\"Immich-AppleTV/Preview Content\"";
 				DEVELOPMENT_TEAM = B92392R73Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Immich-AppleTV-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Immich AppleTV";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -561,7 +562,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10.4;
+				MARKETING_VERSION = 1.10.5;
 				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -578,12 +579,13 @@
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = "Immich-AppleTV/Immich-AppleTV.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 105;
 				DEVELOPMENT_ASSET_PATHS = "\"Immich-AppleTV/Preview Content\"";
 				DEVELOPMENT_TEAM = B92392R73Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Immich-AppleTV-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Immich AppleTV";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -592,7 +594,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.10.4;
+				MARKETING_VERSION = 1.10.5;
 				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -674,7 +676,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = TopShelfExtension/TopShelfExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 105;
 				DEVELOPMENT_TEAM = B92392R73Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TopShelfExtension/Info.plist;
@@ -686,7 +688,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.10.4;
+				MARKETING_VERSION = 1.10.5;
 				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -701,7 +703,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = TopShelfExtension/TopShelfExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 104;
+				CURRENT_PROJECT_VERSION = 105;
 				DEVELOPMENT_TEAM = B92392R73Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TopShelfExtension/Info.plist;
@@ -713,7 +715,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.10.4;
+				MARKETING_VERSION = 1.10.5;
 				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

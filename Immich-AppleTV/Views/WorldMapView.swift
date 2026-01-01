@@ -196,9 +196,11 @@ struct ClusterAnnotationView: View {
     @ObservedObject private var thumbnailCache = ThumbnailCache.shared
     @State private var thumbnailImages: [String: UIImage] = [:]
     @State private var loadingAssets: Set<String> = []
+    @State private var failedAssets: Set<String> = []  // Track failed loads for retry
     @State private var previousZoomState: Bool?
     @State private var loadingTasks: [String: Task<Void, Never>] = [:]
     @State private var debounceTask: Task<Void, Never>?
+    @State private var retryCount: Int = 0  // Track retries for failed loads
     
     // Size configuration
     private let baseImageSize: CGFloat = 80
@@ -206,6 +208,7 @@ struct ClusterAnnotationView: View {
     private let maxImageSize: CGFloat = 160  // Largest size when zoomed in (increased from 120)
     private let maxDisplayCount = 5
     private let baseSpreadRadius: CGFloat = 45 // Distance from center for multiple images
+    private let maxRetries = 3  // Maximum retry attempts for failed loads
     
     // Threshold for showing multiple images (smaller span = more zoomed in)
     // Only show multiple images when span is less than 5 degrees (zoomed in)
@@ -297,9 +300,11 @@ struct ClusterAnnotationView: View {
                 }
             }
         }
+        // Use cluster.id as the view's identity to ensure proper state management
+        .id(cluster.id)
         .onAppear {
             previousZoomState = isZoomedIn
-            loadThumbnails()
+            loadThumbnails(forceRetry: false)
         }
         .onChange(of: mapSpan.latitudeDelta) {
             handleZoomChange()
@@ -307,9 +312,24 @@ struct ClusterAnnotationView: View {
         .onChange(of: mapSpan.longitudeDelta) {
             handleZoomChange()
         }
+        // Also reload when cluster assets change (e.g., when panning brings new data)
+        .onChange(of: cluster.assets.map { $0.id }) {
+            // Reset state for new assets
+            thumbnailImages.removeAll()
+            loadingAssets.removeAll()
+            failedAssets.removeAll()
+            cancelAllLoading()
+            loadThumbnails(forceRetry: false)
+        }
         .onDisappear {
             // Cancel all loading tasks when view disappears
             cancelAllLoading()
+        }
+        // Periodically retry failed loads
+        .task(id: retryCount) {
+            guard retryCount > 0 && retryCount <= maxRetries else { return }
+            try? await Task.sleep(nanoseconds: UInt64(retryCount) * 1_000_000_000) // Exponential backoff
+            loadThumbnails(forceRetry: true)
         }
     }
     
@@ -321,17 +341,19 @@ struct ClusterAnnotationView: View {
         debounceTask = Task {
             try? await Task.sleep(nanoseconds: 100_000_000) // 100ms debounce
             
+            guard !Task.isCancelled else { return }
+            
             // Check if zoom state actually changed (crossed threshold)
             let currentZoomState = isZoomedIn
             if previousZoomState != currentZoomState {
                 previousZoomState = currentZoomState
                 // Only reload if display mode changed
-                loadThumbnails()
+                loadThumbnails(forceRetry: false)
             }
         }
     }
     
-    private func loadThumbnails() {
+    private func loadThumbnails(forceRetry: Bool) {
         let assetsToLoad = displayAssets
         
         // Cancel loading for assets that are no longer needed
@@ -345,9 +367,24 @@ struct ClusterAnnotationView: View {
         
         // Load thumbnails for current display assets
         for asset in assetsToLoad {
-            // Skip if already loaded or currently loading
-            guard thumbnailImages[asset.id] == nil && !loadingAssets.contains(asset.id) else {
+            // Skip if already loaded
+            guard thumbnailImages[asset.id] == nil else {
                 continue
+            }
+            
+            // Skip if currently loading
+            guard !loadingAssets.contains(asset.id) else {
+                continue
+            }
+            
+            // Skip failed assets unless forceRetry is true
+            if failedAssets.contains(asset.id) && !forceRetry {
+                continue
+            }
+            
+            // Remove from failed set if retrying
+            if forceRetry {
+                failedAssets.remove(asset.id)
             }
             
             loadingAssets.insert(asset.id)
@@ -362,7 +399,13 @@ struct ClusterAnnotationView: View {
                     try Task.checkCancellation()
                     
                     await MainActor.run {
-                        self.thumbnailImages[asset.id] = thumbnail
+                        if let thumbnail = thumbnail {
+                            self.thumbnailImages[asset.id] = thumbnail
+                        } else {
+                            // Nil result - mark as failed for retry
+                            self.failedAssets.insert(asset.id)
+                            self.scheduleRetry()
+                        }
                         self.loadingAssets.remove(asset.id)
                         self.loadingTasks.removeValue(forKey: asset.id)
                     }
@@ -377,11 +420,21 @@ struct ClusterAnnotationView: View {
                     await MainActor.run {
                         self.loadingAssets.remove(asset.id)
                         self.loadingTasks.removeValue(forKey: asset.id)
+                        // Mark as failed for retry
+                        self.failedAssets.insert(asset.id)
+                        self.scheduleRetry()
                     }
                 }
             }
             
             loadingTasks[asset.id] = task
+        }
+    }
+    
+    private func scheduleRetry() {
+        // Only schedule retry if we haven't exceeded max retries
+        if retryCount < maxRetries && !failedAssets.isEmpty {
+            retryCount += 1
         }
     }
     

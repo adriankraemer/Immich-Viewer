@@ -13,9 +13,9 @@ class UserManager: ObservableObject {
     @Published var savedUsers: [SavedUser] = []
     @Published var currentUser: SavedUser?
     
-    private let storage: HybridUserStorage
+    private let storage: UserStorageWithTokens
     
-    init(storage: HybridUserStorage? = nil) {
+    init(storage: UserStorageWithTokens? = nil) {
         self.storage = storage ?? HybridUserStorage()
         loadUsers()
     }

@@ -9,7 +9,7 @@ import Foundation
 
 /// Hybrid storage implementation combining UserDefaults for user data and Keychain for secure tokens
 /// This approach provides optimal security for tokens while maintaining TopShelf extension compatibility
-class HybridUserStorage: UserStorage {
+class HybridUserStorage: UserStorageWithTokens {
     
     private let userStorage: UserDefaultsStorage
     private let tokenStorage: KeychainTokenStorage

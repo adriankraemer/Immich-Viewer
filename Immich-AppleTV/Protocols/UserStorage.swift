@@ -14,3 +14,11 @@ protocol UserStorage {
     func removeUser(withId id: String) throws
     func removeAllUserData() throws
 }
+
+/// Extended protocol that includes token management methods
+/// Used by UserManager which needs both user and token storage capabilities
+protocol UserStorageWithTokens: UserStorage {
+    func saveToken(_ token: String, forUserId id: String) throws
+    func getToken(forUserId id: String) -> String?
+    func removeToken(forUserId id: String) throws
+}

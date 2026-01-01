@@ -165,17 +165,48 @@ struct ClusterAnnotationView: View {
     @State private var debounceTask: Task<Void, Never>?
     
     // Size configuration
-    private let imageSize: CGFloat = 80
+    private let baseImageSize: CGFloat = 80
+    private let minImageSize: CGFloat = 60  // Smallest size when zoomed out
+    private let maxImageSize: CGFloat = 160  // Largest size when zoomed in (increased from 120)
     private let maxDisplayCount = 5
-    private let spreadRadius: CGFloat = 45 // Distance from center for multiple images
+    private let baseSpreadRadius: CGFloat = 45 // Distance from center for multiple images
     
     // Threshold for showing multiple images (smaller span = more zoomed in)
     // Only show multiple images when span is less than 5 degrees (zoomed in)
     private let multiImageZoomThreshold: Double = 5.0
     
+    // Zoom level thresholds for size scaling
+    // Increased maxZoomSpan so images stay larger longer when zooming out
+    private let minZoomSpan: Double = 0.1   // Most zoomed in (smallest span)
+    private let maxZoomSpan: Double = 100.0  // Most zoomed out (largest span, increased from 50.0)
+    
     var isZoomedIn: Bool {
         let avgSpan = (mapSpan.latitudeDelta + mapSpan.longitudeDelta) / 2
         return avgSpan < multiImageZoomThreshold
+    }
+    
+    /// Calculate image size based on zoom level
+    /// Smaller span = more zoomed in = bigger images
+    var imageSize: CGFloat {
+        let avgSpan = (mapSpan.latitudeDelta + mapSpan.longitudeDelta) / 2
+        
+        // Clamp span to our range
+        let clampedSpan = max(minZoomSpan, min(maxZoomSpan, avgSpan))
+        
+        // Calculate normalized zoom (0 = most zoomed out, 1 = most zoomed in)
+        let normalizedZoom = 1.0 - ((clampedSpan - minZoomSpan) / (maxZoomSpan - minZoomSpan))
+        
+        // Interpolate between min and max size based on zoom level
+        let size = minImageSize + (maxImageSize - minImageSize) * normalizedZoom
+        
+        return size
+    }
+    
+    /// Calculate spread radius based on image size (proportional)
+    var spreadRadius: CGFloat {
+        // Scale spread radius proportionally with image size
+        let sizeRatio = imageSize / baseImageSize
+        return baseSpreadRadius * sizeRatio
     }
     
     var displayAssets: [ImmichAsset] {

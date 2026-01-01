@@ -72,3 +72,4 @@ struct MapPanGestureView: UIViewRepresentable {
     }
 }
 
+

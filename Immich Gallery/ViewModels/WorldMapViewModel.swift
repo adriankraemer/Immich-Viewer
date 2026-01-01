@@ -127,8 +127,8 @@ class WorldMapViewModel: ObservableObject {
     
     func zoomOut() {
         let currentSpan = region.span
-        let newLatDelta = min(currentSpan.latitudeDelta * 1.3, 90.0)
-        let newLonDelta = min(currentSpan.longitudeDelta * 1.3, 180.0)
+        let newLatDelta = min(currentSpan.latitudeDelta * 2.0, 90.0)
+        let newLonDelta = min(currentSpan.longitudeDelta * 2.0, 180.0)
         
         region = MKCoordinateRegion(
             center: region.center,

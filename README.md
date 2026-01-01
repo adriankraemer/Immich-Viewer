@@ -1,4 +1,4 @@
-# Immich Gallery for Apple TV
+# Immich-AppleTV
 
 A native Apple TV app for browsing your self-hosted Immich photo library with a TV-optimized interface.
 

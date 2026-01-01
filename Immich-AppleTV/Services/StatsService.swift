@@ -44,7 +44,7 @@ class StatsService: ObservableObject {
     }
     
     private func fetchExploreStats() async throws -> ExploreStatsData {
-        let assets = try await exploreService.fetchExploreData()
+        let assets = try await exploreService.fetchAllLocationAssets()
         
         var countries = Set<String>()
         var cities = Set<String>()

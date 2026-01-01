@@ -18,12 +18,13 @@ class CountryViewModel: ObservableObject {
     // MARK: - Dependencies
     private let country: Country
     private let assetService: AssetService
+    private let exploreService: ExploreService
     
     // MARK: - Initialization
-    init(country: Country, assetService: AssetService) {
+    init(country: Country, assetService: AssetService, exploreService: ExploreService) {
         self.country = country
         self.assetService = assetService
-        self.assets = country.assets
+        self.exploreService = exploreService
     }
     
     // MARK: - Computed Properties
@@ -36,11 +37,11 @@ class CountryViewModel: ObservableObject {
     }
     
     var totalPhotos: Int {
-        assets.count
+        country.assetCount
     }
     
     func createAssetProvider() -> AssetProvider {
-        return CountryAssetProvider(assets: assets)
+        return OnDemandCountryAssetProvider(countryName: country.name, exploreService: exploreService)
     }
 }
 

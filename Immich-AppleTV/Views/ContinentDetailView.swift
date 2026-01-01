@@ -11,13 +11,15 @@ struct ContinentDetailView: View {
     @StateObject private var viewModel: ContinentViewModel
     @ObservedObject var assetService: AssetService
     @ObservedObject var authService: AuthenticationService
+    @ObservedObject var exploreService: ExploreService
     @Environment(\.dismiss) private var dismiss
     @State private var selectedCountry: Country?
     
-    init(continent: Continent, assetService: AssetService, authService: AuthenticationService) {
+    init(continent: Continent, assetService: AssetService, authService: AuthenticationService, exploreService: ExploreService) {
         _viewModel = StateObject(wrappedValue: ContinentViewModel(continent: continent, assetService: assetService))
         self.assetService = assetService
         self.authService = authService
+        self.exploreService = exploreService
     }
     
     var body: some View {
@@ -52,7 +54,7 @@ struct ContinentDetailView: View {
             }
         }
         .fullScreenCover(item: $selectedCountry) { country in
-            CountryDetailView(country: country, assetService: assetService, authService: authService)
+            CountryDetailView(country: country, assetService: assetService, authService: authService, exploreService: exploreService)
         }
     }
 }

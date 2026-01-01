@@ -34,8 +34,9 @@ class ExploreViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            let assets = try await exploreService.fetchExploreData()
-            continents = ContinentMapper.organizeAssets(assets: assets)
+            // Fetch lightweight location summaries (countries + counts only)
+            let summaries = try await exploreService.fetchLocationSummaries()
+            continents = ContinentMapper.organizeLocationSummaries(summaries)
             isLoading = false
         } catch {
             errorMessage = error.localizedDescription

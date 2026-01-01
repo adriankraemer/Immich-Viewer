@@ -12,18 +12,18 @@ import SwiftUI
 struct Continent: GridDisplayable, Identifiable, Hashable {
     let name: String
     let countries: [Country]
-    let representativeAsset: ImmichAsset?
+    let representativeAssetId: String?
     
     var id: String { name }
     var primaryTitle: String { name }
     var secondaryTitle: String? { "\(countries.count) \(countries.count == 1 ? "country" : "countries")" }
     var description: String? {
-        let totalPhotos = countries.reduce(0) { $0 + ($1.itemCount ?? 0) }
+        let totalPhotos = countries.reduce(0) { $0 + ($1.assetCount) }
         return "\(totalPhotos) \(totalPhotos == 1 ? "photo" : "photos")"
     }
-    var thumbnailId: String? { representativeAsset?.id }
+    var thumbnailId: String? { representativeAssetId }
     var itemCount: Int? {
-        countries.reduce(0) { $0 + ($1.itemCount ?? 0) }
+        countries.reduce(0) { $0 + ($1.assetCount) }
     }
     var gridCreatedAt: String? { nil }
     var isFavorite: Bool? { nil }
@@ -54,19 +54,19 @@ struct Continent: GridDisplayable, Identifiable, Hashable {
     }
 }
 
-// MARK: - Country Model
+// MARK: - Country Model (Lightweight - no assets stored)
 struct Country: GridDisplayable, Identifiable, Hashable {
     let name: String
     let continent: String
-    let assets: [ImmichAsset]
-    let representativeAsset: ImmichAsset?
+    let assetCount: Int
+    let representativeAssetId: String?
     
-    var id: String { name }
+    var id: String { "\(continent)_\(name)" }
     var primaryTitle: String { name }
     var secondaryTitle: String? { continent }
-    var description: String? { "\(assets.count) \(assets.count == 1 ? "photo" : "photos")" }
-    var thumbnailId: String? { representativeAsset?.id }
-    var itemCount: Int? { assets.count }
+    var description: String? { "\(assetCount) \(assetCount == 1 ? "photo" : "photos")" }
+    var thumbnailId: String? { representativeAssetId }
+    var itemCount: Int? { assetCount }
     var gridCreatedAt: String? { nil }
     var isFavorite: Bool? { nil }
     var isShared: Bool? { false }
@@ -251,7 +251,7 @@ struct ContinentMapper {
     }
     
     // Get canonical country name from normalized name (for display)
-    private static func getCanonicalCountryName(from normalized: String, original: String) -> String {
+    static func getCanonicalCountryName(from normalized: String, original: String) -> String {
         // Map of normalized names to canonical display names
         let canonicalMap: [String: String] = [
             "turkey": "Turkey", "turkiye": "Turkey", "turkish": "Turkey",
@@ -304,74 +304,73 @@ struct ContinentMapper {
             .joined(separator: " ")
     }
     
-    static func organizeAssets(assets: [ImmichAsset]) -> [Continent] {
-        // Group assets by continent -> country (using normalized country names)
-        var continentMap: [String: [String: [ImmichAsset]]] = [:]
-        // Track original country names for each normalized name (to get the best display name)
-        var countryNameMap: [String: [String: String]] = [:] // [continent: [normalizedCountry: originalCountry]]
+    /// Organize location summaries into continent hierarchy (lightweight, no full assets)
+    static func organizeLocationSummaries(_ summaries: [LocationSummary]) -> [Continent] {
+        // Group summaries by continent
+        var continentMap: [String: [LocationSummary]] = [:]
         
-        for asset in assets {
-            guard let exifInfo = asset.exifInfo,
-                  let originalCountry = exifInfo.country,
-                  !originalCountry.isEmpty else {
-                continue
-            }
-            
-            let continent = getContinent(for: originalCountry)
-            let normalizedCountry = normalizeCountryName(originalCountry)
-            
+        for summary in summaries {
+            let continent = getContinent(for: summary.country)
             if continentMap[continent] == nil {
-                continentMap[continent] = [:]
-                countryNameMap[continent] = [:]
+                continentMap[continent] = []
             }
-            if continentMap[continent]![normalizedCountry] == nil {
-                continentMap[continent]![normalizedCountry] = []
-            }
-            continentMap[continent]![normalizedCountry]!.append(asset)
-            
-            // Track the original country name (keep the first one we see, or prefer shorter/more common names)
-            if let existing = countryNameMap[continent]?[normalizedCountry] {
-                // Prefer shorter names or common variations
-                if originalCountry.count < existing.count || 
-                   (originalCountry.count == existing.count && originalCountry < existing) {
-                    countryNameMap[continent]?[normalizedCountry] = originalCountry
-                }
-            } else {
-                countryNameMap[continent]?[normalizedCountry] = originalCountry
-            }
+            continentMap[continent]!.append(summary)
         }
         
         // Convert to hierarchical models
         var continents: [Continent] = []
         
-        for (continentName, countriesMap) in continentMap.sorted(by: { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }) {
-            var countries: [Country] = []
+        for (continentName, countrySummaries) in continentMap.sorted(by: { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }) {
+            // Merge summaries with same normalized country name
+            var mergedCountries: [String: (displayName: String, count: Int, representativeAssetId: String?)] = [:]
             
-            for (normalizedCountryName, countryAssets) in countriesMap.sorted(by: { $0.key.localizedCaseInsensitiveCompare($1.key) == .orderedAscending }) {
-                // Get the canonical display name for this country
-                let originalCountryName = countryNameMap[continentName]?[normalizedCountryName] ?? normalizedCountryName
-                let displayCountryName = getCanonicalCountryName(from: normalizedCountryName, original: originalCountryName)
+            for summary in countrySummaries {
+                let normalizedName = normalizeCountryName(summary.country)
+                let displayName = getCanonicalCountryName(from: normalizedName, original: summary.country)
                 
-                let representativeAsset = countryAssets.first { $0.type == .image } ?? countryAssets.first
-                let country = Country(
-                    name: displayCountryName,
-                    continent: continentName,
-                    assets: countryAssets,
-                    representativeAsset: representativeAsset
-                )
-                countries.append(country)
+                if let existing = mergedCountries[normalizedName] {
+                    mergedCountries[normalizedName] = (
+                        displayName: existing.displayName,
+                        count: existing.count + summary.count,
+                        representativeAssetId: existing.representativeAssetId ?? summary.representativeAssetId
+                    )
+                } else {
+                    mergedCountries[normalizedName] = (
+                        displayName: displayName,
+                        count: summary.count,
+                        representativeAssetId: summary.representativeAssetId
+                    )
+                }
             }
             
-            let representativeAsset = countries.first?.representativeAsset ?? countries.first?.assets.first { $0.type == .image }
+            let countries: [Country] = mergedCountries
+                .sorted(by: { $0.value.displayName.localizedCaseInsensitiveCompare($1.value.displayName) == .orderedAscending })
+                .map { (_, value) in
+                    Country(
+                        name: value.displayName,
+                        continent: continentName,
+                        assetCount: value.count,
+                        representativeAssetId: value.representativeAssetId
+                    )
+                }
+            
+            let representativeAssetId = countries.first?.representativeAssetId
             let continent = Continent(
                 name: continentName,
                 countries: countries,
-                representativeAsset: representativeAsset
+                representativeAssetId: representativeAssetId
             )
             continents.append(continent)
         }
         
         return continents
     }
+}
+
+// MARK: - Location Summary (lightweight structure for initial load)
+struct LocationSummary {
+    let country: String
+    let count: Int
+    let representativeAssetId: String?
 }
 

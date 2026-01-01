@@ -270,7 +270,7 @@ struct AssetGridView: View {
         
         Task {
             do {
-                let searchResult = try await assetProvider.fetchAssets(page: 1, limit: 200)
+                let searchResult = try await assetProvider.fetchAssets(page: 1, limit: 30)
                 await MainActor.run {
                     self.assets = searchResult.assets
                     self.nextPage = searchResult.nextPage
@@ -330,7 +330,7 @@ struct AssetGridView: View {
             do {
                 // Extract page number from nextPage string
                 let pageNumber = extractPageFromNextPage(nextPage!)
-                let searchResult = try await assetProvider.fetchAssets(page: pageNumber, limit: 200)
+                let searchResult = try await assetProvider.fetchAssets(page: pageNumber, limit: 30)
                 
                 await MainActor.run {
                     if !searchResult.assets.isEmpty {

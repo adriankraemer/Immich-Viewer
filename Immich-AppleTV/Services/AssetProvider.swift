@@ -172,8 +172,16 @@ class AlbumAssetProvider: AssetProvider {
     }
 }
 
-class CountryAssetProvider: AssetProvider {
-    private let assets: [ImmichAsset]
+/// Asset provider that fetches assets for a country on-demand with pagination
+/// Uses map markers to get asset IDs first (fast), then fetches assets in batches
+class OnDemandCountryAssetProvider: AssetProvider {
+    private let countryName: String
+    private let exploreService: ExploreService
+    
+    /// Asset IDs for this country (from map markers - fast to get)
+    private var assetIds: [String]?
+    /// Cached fetched assets keyed by ID
+    private var fetchedAssets: [String: ImmichAsset] = [:]
     
     private enum SortOrder {
         case newestFirst
@@ -192,47 +200,104 @@ class CountryAssetProvider: AssetProvider {
         return formatter
     }()
     
-    init(assets: [ImmichAsset]) {
-        self.assets = assets
+    init(countryName: String, exploreService: ExploreService) {
+        self.countryName = countryName
+        self.exploreService = exploreService
+    }
+    
+    /// Get asset IDs for this country (uses cached map markers - very fast)
+    private func getAssetIds() async throws -> [String] {
+        if let ids = assetIds {
+            return ids
+        }
+        
+        let ids = try await exploreService.getAssetIdsForCountry(countryName)
+        assetIds = ids
+        print("OnDemandCountryAssetProvider: Found \(ids.count) assets for \(countryName)")
+        return ids
     }
     
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
-        let sortedAssets = sortAssets(assets)
-        guard !assets.isEmpty else {
+        // First, get all asset IDs for this country (fast - uses map markers cache)
+        let ids = try await getAssetIds()
+        
+        guard !ids.isEmpty else {
             return SearchResult(assets: [], total: 0, nextPage: nil)
         }
-
+        
         let pageSize = max(limit, 1)
         let startIndex = max((page - 1) * pageSize, 0)
-        let endIndex = min(startIndex + pageSize, sortedAssets.count)
-
-        let pageAssets: [ImmichAsset]
-        if startIndex < endIndex {
-            pageAssets = Array(sortedAssets[startIndex..<endIndex])
-        } else {
-            pageAssets = []
+        let endIndex = min(startIndex + pageSize, ids.count)
+        
+        guard startIndex < ids.count else {
+            return SearchResult(assets: [], total: ids.count, nextPage: nil)
         }
-
-        let nextPage: String? = endIndex < sortedAssets.count ? String(page + 1) : nil
-
+        
+        let pageIds = Array(ids[startIndex..<endIndex])
+        
+        // Check which assets we already have cached
+        var assetsToFetch: [String] = []
+        var cachedAssets: [ImmichAsset] = []
+        
+        for id in pageIds {
+            if let asset = fetchedAssets[id] {
+                cachedAssets.append(asset)
+            } else {
+                assetsToFetch.append(id)
+            }
+        }
+        
+        // Fetch missing assets
+        if !assetsToFetch.isEmpty {
+            let result = try await exploreService.fetchAssetsByIds(assetsToFetch, page: 1, limit: assetsToFetch.count)
+            for asset in result.assets {
+                fetchedAssets[asset.id] = asset
+            }
+        }
+        
+        // Build final page assets in order
+        var pageAssets: [ImmichAsset] = []
+        for id in pageIds {
+            if let asset = fetchedAssets[id] {
+                pageAssets.append(asset)
+            }
+        }
+        
+        // Sort the page
+        let sortedAssets = sortAssets(pageAssets)
+        
+        let hasMore = endIndex < ids.count
+        let nextPage: String? = hasMore ? String(page + 1) : nil
+        
         return SearchResult(
-            assets: pageAssets,
-            total: sortedAssets.count,
+            assets: sortedAssets,
+            total: ids.count,
             nextPage: nextPage
         )
     }
     
     func fetchRandomAssets(limit: Int) async throws -> SearchResult {
-        guard !assets.isEmpty else {
+        let ids = try await getAssetIds()
+        
+        guard !ids.isEmpty else {
             return SearchResult(assets: [], total: 0, nextPage: nil)
         }
-
-        let sampleCount = min(limit, assets.count)
-        let shuffledAssets = Array(assets.shuffled().prefix(sampleCount))
-
+        
+        // Shuffle and take a sample of IDs
+        let sampleCount = min(limit, ids.count)
+        let sampleIds = Array(ids.shuffled().prefix(sampleCount))
+        
+        // Fetch these specific assets
+        let result = try await exploreService.fetchAssetsByIds(sampleIds, page: 1, limit: sampleCount)
+        
+        // Cache them
+        for asset in result.assets {
+            fetchedAssets[asset.id] = asset
+        }
+        
         return SearchResult(
-            assets: shuffledAssets,
-            total: assets.count,
+            assets: result.assets,
+            total: ids.count,
             nextPage: nil
         )
     }
@@ -280,10 +345,10 @@ class CountryAssetProvider: AssetProvider {
     
     private func parseDate(_ value: String?) -> Date? {
         guard let value = value else { return nil }
-        if let date = CountryAssetProvider.isoFormatterWithFractional.date(from: value) {
+        if let date = OnDemandCountryAssetProvider.isoFormatterWithFractional.date(from: value) {
             return date
         }
-        return CountryAssetProvider.isoFormatter.date(from: value)
+        return OnDemandCountryAssetProvider.isoFormatter.date(from: value)
     }
 }
 

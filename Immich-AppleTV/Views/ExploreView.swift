@@ -85,7 +85,7 @@ struct ExploreView: View {
             StatsView(statsService: createStatsService())
         }
         .fullScreenCover(item: $selectedContinent) { continent in
-            ContinentDetailView(continent: continent, assetService: assetService, authService: authService)
+            ContinentDetailView(continent: continent, assetService: assetService, authService: authService, exploreService: exploreService)
         }
         .onAppear {
             if viewModel.continents.isEmpty {

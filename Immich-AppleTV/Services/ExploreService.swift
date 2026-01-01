@@ -31,7 +31,7 @@ class ExploreService: ObservableObject {
         NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))
             .sink { [weak self] _ in
                 self?.invalidateCache()
-                print("ExploreService: Cache invalidated due to user switch")
+                debugLog("ExploreService: Cache invalidated due to user switch")
             }
             .store(in: &cancellables)
     }
@@ -43,7 +43,7 @@ class ExploreService: ObservableObject {
         if let cached = cachedSummaries,
            let cacheTime = summaryCacheTime,
            Date().timeIntervalSince(cacheTime) < cacheValidityDuration {
-            print("ExploreService: Returning \(cached.count) cached location summaries")
+            debugLog("ExploreService: Returning \(cached.count) cached location summaries")
             return cached
         }
         
@@ -78,7 +78,7 @@ class ExploreService: ObservableObject {
         cachedSummaries = summaries
         summaryCacheTime = Date()
         
-        print("ExploreService: Built \(summaries.count) location summaries from \(markers.count) markers")
+        debugLog("ExploreService: Built \(summaries.count) location summaries from \(markers.count) markers")
         return summaries
     }
     
@@ -215,7 +215,7 @@ class ExploreService: ObservableObject {
             )
             assets = result.assets.items
         } catch {
-            print("ExploreService: Bulk fetch failed, falling back to individual fetches: \(error)")
+            debugLog("ExploreService: Bulk fetch failed, falling back to individual fetches: \(error)")
             // Fallback: fetch individually (slower but more reliable)
             for id in pageIds {
                 do {
@@ -226,7 +226,7 @@ class ExploreService: ObservableObject {
                     )
                     assets.append(asset)
                 } catch {
-                    print("ExploreService: Failed to fetch asset \(id): \(error)")
+                    debugLog("ExploreService: Failed to fetch asset \(id): \(error)")
                 }
             }
         }

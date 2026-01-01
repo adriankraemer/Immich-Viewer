@@ -74,7 +74,7 @@ struct CountryDetailView: View {
             )
         }
         .onAppear {
-            print("Country detail view for country: \(viewModel.countryName)")
+            debugLog("Country detail view for country: \(viewModel.countryName)")
         }
     }
     

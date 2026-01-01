@@ -27,7 +27,7 @@ class MapService: ObservableObject {
         NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))
             .sink { [weak self] _ in
                 self?.invalidateCache()
-                print("MapService: Cache invalidated due to user switch")
+                debugLog("MapService: Cache invalidated due to user switch")
             }
             .store(in: &cancellables)
     }
@@ -41,7 +41,7 @@ class MapService: ObservableObject {
         if let cached = cachedMarkers,
            let cacheTime = markersCacheTime,
            Date().timeIntervalSince(cacheTime) < cacheValidityDuration {
-            print("MapService: Returning \(cached.count) cached markers")
+            debugLog("MapService: Returning \(cached.count) cached markers")
             return cached
         }
         
@@ -50,10 +50,10 @@ class MapService: ObservableObject {
             let markers = try await fetchMarkersFromMapEndpoint()
             cachedMarkers = markers
             markersCacheTime = Date()
-            print("MapService: Fetched \(markers.count) markers from map endpoint")
+            debugLog("MapService: Fetched \(markers.count) markers from map endpoint")
             return markers
         } catch {
-            print("MapService: Map markers endpoint failed, falling back to metadata search: \(error)")
+            debugLog("MapService: Map markers endpoint failed, falling back to metadata search: \(error)")
             // Fall back to metadata search
             let markers = try await fetchMarkersFromMetadataSearch()
             cachedMarkers = markers
@@ -140,7 +140,7 @@ class MapService: ObservableObject {
             page += 1
         }
         
-        print("MapService: Converted \(allMarkers.count) assets to markers from metadata search")
+        debugLog("MapService: Converted \(allMarkers.count) assets to markers from metadata search")
         return allMarkers
     }
     
@@ -175,7 +175,7 @@ class MapService: ObservableObject {
                 )
                 assets.append(contentsOf: result.assets.items)
             } catch {
-                print("MapService: Failed to fetch batch of assets: \(error)")
+                debugLog("MapService: Failed to fetch batch of assets: \(error)")
                 // Continue with other batches
             }
         }

@@ -14,7 +14,7 @@ class UserDefaultsStorage: UserStorage {
     init() {
         // Use shared UserDefaults so TopShelf extension can access the data
         self.userDefaults = UserDefaults(suiteName: AppConstants.appGroupIdentifier) ?? UserDefaults.standard
-        print("UserDefaultsStorage: Using UserDefaults suite: \(AppConstants.appGroupIdentifier)")
+        debugLog("UserDefaultsStorage: Using UserDefaults suite: \(AppConstants.appGroupIdentifier)")
         
         // Migrate data from standard UserDefaults if needed
         migrateFromStandardUserDefaultsIfNeeded()
@@ -29,7 +29,7 @@ class UserDefaultsStorage: UserStorage {
         
         let key = "\(UserDefaultsKeys.userPrefix)\(user.id)"
         userDefaults.set(userData, forKey: key)
-        print("UserDefaultsStorage: Saved user \(user.email) with ID \(user.id)")
+        debugLog("UserDefaultsStorage: Saved user \(user.email) with ID \(user.id)")
     }
     
     func loadUsers() -> [SavedUser] {
@@ -44,9 +44,9 @@ class UserDefaultsStorage: UserStorage {
                 do {
                     let user = try JSONDecoder().decode(SavedUser.self, from: userData)
                     users.append(user)
-                    print("UserDefaultsStorage: Successfully loaded user \(user.email)")
+                    debugLog("UserDefaultsStorage: Successfully loaded user \(user.email)")
                 } catch {
-                    print("UserDefaultsStorage: Failed to decode user data for key \(key): \(error)")
+                    debugLog("UserDefaultsStorage: Failed to decode user data for key \(key): \(error)")
                     // Could implement migration logic here if needed
                 }
             }
@@ -60,7 +60,7 @@ class UserDefaultsStorage: UserStorage {
         let userKey = "\(UserDefaultsKeys.userPrefix)\(id)"
         userDefaults.removeObject(forKey: userKey)
         
-        print("UserDefaultsStorage: Removed user with ID \(id)")
+        debugLog("UserDefaultsStorage: Removed user with ID \(id)")
     }
     
     // MARK: - Migration-Only Token Methods
@@ -81,7 +81,7 @@ class UserDefaultsStorage: UserStorage {
         let userKeys = allKeys.filter { $0.hasPrefix(UserDefaultsKeys.userPrefix) }
         userKeys.forEach { userDefaults.removeObject(forKey: $0) }
         
-        print("UserDefaultsStorage: Removed all user data")
+        debugLog("UserDefaultsStorage: Removed all user data")
     }
     
     // MARK: - Migration
@@ -91,11 +91,11 @@ class UserDefaultsStorage: UserStorage {
         
         // Check if migration already completed
         if userDefaults.bool(forKey: migrationKey) {
-            print("UserDefaultsStorage: Migration already completed")
+            debugLog("UserDefaultsStorage: Migration already completed")
             return
         }
         
-        print("UserDefaultsStorage: Starting migration from standard UserDefaults...")
+        debugLog("UserDefaultsStorage: Starting migration from standard UserDefaults...")
         
         let standardDefaults = UserDefaults.standard
         let standardDict = standardDefaults.dictionaryRepresentation()
@@ -111,7 +111,7 @@ class UserDefaultsStorage: UserStorage {
                 userDefaults.set(userData, forKey: userKey)
                 standardDefaults.removeObject(forKey: userKey)
                 migratedUsers += 1
-                print("UserDefaultsStorage: Migrated user key: \(userKey)")
+                debugLog("UserDefaultsStorage: Migrated user key: \(userKey)")
             }
         }
         
@@ -121,14 +121,14 @@ class UserDefaultsStorage: UserStorage {
         for legacyKey in legacyKeys {
             if standardDefaults.object(forKey: legacyKey) != nil {
                 standardDefaults.removeObject(forKey: legacyKey)
-                print("UserDefaultsStorage: Removed legacy key: \(legacyKey)")
+                debugLog("UserDefaultsStorage: Removed legacy key: \(legacyKey)")
             }
         }
         
         // Mark migration as completed
         userDefaults.set(true, forKey: migrationKey)
         
-        print("UserDefaultsStorage: Migration completed - migrated \(migratedUsers) users")
+        debugLog("UserDefaultsStorage: Migration completed - migrated \(migratedUsers) users")
     }
 }
 

@@ -44,7 +44,7 @@ class AlbumThumbnailProvider: ThumbnailProvider {
                 try await self.assetService.loadImage(assetId: thumbnailId, size: "thumbnail")
             }
         } catch {
-            print("Failed to load static thumbnail for album \(album.id): \(error)")
+            debugLog("Failed to load static thumbnail for album \(album.id): \(error)")
             return nil
         }
     }
@@ -66,13 +66,13 @@ class AlbumThumbnailProvider: ThumbnailProvider {
                         loadedThumbnails.append(thumbnail)
                     }
                 } catch {
-                    print("Failed to load thumbnail for asset \(asset.id): \(error)")
+                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
                 }
             }
             
             return loadedThumbnails
         } catch {
-            print("Failed to fetch assets for album \(album.id): \(error)")
+            debugLog("Failed to fetch assets for album \(album.id): \(error)")
             return []
         }
     }
@@ -106,13 +106,13 @@ class PeopleThumbnailProvider: ThumbnailProvider {
                         loadedThumbnails.append(thumbnail)
                     }
                 } catch {
-                    print("Failed to load thumbnail for asset \(asset.id): \(error)")
+                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
                 }
             }
             
             return loadedThumbnails
         } catch {
-            print("Failed to fetch assets for person \(person.id): \(error)")
+            debugLog("Failed to fetch assets for person \(person.id): \(error)")
             return []
         }
     }
@@ -146,13 +146,13 @@ class TagThumbnailProvider: ThumbnailProvider {
                         loadedThumbnails.append(thumbnail)
                     }
                 } catch {
-                    print("Failed to load thumbnail for asset \(asset.id): \(error)")
+                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
                 }
             }
             
             return loadedThumbnails
         } catch {
-            print("Failed to fetch assets for tag \(tag.id): \(error)")
+            debugLog("Failed to fetch assets for tag \(tag.id): \(error)")
             return []
         }
     }
@@ -186,13 +186,13 @@ class FolderThumbnailProvider: ThumbnailProvider {
                         loadedThumbnails.append(thumbnail)
                     }
                 } catch {
-                    print("Failed to load thumbnail for asset \(asset.id): \(error)")
+                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
                 }
             }
             
             return loadedThumbnails
         } catch {
-            print("Failed to fetch assets for folder \(folder.path): \(error)")
+            debugLog("Failed to fetch assets for folder \(folder.path): \(error)")
             return []
         }
     }
@@ -241,7 +241,7 @@ class ContinentThumbnailProvider: ThumbnailProvider {
                     loadedThumbnails.append(thumbnail)
                 }
             } catch {
-                print("Failed to load thumbnail for continent asset \(assetId): \(error)")
+                debugLog("Failed to load thumbnail for continent asset \(assetId): \(error)")
             }
         }
         
@@ -274,7 +274,7 @@ class CountryThumbnailProvider: ThumbnailProvider {
                 return [thumbnail]
             }
         } catch {
-            print("Failed to load thumbnail for country asset \(assetId): \(error)")
+            debugLog("Failed to load thumbnail for country asset \(assetId): \(error)")
         }
         
         return []

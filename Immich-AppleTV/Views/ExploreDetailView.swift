@@ -66,7 +66,7 @@ struct ExploreDetailView: View {
             )
         }
         .onAppear(){
-            print("Explore detail view for city: \(city)")
+            debugLog("Explore detail view for city: \(city)")
         }
     }
     

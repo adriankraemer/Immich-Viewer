@@ -35,8 +35,8 @@ struct SlideshowSettings: View {
                 content: AnyView(
                     HStack(spacing: 40) {
                         Button(action: {
-                            print("clicked -")
-                            print(slideshowInterval)
+                            debugLog("clicked -")
+                            debugLog("\(slideshowInterval)")
                             if slideshowInterval > 8 {
                                 slideshowInterval -= 1
                             }
@@ -56,8 +56,8 @@ struct SlideshowSettings: View {
                             .id("slideshow-interval-\(Int(slideshowInterval))")
                         
                         Button(action: {
-                            print("clicked +")
-                            print(slideshowInterval)
+                            debugLog("clicked +")
+                            debugLog("\(slideshowInterval)")
                             if slideshowInterval < 15 {
                                 slideshowInterval += 1
                             }

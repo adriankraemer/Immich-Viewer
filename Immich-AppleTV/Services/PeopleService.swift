@@ -16,13 +16,13 @@ class PeopleService: ObservableObject {
 
     func getAllPeople(page: Int = 1, size: Int = 100, withHidden: Bool = false) async throws -> [Person] {
         let endpoint = "/api/people?page=\(page)&size=\(size)&withHidden=\(withHidden)"
-        print("PeopleService: Fetching people from \(endpoint)")
+        debugLog("PeopleService: Fetching people from \(endpoint)")
         struct PeopleResponse: Codable { let people: [Person] }
         let response: PeopleResponse = try await networkService.makeRequest(
             endpoint: endpoint,
             responseType: PeopleResponse.self
         )
-        print("PeopleService: Received \(response.people.count) people")
+        debugLog("PeopleService: Received \(response.people.count) people")
         return response.people
     }
 

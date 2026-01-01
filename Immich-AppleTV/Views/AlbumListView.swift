@@ -101,7 +101,7 @@ struct AlbumListView: View {
                     self.firstFavoriteAssetId = result.assets.first?.id
                 }
             } catch {
-                print("Failed to fetch favorites count: \(error)")
+                debugLog("Failed to fetch favorites count: \(error)")
             }
         }
     }
@@ -193,7 +193,7 @@ struct AlbumDetailView: View {
             )
         }
         .onAppear(){
-            print("Album defaul view")
+            debugLog("Album defaul view")
         }
     }
     

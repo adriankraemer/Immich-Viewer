@@ -213,7 +213,7 @@ class OnDemandCountryAssetProvider: AssetProvider {
         
         let ids = try await exploreService.getAssetIdsForCountry(countryName)
         assetIds = ids
-        print("OnDemandCountryAssetProvider: Found \(ids.count) assets for \(countryName)")
+        debugLog("OnDemandCountryAssetProvider: Found \(ids.count) assets for \(countryName)")
         return ids
     }
     

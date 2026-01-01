@@ -95,7 +95,7 @@ struct TechnicalInfoItem: View {
         VStack {
             Spacer()
             ExifInfoOverlay(asset: sampleAsset) {
-                print("Dismiss overlay")
+                debugLog("Dismiss overlay")
             }
         }
     }

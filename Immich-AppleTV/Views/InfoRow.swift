@@ -94,7 +94,7 @@ struct InfoRow: View {
         VStack {
             Spacer()
             ExifInfoOverlay(asset: sampleAsset) {
-                print("Dismiss overlay")
+                debugLog("Dismiss overlay")
             }
         }
     }

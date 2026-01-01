@@ -180,7 +180,7 @@ class WorldMapViewModel: ObservableObject {
             isInitialLoad = false
             loadingProgress = ""
             
-            print("WorldMapViewModel: Loaded \(markers.count) markers into \(clusters.count) clusters")
+            debugLog("WorldMapViewModel: Loaded \(markers.count) markers into \(clusters.count) clusters")
             
         } catch {
             errorMessage = error.localizedDescription
@@ -460,7 +460,7 @@ class WorldMapViewModel: ObservableObject {
             // Task was cancelled - this is expected when region changes
             loadingState = .ready
         } catch {
-            print("WorldMapViewModel: Failed to load asset details: \(error)")
+            debugLog("WorldMapViewModel: Failed to load asset details: \(error)")
             loadingState = .ready
         }
     }

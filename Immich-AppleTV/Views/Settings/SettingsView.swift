@@ -504,7 +504,7 @@ struct SettingsView: View {
                 }
                 
             } catch {
-                print("SettingsView: Failed to switch user: \(error)")
+                debugLog("SettingsView: Failed to switch user: \(error)")
                 // Handle error - could show alert to user
             }
         }
@@ -522,7 +522,7 @@ struct SettingsView: View {
                 if wasCurrentUser {
                     if userManager.hasCurrentUser {
                         // Switch to the new current user
-                        print("SettingsView: Switching to next available user after removal")
+                        debugLog("SettingsView: Switching to next available user after removal")
                         authService.updateCredentialsFromCurrentUser()
                         
                         await MainActor.run {
@@ -536,7 +536,7 @@ struct SettingsView: View {
                         NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
                     } else {
                         // No users left, sign out completely
-                        print("SettingsView: No users left, signing out completely")
+                        debugLog("SettingsView: No users left, signing out completely")
                         await MainActor.run {
                             authService.isAuthenticated = false
                             authService.currentUser = nil
@@ -545,7 +545,7 @@ struct SettingsView: View {
                     }
                 }
             } catch {
-                print("SettingsView: Failed to remove user: \(error)")
+                debugLog("SettingsView: Failed to remove user: \(error)")
                 // Handle error - could show alert to user
             }
         }
@@ -559,14 +559,14 @@ struct SettingsView: View {
             do {
                 // Refresh user info to verify connection
                 try await authService.fetchUserInfo()
-                print("✅ Server connection refreshed successfully")
+                debugLog("✅ Server connection refreshed successfully")
                 
                 // Post notification to refresh all tabs
                 DispatchQueue.main.async {
                     NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
                 }
             } catch {
-                print("❌ Failed to refresh server connection: \(error)")
+                debugLog("❌ Failed to refresh server connection: \(error)")
                 // You could add an alert here to show the error to the user
             }
         }

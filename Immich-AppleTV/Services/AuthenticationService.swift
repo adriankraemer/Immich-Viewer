@@ -45,7 +45,7 @@ class AuthenticationService: ObservableObject {
         self.networkService = networkService
         self.userManager = userManager
         self.isAuthenticated = userManager.hasCurrentUser
-        print("AuthenticationService: Initialized with isAuthenticated: \(isAuthenticated), hasCurrentUser: \(userManager.hasCurrentUser)")
+        debugLog("AuthenticationService: Initialized with isAuthenticated: \(isAuthenticated), hasCurrentUser: \(userManager.hasCurrentUser)")
         
         // Update network service with current user credentials if available
         networkService.updateCredentialsFromCurrentUser()
@@ -68,7 +68,7 @@ class AuthenticationService: ObservableObject {
                 
                 await MainActor.run {
                     self.isAuthenticated = true
-                    print("AuthenticationService: Successfully authenticated user: \(email)")
+                    debugLog("AuthenticationService: Successfully authenticated user: \(email)")
                 }
                 
                 // Fetch user details
@@ -116,7 +116,7 @@ class AuthenticationService: ObservableObject {
                 
                 await MainActor.run {
                     self.isAuthenticated = true
-                    print("AuthenticationService: Successfully authenticated user with API key: \(email)")
+                    debugLog("AuthenticationService: Successfully authenticated user with API key: \(email)")
                 }
                 
                 // Fetch user details
@@ -153,7 +153,7 @@ class AuthenticationService: ObservableObject {
     /// Internal sign out method - logs out current user and switches to next available user if any exist
     /// For UI-initiated logout, use UserManager.logoutCurrentUser() directly
     func signOut() {
-        print("AuthenticationService: Signing out user")
+        debugLog("AuthenticationService: Signing out user")
         
         Task {
             do {
@@ -163,7 +163,7 @@ class AuthenticationService: ObservableObject {
                 // Check if we still have a current user after logout
                 if userManager.hasCurrentUser {
                     // Switch to the new current user
-                    print("AuthenticationService: Switching to next available user after logout")
+                    debugLog("AuthenticationService: Switching to next available user after logout")
                     networkService.updateCredentialsFromCurrentUser()
                     
                     await MainActor.run {
@@ -174,7 +174,7 @@ class AuthenticationService: ObservableObject {
                     try await fetchUserInfo()
                 } else {
                     // No users left, fully sign out
-                    print("AuthenticationService: No users left, fully signing out")
+                    debugLog("AuthenticationService: No users left, fully signing out")
                     networkService.clearCredentials()
                     
                     await MainActor.run {
@@ -183,9 +183,9 @@ class AuthenticationService: ObservableObject {
                     }
                 }
                 
-                print("AuthenticationService: Successfully completed signout process")
+                debugLog("AuthenticationService: Successfully completed signout process")
             } catch {
-                print("AuthenticationService: Error during signout: \(error)")
+                debugLog("AuthenticationService: Error during signout: \(error)")
                 
                 // Even if logout fails, still clear the auth state
                 networkService.clearCredentials()
@@ -205,7 +205,7 @@ class AuthenticationService: ObservableObject {
         
         await MainActor.run {
             self.isAuthenticated = true
-            print("AuthenticationService: Switched to user \(user.email)")
+            debugLog("AuthenticationService: Switched to user \(user.email)")
         }
         
         // Fetch user details from server
@@ -240,7 +240,7 @@ class AuthenticationService: ObservableObject {
     }
     
     func fetchUserInfo() async throws {
-        print("AuthenticationService: Fetching user info from server")
+        debugLog("AuthenticationService: Fetching user info from server")
         let user: User = try await networkService.makeRequest(
             endpoint: "/api/users/me",
             responseType: User.self
@@ -255,39 +255,39 @@ class AuthenticationService: ObservableObject {
             avatarColor: user.avatarColor
         )
         
-        print("AuthenticationService: Updating currentUser to \(owner.email)")
+        debugLog("AuthenticationService: Updating currentUser to \(owner.email)")
         self.currentUser = owner
     }
     
     private func validateTokenIfNeeded() {
         guard isAuthenticated && !networkService.baseURL.isEmpty else { 
-            print("AuthenticationService: Skipping token validation - not authenticated or no baseURL")
+            debugLog("AuthenticationService: Skipping token validation - not authenticated or no baseURL")
             return 
         }
         
         Task { @MainActor in
             do {
                 try await fetchUserInfo()
-                print("AuthenticationService: Token validation successful")
+                debugLog("AuthenticationService: Token validation successful")
             } catch let error as ImmichError {
-                print("AuthenticationService: Token validation failed with ImmichError: \(error)")
+                debugLog("AuthenticationService: Token validation failed with ImmichError: \(error)")
                 
                 if error.shouldLogout {
-                    print("AuthenticationService: Logging out user due to authentication error: \(error)")
+                    debugLog("AuthenticationService: Logging out user due to authentication error: \(error)")
                     self.signOut()
                     if let bundleID = Bundle.main.bundleIdentifier {
-                        print("removing all shared data")
+                        debugLog("removing all shared data")
                         UserDefaults.standard.removePersistentDomain(forName: bundleID)
                         UserDefaults.standard.removePersistentDomain(forName: AppConstants.appGroupIdentifier)
                         UserDefaults.standard.synchronize()
                     }
                 } else {
-                    print("AuthenticationService: Preserving authentication state despite error: \(error)")
+                    debugLog("AuthenticationService: Preserving authentication state despite error: \(error)")
                     // For server/network errors, preserve authentication state
                     // The user will see error messages in the UI but won't be logged out
                 }
             } catch {
-                print("AuthenticationService: Token validation failed with unexpected error: \(error)")
+                debugLog("AuthenticationService: Token validation failed with unexpected error: \(error)")
                 // Handle unexpected errors conservatively - don't logout
                 // This preserves user authentication state for unknown error types
             }

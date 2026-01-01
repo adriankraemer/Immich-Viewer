@@ -72,7 +72,7 @@ class AssetService: ObservableObject {
     func loadFullImage(asset: ImmichAsset) async throws -> UIImage? {
         // Check if it's a RAW format before loading
         if let mimeType = asset.originalMimeType, isRawFormat(mimeType) {
-            print("AssetService: Detected RAW format (\(mimeType)), using server-converted version")
+            debugLog("AssetService: Detected RAW format (\(mimeType)), using server-converted version")
             if let convertedImage = try await loadConvertedImage(asset: asset) {
                 return convertedImage
             }
@@ -83,11 +83,11 @@ class AssetService: ObservableObject {
         let originalData = try await networkService.makeDataRequest(endpoint: originalEndpoint)
         
         if let image = UIImage(data: originalData) {
-            print("AssetService: Successfully loaded image for asset \(asset.id)")
+            debugLog("AssetService: Successfully loaded image for asset \(asset.id)")
             return image
         }
         
-        print("AssetService: Failed to load image for asset \(asset.id)")
+        debugLog("AssetService: Failed to load image for asset \(asset.id)")
         return nil
     }
     
@@ -126,11 +126,11 @@ class AssetService: ObservableObject {
         do {
             let data = try await networkService.makeDataRequest(endpoint: endpoint)
             if let image = UIImage(data: data) {
-                print("AssetService: Loaded converted RAW image: \(image.size)")
+                debugLog("AssetService: Loaded converted RAW image: \(image.size)")
                 return image
             }
         } catch {
-            print("AssetService: Failed to load converted RAW image: \(error)")
+            debugLog("AssetService: Failed to load converted RAW image: \(error)")
         }
         
         return nil

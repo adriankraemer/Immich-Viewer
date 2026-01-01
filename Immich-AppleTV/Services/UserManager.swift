@@ -39,7 +39,7 @@ class UserManager: ObservableObject {
             savedUsers.sort { $0.createdAt > $1.createdAt }
         }
         
-        print("UserManager: Saved user \(user.email) with token")
+        debugLog("UserManager: Saved user \(user.email) with token")
     }
     
     /// Loads all saved users from storage
@@ -48,7 +48,7 @@ class UserManager: ObservableObject {
         
         // Set users synchronously during initialization to ensure proper startup order
         savedUsers = users
-        print("UserManager: Loaded \(users.count) saved users")
+        debugLog("UserManager: Loaded \(users.count) saved users")
         
         // Load current user immediately after savedUsers is populated
         loadCurrentUser()
@@ -59,17 +59,17 @@ class UserManager: ObservableObject {
         if let currentUserId = getCurrentUserId(),
            let user = savedUsers.first(where: { $0.id == currentUserId }) {
             currentUser = user
-            print("UserManager: Loaded current user: \(user.email)")
+            debugLog("UserManager: Loaded current user: \(user.email)")
         } else {
             // If no previously saved user ID is found, or the user is not in the list,
             // set the first saved user as the current one.
             if let firstUser = savedUsers.first {
                 currentUser = firstUser
                 setCurrentUserId(firstUser.id)
-                print("UserManager: No current user found. Defaulted to first saved user: \(firstUser.email)")
+                debugLog("UserManager: No current user found. Defaulted to first saved user: \(firstUser.email)")
             } else {
                 currentUser = nil
-                print("UserManager: No users found in saved list.")
+                debugLog("UserManager: No users found in saved list.")
             }
         }
     }
@@ -89,7 +89,7 @@ class UserManager: ObservableObject {
             setCurrentUserId(user.id)
         }
         
-        print("UserManager: Switched to user \(user.email)")
+        debugLog("UserManager: Switched to user \(user.email)")
         return token
     }
     
@@ -108,17 +108,17 @@ class UserManager: ObservableObject {
                 if let nextUser = savedUsers.first {
                     currentUser = nextUser
                     setCurrentUserId(nextUser.id)
-                    print("UserManager: Switched to next available user: \(nextUser.email)")
+                    debugLog("UserManager: Switched to next available user: \(nextUser.email)")
                 } else {
                     // No other users available, clear current user
                     currentUser = nil
                     clearCurrentUserId()
-                    print("UserManager: No other users available, cleared current user")
+                    debugLog("UserManager: No other users available, cleared current user")
                 }
             }
         }
         
-        print("UserManager: Removed user \(user.email)")
+        debugLog("UserManager: Removed user \(user.email)")
     }
     
     /// Gets the authentication token for a specific user
@@ -149,7 +149,7 @@ class UserManager: ObservableObject {
             authType: .jwt,
             profileImageData: profileImageData
         )
-        print("saving user \(authResponse.userEmail)")
+        debugLog("saving user \(authResponse.userEmail)")
         // Save user and token
         try await saveUser(savedUser, token: authResponse.accessToken)
         
@@ -184,7 +184,7 @@ class UserManager: ObservableObject {
             profileImageData: profileImageData
         )
         
-        print("saving user \(email)")
+        debugLog("saving user \(email)")
         // Save user and API key as token
         try await saveUser(savedUser, token: apiKey)
         
@@ -261,17 +261,17 @@ class UserManager: ObservableObject {
             clearCurrentUserId()
         }
         
-        print("UserManager: Cleared all user data")
+        debugLog("UserManager: Cleared all user data")
     }
     
     /// Logs out only the current user (removes them from saved users)
     func logoutCurrentUser() async throws {
         guard let currentUser = currentUser else {
-            print("UserManager: No current user to logout")
+            debugLog("UserManager: No current user to logout")
             return
         }
         
-        print("UserManager: Logging out current user: \(currentUser.email)")
+        debugLog("UserManager: Logging out current user: \(currentUser.email)")
         try await removeUser(currentUser)
     }
     
@@ -293,7 +293,7 @@ class UserManager: ObservableObject {
             
             return imageData
         } catch {
-            print("UserManager: Failed to fetch profile image for user \(userId): \(error)")
+            debugLog("UserManager: Failed to fetch profile image for user \(userId): \(error)")
             return nil
         }
     }
@@ -361,7 +361,7 @@ class UserManager: ObservableObject {
     
     private func setCurrentUserId(_ userId: String) {
         sharedDefaults.set(userId, forKey: "currentActiveUserId")
-        print("UserManager: Set current user ID: \(userId)")
+        debugLog("UserManager: Set current user ID: \(userId)")
     }
     
     private func getCurrentUserId() -> String? {
@@ -370,7 +370,7 @@ class UserManager: ObservableObject {
     
     private func clearCurrentUserId() {
         sharedDefaults.removeObject(forKey: "currentActiveUserId")
-        print("UserManager: Cleared current user ID")
+        debugLog("UserManager: Cleared current user ID")
     }
     
     // MARK: - Public Current User Methods
@@ -406,11 +406,11 @@ class UserManager: ObservableObject {
         if let cookies = cookieStorage.cookies(for: url) {
             for cookie in cookies {
                 cookieStorage.deleteCookie(cookie)
-                print("UserManager: Deleted cookie: \(cookie.name) for \(cookie.domain)")
+                debugLog("UserManager: Deleted cookie: \(cookie.name) for \(cookie.domain)")
             }
-            print("UserManager: Cleared \(cookies.count) cookies for \(serverURL)")
+            debugLog("UserManager: Cleared \(cookies.count) cookies for \(serverURL)")
         } else {
-            print("UserManager: No cookies found for \(serverURL)")
+            debugLog("UserManager: No cookies found for \(serverURL)")
         }
     }
     
@@ -421,7 +421,7 @@ class UserManager: ObservableObject {
             for cookie in cookies {
                 cookieStorage.deleteCookie(cookie)
             }
-            print("UserManager: Cleared all \(cookies.count) HTTP cookies")
+            debugLog("UserManager: Cleared all \(cookies.count) HTTP cookies")
         }
     }
 }

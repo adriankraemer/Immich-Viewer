@@ -422,7 +422,7 @@ struct ClusterAnnotationView: View {
                         self.loadingTasks.removeValue(forKey: asset.id)
                     }
                 } catch {
-                    print("Failed to load thumbnail for asset \(asset.id): \(error)")
+                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
                     await MainActor.run {
                         self.loadingAssets.remove(asset.id)
                         self.loadingTasks.removeValue(forKey: asset.id)

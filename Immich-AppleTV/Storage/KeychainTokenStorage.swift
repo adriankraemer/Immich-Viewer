@@ -25,7 +25,7 @@ class KeychainTokenStorage {
         
         let account = "token_\(id)"
         try saveData(tokenData, account: account)
-        print("KeychainTokenStorage: Saved token for user ID \(id)")
+        debugLog("KeychainTokenStorage: Saved token for user ID \(id)")
     }
     
     func getToken(forUserId id: String) -> String? {
@@ -42,7 +42,7 @@ class KeychainTokenStorage {
     func removeToken(forUserId id: String) throws {
         let account = "token_\(id)"
         try deleteItem(account: account)
-        print("KeychainTokenStorage: Removed token for user ID \(id)")
+        debugLog("KeychainTokenStorage: Removed token for user ID \(id)")
     }
     
     func removeAllTokens() throws {
@@ -56,11 +56,11 @@ class KeychainTokenStorage {
         
         // errSecItemNotFound is OK - means nothing to delete
         if status != errSecSuccess && status != errSecItemNotFound {
-            print("KeychainTokenStorage: Delete all failed with status: \(status)")
+            debugLog("KeychainTokenStorage: Delete all failed with status: \(status)")
             throw UserStorageError.deleteFailed
         }
         
-        print("KeychainTokenStorage: Removed all tokens")
+        debugLog("KeychainTokenStorage: Removed all tokens")
     }
     
     // MARK: - Private Keychain Helpers
@@ -87,7 +87,7 @@ class KeychainTokenStorage {
         let status = SecItemAdd(query as CFDictionary, nil)
         
         if status != errSecSuccess {
-            print("KeychainTokenStorage: Save failed with status: \(status)")
+            debugLog("KeychainTokenStorage: Save failed with status: \(status)")
             throw UserStorageError.saveFailed
         }
     }
@@ -123,7 +123,7 @@ class KeychainTokenStorage {
         
         // errSecItemNotFound is OK - means item already doesn't exist
         if status != errSecSuccess && status != errSecItemNotFound {
-            print("KeychainTokenStorage: Delete failed with status: \(status)")
+            debugLog("KeychainTokenStorage: Delete failed with status: \(status)")
             throw UserStorageError.deleteFailed
         }
     }

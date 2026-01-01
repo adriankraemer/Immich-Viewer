@@ -120,9 +120,9 @@ struct AssetThumbnailView: View {
                 }
             } catch is CancellationError {
                 // Task was cancelled - don't update UI or log error
-                print("Thumbnail loading cancelled for asset \(asset.id)")
+                debugLog("Thumbnail loading cancelled for asset \(asset.id)")
             } catch {
-                print("Failed to load thumbnail for asset \(asset.id): \(error)")
+                debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
                 await MainActor.run {
                     self.isLoading = false
                 }

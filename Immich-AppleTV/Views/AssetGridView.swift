@@ -87,11 +87,11 @@ struct AssetGridView: View {
                             LazyVGrid(columns: columns, spacing: 50) {
                             ForEach(assets) { asset in
                                 Button(action: {
-                                    print("AssetGridView: Asset selected: \(asset.id)")
+                                    debugLog("AssetGridView: Asset selected: \(asset.id)")
                                     selectedAsset = asset
                                     if let index = assets.firstIndex(of: asset) {
                                         currentAssetIndex = index
-                                        print("AssetGridView: Set currentAssetIndex to \(index)")
+                                        debugLog("AssetGridView: Set currentAssetIndex to \(index)")
                                     }
                                     showingFullScreen = true
                                 }) {
@@ -116,7 +116,7 @@ struct AssetGridView: View {
                                         
                                         // Check if this is the asset we need to scroll to
                                         if shouldScrollToAsset == asset.id {
-                                            print("AssetGridView: Target asset appeared in grid - \(asset.id)")
+                                            debugLog("AssetGridView: Target asset appeared in grid - \(asset.id)")
                                         }
                                     }
                                 }
@@ -140,20 +140,20 @@ struct AssetGridView: View {
                         .padding(.top, 20)
                         .padding(.bottom, 40)
                         .onChange(of: focusedAssetId) { oldValue, newFocusedId in
-                            print("AssetGridView: focusedAssetId changed to \(newFocusedId ?? "nil"), isProgrammatic: \(isProgrammaticFocusChange)")
+                            debugLog("AssetGridView: focusedAssetId changed to \(newFocusedId ?? "nil"), isProgrammatic: \(isProgrammaticFocusChange)")
                             
                             // Update currentAssetIndex when focus changes
                             if let focusedId = newFocusedId,
                                let focusedAsset = assets.first(where: { $0.id == focusedId }),
                                let index = assets.firstIndex(of: focusedAsset) {
                                 currentAssetIndex = index
-                                print("AssetGridView: Updated currentAssetIndex to \(index) for focused asset")
+                                debugLog("AssetGridView: Updated currentAssetIndex to \(index) for focused asset")
                             }
                             
                             // Scroll to the focused asset when it changes
                             if let focusedId = newFocusedId {
                                 if isProgrammaticFocusChange {
-                                    print("AssetGridView: Programmatic focus change - scrolling to asset ID: \(focusedId)")
+                                    debugLog("AssetGridView: Programmatic focus change - scrolling to asset ID: \(focusedId)")
                                     withAnimation(.easeInOut(duration: 0.5)) {
                                         proxy.scrollTo(focusedId, anchor: .center)
                                     }
@@ -162,13 +162,13 @@ struct AssetGridView: View {
                                         isProgrammaticFocusChange = false
                                     }
                                 } else {
-                                    print("AssetGridView: User navigation - not scrolling")
+                                    debugLog("AssetGridView: User navigation - not scrolling")
                                 }
                             }
                         }
                         .onChange(of: shouldScrollToAsset) { oldValue, assetId in
                             if let assetId = assetId {
-                                print("AssetGridView: shouldScrollToAsset triggered - scrolling to asset ID: \(assetId)")
+                                debugLog("AssetGridView: shouldScrollToAsset triggered - scrolling to asset ID: \(assetId)")
                                 // Use a more robust scrolling approach with proper timing
                                 DispatchQueue.main.async {
                                     withAnimation(.easeInOut(duration: 0.5)) {
@@ -183,7 +183,7 @@ struct AssetGridView: View {
                         }
                         .onChange(of: deepLinkAssetId) { oldValue, assetId in
                             if let assetId = assetId {
-                                print("AssetGridView: Deep link asset ID received: \(assetId)")
+                                debugLog("AssetGridView: Deep link asset ID received: \(assetId)")
                                 handleDeepLinkAsset(assetId)
                             }
                         }
@@ -207,7 +207,7 @@ struct AssetGridView: View {
         .fullScreenCover(isPresented: $showingSlideshow) {
             let imageAssets = assets.filter { $0.type == .image }
             if !imageAssets.isEmpty {
-                let _ = print("currentAssetIndex test", currentAssetIndex)
+                let _ = debugLog("currentAssetIndex test: \(currentAssetIndex)")
                 // Find the index of the current asset in the filtered image assets
                 let startingIndex = currentAssetIndex < assets.count ? 
                     (imageAssets.firstIndex(of: assets[currentAssetIndex]) ?? 0) : 0
@@ -215,11 +215,11 @@ struct AssetGridView: View {
             }
         }
         .onPlayPauseCommand(perform: {
-            print("Play pause tapped in AssetGridView - starting slideshow")
+            debugLog("Play pause tapped in AssetGridView - starting slideshow")
             startSlideshow()
         })
         .onAppear {
-            print("Appared")
+            debugLog("Appared")
             if assets.isEmpty {
                 loadAssets()
             }
@@ -229,25 +229,25 @@ struct AssetGridView: View {
             loadMoreTask?.cancel()
         }
         .onChange(of: showingFullScreen) { _, isShowing in
-            print("AssetGridView: showingFullScreen changed to \(isShowing)")
+            debugLog("AssetGridView: showingFullScreen changed to \(isShowing)")
             // When fullscreen is dismissed, highlight the current asset
             if !isShowing && currentAssetIndex < assets.count {
                 let currentAsset = assets[currentAssetIndex]
-                print("AssetGridView: Fullscreen dismissed, currentAssetIndex: \(currentAssetIndex), asset ID: \(currentAsset.id)")
+                debugLog("AssetGridView: Fullscreen dismissed, currentAssetIndex: \(currentAssetIndex), asset ID: \(currentAsset.id)")
                 
                 // Use a more robust approach with proper state management
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     // First, trigger the scroll
-                    print("AssetGridView: Setting shouldScrollToAsset to \(currentAsset.id)")
+                    debugLog("AssetGridView: Setting shouldScrollToAsset to \(currentAsset.id)")
                     shouldScrollToAsset = currentAsset.id
                     
                     // Then set the focus after a short delay to ensure scroll starts
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        print("AssetGridView: Setting focusedAssetId to \(currentAsset.id)")
-                        print("AssetGridView: Setting isProgrammaticFocusChange to true")
+                        debugLog("AssetGridView: Setting focusedAssetId to \(currentAsset.id)")
+                        debugLog("AssetGridView: Setting isProgrammaticFocusChange to true")
                         isProgrammaticFocusChange = true
                         focusedAssetId = currentAsset.id
-                        print("AssetGridView: focusedAssetId set to \(currentAsset.id)")
+                        debugLog("AssetGridView: focusedAssetId set to \(currentAsset.id)")
                     }
                 }
             }
@@ -349,7 +349,7 @@ struct AssetGridView: View {
                 ThumbnailCache.shared.preloadThumbnails(for: searchResult.assets)
             } catch {
                 await MainActor.run {
-                    print("Failed to load more assets: \(error)")
+                    debugLog("Failed to load more assets: \(error)")
                     self.isLoadingMore = false
                 }
             }
@@ -404,11 +404,11 @@ struct AssetGridView: View {
     private func handleDeepLinkAsset(_ assetId: String) {
         // Check if the asset is already loaded
         if assets.contains(where: { $0.id == assetId }) {
-            print("AssetGridView: Asset \(assetId) found in loaded assets, scrolling and focusing")
+            debugLog("AssetGridView: Asset \(assetId) found in loaded assets, scrolling and focusing")
             focusedAssetId = assetId
             isProgrammaticFocusChange = true
         } else {
-            print("AssetGridView: Asset \(assetId) not found in current loaded assets")
+            debugLog("AssetGridView: Asset \(assetId) not found in current loaded assets")
             // For now, just load the first page and hope the asset is there
             // In a more complex implementation, we could search for the asset across pages
             if assets.isEmpty {

@@ -15,7 +15,7 @@ class AlbumService: ObservableObject {
     }
 
     func fetchAlbums() async throws -> [ImmichAlbum] {
-        print("AlbumService: Fetching albums from /api/albums")
+        debugLog("AlbumService: Fetching albums from /api/albums")
         let albums = try await networkService.makeRequest(
             endpoint: "/api/albums?shared=false",
             responseType: [ImmichAlbum].self
@@ -25,7 +25,7 @@ class AlbumService: ObservableObject {
             endpoint: "/api/albums?shared=true",
             responseType: [ImmichAlbum].self
         )
-        print("AlbumService: Received \(albums.count) albums")
+        debugLog("AlbumService: Received \(albums.count) albums")
         return [albums, sharedAlbums].flatMap { $0 }
     }
 

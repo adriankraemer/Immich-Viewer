@@ -233,7 +233,7 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.openAsset))) { notification in
             if let assetId = notification.userInfo?["assetId"] as? String {
-                print("ContentView: Received OpenAsset notification for asset: \(assetId)")
+                debugLog("ContentView: Received OpenAsset notification for asset: \(assetId)")
                 
                 // Switch to Photos tab and set deep link asset ID
                 selectedTab = TabName.photos.rawValue
@@ -250,12 +250,12 @@ struct ContentView: View {
             TapGesture().onEnded { resetInactivityTimer() }
         )
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("stopAutoSlideshowTimer"))) { _ in
-            print("ContentView: Stopping auto-slideshow timer")
+            debugLog("ContentView: Stopping auto-slideshow timer")
             inactivityTimer?.invalidate()
             inactivityTimer = nil
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("restartAutoSlideshowTimer"))) { _ in
-            print("ContentView: Restarting auto-slideshow timer")
+            debugLog("ContentView: Restarting auto-slideshow timer")
             resetInactivityTimer()
         }
     }
@@ -265,11 +265,11 @@ struct ContentView: View {
         inactivityTimer?.invalidate()
         inactivityTimer = nil
         if autoSlideshowTimeout > 0 {
-            print("ContentView: Starting inactivity timer with timeout: \(autoSlideshowTimeout) minutes")
+            debugLog("ContentView: Starting inactivity timer with timeout: \(autoSlideshowTimeout) minutes")
             inactivityTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
                 let elapsed = Date().timeIntervalSince(lastInteractionDate)
                 if elapsed > Double(autoSlideshowTimeout * 60) {
-                    print("ContentView: Auto-slideshow timeout reached! Elapsed: \(elapsed) seconds")
+                    debugLog("ContentView: Auto-slideshow timeout reached! Elapsed: \(elapsed) seconds")
                     inactivityTimer?.invalidate()
                     inactivityTimer = nil
                     // Switch to Photos tab and start auto slideshow
@@ -281,12 +281,12 @@ struct ContentView: View {
                 }
             }
         } else {
-            print("ContentView: Auto-slideshow disabled (timeout = 0)")
+            debugLog("ContentView: Auto-slideshow disabled (timeout = 0)")
         }
     }
     
     private func resetInactivityTimer() {
-        print("ContentView: Resetting inactivity timer")
+        debugLog("ContentView: Resetting inactivity timer")
         lastInteractionDate = Date()
         startInactivityTimer() // Restart the timer
     }

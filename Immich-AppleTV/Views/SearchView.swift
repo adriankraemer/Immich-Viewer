@@ -148,7 +148,7 @@ struct SearchView: View {
             return
         }
         
-        print("SearchView: Performing search for: '\(trimmedText)'")
+        debugLog("SearchView: Performing search for: '\(trimmedText)'")
         
         Task {
             await MainActor.run {
@@ -160,13 +160,13 @@ struct SearchView: View {
             do {
                 let result = try await searchService.searchAssets(query: trimmedText)
                 await MainActor.run {
-                    print("SearchView: Search completed, found \(result.assets.count) assets")
+                    debugLog("SearchView: Search completed, found \(result.assets.count) assets")
                     assets = result.assets
                     isLoading = false
                 }
             } catch {
                 await MainActor.run {
-                    print("SearchView: Search failed with error: \(error)")
+                    debugLog("SearchView: Search failed with error: \(error)")
                     errorMessage = error.localizedDescription
                     isLoading = false
                 }

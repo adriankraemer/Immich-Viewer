@@ -302,7 +302,7 @@ struct ErrorBoundary<Content: View>: View {
     }
     
     private func handleError(_ error: Error) {
-        print("ErrorBoundary [\(context)]: \(error)")
+        debugLog("ErrorBoundary [\(context)]: \(error)")
         currentError = error
         hasError = true
     }
@@ -343,7 +343,7 @@ class GlobalErrorHandler {
     private init() {}
     
     func handleError(_ error: Error, context: String = "Unknown") {
-        print("GlobalError [\(context)]: \(error)")
+        debugLog("GlobalError [\(context)]: \(error)")
         
         DispatchQueue.main.async {
             NotificationCenter.default.post(
@@ -354,7 +354,7 @@ class GlobalErrorHandler {
     }
     
     func clearErrors() {
-        print("GlobalErrorHandler: Clearing all error states")
+        debugLog("GlobalErrorHandler: Clearing all error states")
         // Additional cleanup logic can be added here if needed
     }
 }
@@ -384,6 +384,6 @@ extension View {
     UniversalErrorDisplayView(
         error: mockError,
         context: "Photo Slideshow",
-        onDismiss: { print("Preview: Dismissed error") }
+        onDismiss: { debugLog("Preview: Dismissed error") }
     )
 }

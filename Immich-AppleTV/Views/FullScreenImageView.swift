@@ -26,7 +26,7 @@ struct FullScreenImageView: View {
     @State private var showingExifInfo = false
     
     init(asset: ImmichAsset, assets: [ImmichAsset], currentIndex: Int, assetService: AssetService, authenticationService: AuthenticationService, currentAssetIndex: Binding<Int>) {
-        print("FullScreenImageView: Initializing with currentIndex: \(currentIndex)")
+        debugLog("FullScreenImageView: Initializing with currentIndex: \(currentIndex)")
         self.asset = asset
         self.assets = assets
         self.currentIndex = currentIndex
@@ -156,11 +156,11 @@ struct FullScreenImageView: View {
         }
         .id(refreshToggle)
         .onExitCommand {
-            print("FullScreenImageView: Exit command triggered")
+            debugLog("FullScreenImageView: Exit command triggered")
             if showingVideoPlayer {
                 showingVideoPlayer = false
             } else {
-                print("FullScreenImageView: Dismissing fullscreen view")
+                debugLog("FullScreenImageView: Dismissing fullscreen view")
                 dismiss()
             }
         }
@@ -182,14 +182,14 @@ struct FullScreenImageView: View {
     }
     
     private func navigateToImage(at index: Int) {
-        print("FullScreenImageView: Attempting to navigate to image at index \(index) (total assets: \(assets.count))")
+        debugLog("FullScreenImageView: Attempting to navigate to image at index \(index) (total assets: \(assets.count))")
         guard index >= 0 && index < assets.count else {
-            print("FullScreenImageView: Navigation failed - index \(index) out of bounds")
+            debugLog("FullScreenImageView: Navigation failed - index \(index) out of bounds")
             return
         }
-        print("FullScreenImageView: Navigating to asset ID: \(assets[index].id)")
+        debugLog("FullScreenImageView: Navigating to asset ID: \(assets[index].id)")
         currentAssetIndex = index // This now updates the binding
-        print("FullScreenImageView: Updated currentAssetIndex binding to \(index)")
+        debugLog("FullScreenImageView: Updated currentAssetIndex binding to \(index)")
         currentAsset = assets[index]
         refreshToggle.toggle() // Force UI update
         
@@ -207,15 +207,15 @@ struct FullScreenImageView: View {
     private func loadFullImage() {
         Task {
             do {
-                print("Loading full image for asset \(currentAsset.id)")
+                debugLog("Loading full image for asset \(currentAsset.id)")
                 let fullImage = try await assetService.loadFullImage(asset: currentAsset)
                 await MainActor.run {
-                    print("Loaded image for asset \(currentAsset.id)")
+                    debugLog("Loaded image for asset \(currentAsset.id)")
                     self.image = fullImage
                     self.isLoading = false
                 }
             } catch {
-                print("Failed to load full image for asset \(currentAsset.id): \(error)")
+                debugLog("Failed to load full image for asset \(currentAsset.id): \(error)")
                 await MainActor.run {
                     self.isLoading = false
                 }
@@ -262,52 +262,52 @@ struct ContentAwareModifier: ViewModifier {
                 }
                 .onTapGesture {
                     // Only dismiss on tap for photos, not video thumbnails
-                    print("FullScreenImageView: Tap gesture detected - isVideo: \(isVideo)")
+                    debugLog("FullScreenImageView: Tap gesture detected - isVideo: \(isVideo)")
                     if isVideo {
                         onPlayButtonTapped()
                     }
                 }
                 .onChange(of: isFocused) { oldValue, newValue in
-                    print("FullScreenImageView focus: \(newValue)")
+                    debugLog("FullScreenImageView focus: \(newValue)")
                 }
                 .onMoveCommand { direction in
                     switch direction {
                     case .left:
-                        print("FullScreenImageView: Left navigation triggered (current: \(currentAssetIndex), total: \(assets.count))")
+                        debugLog("FullScreenImageView: Left navigation triggered (current: \(currentAssetIndex), total: \(assets.count))")
                         if currentAssetIndex > 0 {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 onNavigate(currentAssetIndex - 1)
                             }
                         } else {
-                            print("FullScreenImageView: Already at first photo, cannot navigate further")
+                            debugLog("FullScreenImageView: Already at first photo, cannot navigate further")
                         }
                     case .right:
-                        print("FullScreenImageView: Right navigation triggered (current: \(currentAssetIndex), total: \(assets.count))")
+                        debugLog("FullScreenImageView: Right navigation triggered (current: \(currentAssetIndex), total: \(assets.count))")
                         if currentAssetIndex < assets.count - 1 {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 onNavigate(currentAssetIndex + 1)
                             }
                         } else {
-                            print("FullScreenImageView: Already at last photo, cannot navigate further")
+                            debugLog("FullScreenImageView: Already at last photo, cannot navigate further")
                         }
                     case .up:
-                        print("FullScreenImageView: Up navigation triggered - toggling EXIF info")
+                        debugLog("FullScreenImageView: Up navigation triggered - toggling EXIF info")
                         withAnimation(.easeInOut(duration: 0.3)) {
                             showingExifInfo.toggle()
                         }
                     case .down:
-                        print("FullScreenImageView: Down navigation triggered")
+                        debugLog("FullScreenImageView: Down navigation triggered")
                         if showingExifInfo {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 showingExifInfo = false
                             }
                         }
                     @unknown default:
-                        print("FullScreenImageView: Unknown direction")
+                        debugLog("FullScreenImageView: Unknown direction")
                     }
                 }
                 .onPlayPauseCommand(perform: {
-                    print("Play pause tapped")
+                    debugLog("Play pause tapped")
                 })
                 .contentShape(Rectangle())
         }
@@ -417,18 +417,18 @@ struct VideoThumbnailView: View {
         
         Task {
             do {
-                print("Loading thumbnail for video asset \(asset.id)")
+                debugLog("Loading thumbnail for video asset \(asset.id)")
                 let thumbnailImage = try await thumbnailCache.getThumbnail(for: asset.id, size: "preview") {
                     // Load from server if not in cache
                     try await assetService.loadImage(assetId: asset.id, size: "preview")
                 }
                 await MainActor.run {
-                    print("Loaded thumbnail for video asset \(asset.id)")
+                    debugLog("Loaded thumbnail for video asset \(asset.id)")
                     self.thumbnail = thumbnailImage
                     self.isLoading = false
                 }
             } catch {
-                print("Failed to load thumbnail for video asset \(asset.id): \(error)")
+                debugLog("Failed to load thumbnail for video asset \(asset.id): \(error)")
                 await MainActor.run {
                     self.errorMessage = error.localizedDescription
                     self.isLoading = false

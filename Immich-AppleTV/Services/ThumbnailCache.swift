@@ -44,17 +44,17 @@ class ThumbnailCache: NSObject, ObservableObject {
         do {
             if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
                 try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
-                print("📁 Created cache directory: \(cacheDirectory.path)")
+                debugLog("📁 Created cache directory: \(cacheDirectory.path)")
             } else {
-                print("📁 Cache directory already exists: \(cacheDirectory.path)")
+                debugLog("📁 Cache directory already exists: \(cacheDirectory.path)")
             }
             
             // Verify directory is writable
             let isWritable = FileManager.default.isWritableFile(atPath: cacheDirectory.path)
-            print("📁 Directory is writable: \(isWritable)")
+            debugLog("📁 Directory is writable: \(isWritable)")
         } catch {
-            print("❌ Failed to create cache directory: \(error)")
-            print("❌ Error details: \(error.localizedDescription)")
+            debugLog("❌ Failed to create cache directory: \(error)")
+            debugLog("❌ Error details: \(error.localizedDescription)")
         }
         
         // Load initial disk cache size
@@ -69,11 +69,11 @@ class ThumbnailCache: NSObject, ObservableObject {
     func getThumbnail(for assetId: String, size: String = "thumbnail", loadFromServer: @escaping () async throws -> UIImage?) async throws -> UIImage? {
         let cacheKey = cacheKey(for: assetId, size: size)
         
-        print("🔍 Looking for thumbnail: \(cacheKey)")
+        debugLog("🔍 Looking for thumbnail: \(cacheKey)")
         
         // Check memory cache first
         if let cachedImage = memoryCache.object(forKey: cacheKey as NSString) {
-            print("⚡ Memory cache hit: \(cacheKey)")
+            debugLog("⚡ Memory cache hit: \(cacheKey)")
             return cachedImage.image
         }
         
@@ -89,14 +89,14 @@ class ThumbnailCache: NSObject, ObservableObject {
             return diskImage
         }
         
-        print("🌐 Loading from server: \(cacheKey)")
+        debugLog("🌐 Loading from server: \(cacheKey)")
         // Load from server
         guard let serverImage = try await loadFromServer() else {
-            print("❌ Failed to load from server: \(cacheKey)")
+            debugLog("❌ Failed to load from server: \(cacheKey)")
             return nil
         }
         
-        print("💾 Caching new image: \(cacheKey)")
+        debugLog("💾 Caching new image: \(cacheKey)")
         // Cache the image
         await cacheImage(serverImage, for: cacheKey)
         
@@ -122,7 +122,7 @@ class ThumbnailCache: NSObject, ObservableObject {
                 // Preload in background - just check if cached, actual loading happens elsewhere
                 let isCached = await isCachedOnDisk(cacheKey: cacheKey)
                 if !isCached {
-                    print("Asset \(asset.id) not cached, will be loaded on demand")
+                    debugLog("Asset \(asset.id) not cached, will be loaded on demand")
                 }
             }
         }
@@ -225,14 +225,14 @@ class ThumbnailCache: NSObject, ObservableObject {
                 // Check if directory exists and is writable
                 let directoryExists = FileManager.default.fileExists(atPath: cacheDirectory.path)
                 let isWritable = FileManager.default.isWritableFile(atPath: cacheDirectory.path)
-                print("📁 Directory exists: \(directoryExists), writable: \(isWritable)")
-                print("📁 Writing to: \(fileURL.path)")
+                debugLog("📁 Directory exists: \(directoryExists), writable: \(isWritable)")
+                debugLog("📁 Writing to: \(fileURL.path)")
                 
                 do {
                     try imageData.write(to: fileURL)
-                    print("✅ Cached thumbnail to disk: \(cacheKey) (\(imageData.count) bytes)")
+                    debugLog("✅ Cached thumbnail to disk: \(cacheKey) (\(imageData.count) bytes)")
                     let fileCount = (try? FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil).count) ?? 0
-                    print("📊 Cache directory now contains: \(fileCount) files")
+                    debugLog("📊 Cache directory now contains: \(fileCount) files")
                     
                     // Calculate current disk size and cleanup if needed
                     let fileURLs = try? FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: [.fileSizeKey])
@@ -258,8 +258,8 @@ class ThumbnailCache: NSObject, ObservableObject {
                         }
                     }
                 } catch {
-                    print("❌ Failed to store thumbnail on disk: \(error)")
-                    print("❌ Error details: \(error.localizedDescription)")
+                    debugLog("❌ Failed to store thumbnail on disk: \(error)")
+                    debugLog("❌ Error details: \(error.localizedDescription)")
                 }
                 
                 continuation.resume()
@@ -292,15 +292,15 @@ class ThumbnailCache: NSObject, ObservableObject {
                     return total + fileSize
                 }
                 
-                print("📊 Disk cache calculation: \(fileURLs.count) files, \(totalSize) bytes")
-                print("📊 Cache directory: \(cacheDir.path)")
+                debugLog("📊 Disk cache calculation: \(fileURLs.count) files, \(totalSize) bytes")
+                debugLog("📊 Cache directory: \(cacheDir.path)")
                 
                 self?.diskCacheSize = totalSize
-                print("📊 Updated disk cache size: \(totalSize) bytes")
+                debugLog("📊 Updated disk cache size: \(totalSize) bytes")
             } catch {
-                print("❌ Failed to calculate disk cache size: \(error)")
-                print("❌ Cache directory: \(cacheDir.path)")
-                print("❌ Error details: \(error.localizedDescription)")
+                debugLog("❌ Failed to calculate disk cache size: \(error)")
+                debugLog("❌ Cache directory: \(cacheDir.path)")
+                debugLog("❌ Error details: \(error.localizedDescription)")
             }
         }
     }
@@ -335,7 +335,7 @@ class ThumbnailCache: NSObject, ObservableObject {
                 
                 self?.diskCacheSize = currentSize
             } catch {
-                print("Failed to cleanup disk cache: \(error)")
+                debugLog("Failed to cleanup disk cache: \(error)")
             }
         }
     }
@@ -355,7 +355,7 @@ class ThumbnailCache: NSObject, ObservableObject {
                     }
                 }
             } catch {
-                print("Failed to remove expired cache entries: \(error)")
+                debugLog("Failed to remove expired cache entries: \(error)")
             }
         }
         
@@ -367,7 +367,7 @@ class ThumbnailCache: NSObject, ObservableObject {
         // but also recalculate disk cache size periodically
         // Only log if there are significant changes or for debugging
         if self.memoryCacheSize > 0 || self.memoryCacheCount > 0 {
-            print("📊 Memory cache stats - Size: \(self.memoryCacheSize), Count: \(self.memoryCacheCount)")
+            debugLog("📊 Memory cache stats - Size: \(self.memoryCacheSize), Count: \(self.memoryCacheCount)")
         }
         
         // Recalculate disk cache size periodically
@@ -378,10 +378,10 @@ class ThumbnailCache: NSObject, ObservableObject {
         if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
             do {
                 try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
-                print("📁 Created cache directory: \(cacheDirectory.path)")
+                debugLog("📁 Created cache directory: \(cacheDirectory.path)")
             } catch {
-                print("❌ Failed to create cache directory: \(error)")
-                print("❌ Error details: \(error.localizedDescription)")
+                debugLog("❌ Failed to create cache directory: \(error)")
+                debugLog("❌ Error details: \(error.localizedDescription)")
             }
         }
     }

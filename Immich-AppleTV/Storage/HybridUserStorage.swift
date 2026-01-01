@@ -17,19 +17,19 @@ class HybridUserStorage: UserStorageWithTokens {
     init() {
         self.userStorage = UserDefaultsStorage()
         self.tokenStorage = KeychainTokenStorage()
-        print("HybridUserStorage: Initialized with UserDefaults for user data and Keychain for tokens")
+        debugLog("HybridUserStorage: Initialized with UserDefaults for user data and Keychain for tokens")
     }
     
     // MARK: - User Management (UserDefaults)
     
     func saveUser(_ user: SavedUser) throws {
         try userStorage.saveUser(user)
-        print("HybridUserStorage: Saved user \(user.email) to UserDefaults")
+        debugLog("HybridUserStorage: Saved user \(user.email) to UserDefaults")
     }
     
     func loadUsers() -> [SavedUser] {
         let users = userStorage.loadUsers()
-        print("HybridUserStorage: Loaded \(users.count) users from UserDefaults")
+        debugLog("HybridUserStorage: Loaded \(users.count) users from UserDefaults")
         return users
     }
     
@@ -40,7 +40,7 @@ class HybridUserStorage: UserStorageWithTokens {
         // Remove associated token from Keychain
         try tokenStorage.removeToken(forUserId: id)
         
-        print("HybridUserStorage: Removed user with ID \(id) from both storages")
+        debugLog("HybridUserStorage: Removed user with ID \(id) from both storages")
     }
     
     // MARK: - Token Management (Keychain)
@@ -49,24 +49,24 @@ class HybridUserStorage: UserStorageWithTokens {
         // Save to Keychain only - TopShelf extension now has keychain access
         try tokenStorage.saveToken(token, forUserId: id)
         
-        print("HybridUserStorage: Saved token for user ID \(id) to Keychain")
+        debugLog("HybridUserStorage: Saved token for user ID \(id) to Keychain")
     }
     
     func getToken(forUserId id: String) -> String? {
         // Read from Keychain only
         if let token = tokenStorage.getToken(forUserId: id) {
-            print("HybridUserStorage: Retrieved token for user ID \(id) from Keychain")
+            debugLog("HybridUserStorage: Retrieved token for user ID \(id) from Keychain")
             return token
         }
         
-        print("HybridUserStorage: No token found for user ID \(id) in Keychain")
+        debugLog("HybridUserStorage: No token found for user ID \(id) in Keychain")
         return nil
     }
     
     func removeToken(forUserId id: String) throws {
         // Remove from Keychain only
         try tokenStorage.removeToken(forUserId: id)
-        print("HybridUserStorage: Removed token for user ID \(id) from Keychain")
+        debugLog("HybridUserStorage: Removed token for user ID \(id) from Keychain")
     }
     
     // MARK: - Cleanup
@@ -78,6 +78,6 @@ class HybridUserStorage: UserStorageWithTokens {
         // Remove all tokens from Keychain
         try tokenStorage.removeAllTokens()
         
-        print("HybridUserStorage: Removed all data from UserDefaults and Keychain")
+        debugLog("HybridUserStorage: Removed all data from UserDefaults and Keychain")
     }
 }

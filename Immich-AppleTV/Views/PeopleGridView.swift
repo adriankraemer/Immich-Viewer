@@ -28,7 +28,7 @@ struct PeopleGridView: View {
             isLoading: isLoading,
             errorMessage: errorMessage,
             onItemSelected: { person in
-                print("Person selected: \(person.id)")
+                debugLog("Person selected: \(person.id)")
                 selectedPerson = person
             },
             onRetry: loadPeople
@@ -37,7 +37,7 @@ struct PeopleGridView: View {
             PersonPhotosView(person: person, peopleService: peopleService, authService: authService, assetService: assetService)
         }
         .onAppear {
-            print("PeopleGridView: View appeared, people count: \(people.count), isLoading: \(isLoading), errorMessage: \(errorMessage ?? "nil")")
+            debugLog("PeopleGridView: View appeared, people count: \(people.count), isLoading: \(isLoading), errorMessage: \(errorMessage ?? "nil")")
             if people.isEmpty {
                 loadPeople()
             }
@@ -45,33 +45,33 @@ struct PeopleGridView: View {
     }
     
     private func loadPeople() {
-        print("PeopleGridView: loadPeople called - isAuthenticated: \(authService.isAuthenticated)")
+        debugLog("PeopleGridView: loadPeople called - isAuthenticated: \(authService.isAuthenticated)")
         guard authService.isAuthenticated else {
             errorMessage = "Not authenticated. Please check your credentials."
             return
         }
         
-        print("Loading people - isAuthenticated: \(authService.isAuthenticated), baseURL: \(authService.baseURL)")
+        debugLog("Loading people - isAuthenticated: \(authService.isAuthenticated), baseURL: \(authService.baseURL)")
         
         isLoading = true
         errorMessage = nil
-        print("PeopleGridView: Set loading state to true")
+        debugLog("PeopleGridView: Set loading state to true")
         
         Task {
             do {
                 let fetchedPeople = try await peopleService.getAllPeople()
-                print("Successfully fetched \(fetchedPeople.count) people")
+                debugLog("Successfully fetched \(fetchedPeople.count) people")
                 await MainActor.run {
                     self.people = fetchedPeople
                     self.isLoading = false
-                    print("PeopleGridView: Updated UI with \(self.people.count) people, isLoading: \(self.isLoading)")
+                    debugLog("PeopleGridView: Updated UI with \(self.people.count) people, isLoading: \(self.isLoading)")
                 }
             } catch {
-                print("Error fetching people: \(error)")
+                debugLog("Error fetching people: \(error)")
                 await MainActor.run {
                     self.errorMessage = error.localizedDescription
                     self.isLoading = false
-                    print("PeopleGridView: Set error state, isLoading: \(self.isLoading)")
+                    debugLog("PeopleGridView: Set error state, isLoading: \(self.isLoading)")
                 }
             }
         }

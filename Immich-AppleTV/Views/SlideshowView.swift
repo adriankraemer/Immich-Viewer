@@ -273,7 +273,7 @@ struct SlideshowView: View {
 
             // Prevent display from sleeping during slideshow
             UIApplication.shared.isIdleTimerDisabled = true
-            print("SlideshowView: Display sleep disabled")
+            debugLog("SlideshowView: Display sleep disabled")
 
             // Initialize slideshow (this will handle shared album detection)
             initializeSlideshow()
@@ -284,12 +284,12 @@ struct SlideshowView: View {
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             // Re-enable display sleep when app goes to background
             UIApplication.shared.isIdleTimerDisabled = false
-            print("SlideshowView: Display sleep re-enabled (app backgrounded)")
+            debugLog("SlideshowView: Display sleep re-enabled (app backgrounded)")
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             // Re-disable display sleep when app becomes active again (if slideshow is still running)
             UIApplication.shared.isIdleTimerDisabled = true
-            print("SlideshowView: Display sleep disabled (app foregrounded)")
+            debugLog("SlideshowView: Display sleep disabled (app foregrounded)")
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             // Update all settings if they changed
@@ -324,7 +324,7 @@ struct SlideshowView: View {
         .onTapGesture {
             // Re-enable display sleep before dismissing
             UIApplication.shared.isIdleTimerDisabled = false
-            print("SlideshowView: Display sleep re-enabled (tap dismiss)")
+            debugLog("SlideshowView: Display sleep re-enabled (tap dismiss)")
             dismiss()
         }
     }
@@ -344,12 +344,12 @@ struct SlideshowView: View {
         
         do {
             let album = try await albumService.getAlbumInfo(albumId: albumId, withoutAssets: true)
-            print("SlideshowView: Album info - shared: \(album.shared)")
+            debugLog("SlideshowView: Album info - shared: \(album.shared)")
             await MainActor.run {
                 self.isSharedAlbum = album.shared
             }
         } catch {
-            print("SlideshowView: Failed to get album info: \(error)")
+            debugLog("SlideshowView: Failed to get album info: \(error)")
             await MainActor.run {
                 self.isSharedAlbum = false
             }
@@ -370,7 +370,7 @@ struct SlideshowView: View {
 
         // Re-enable display sleep when slideshow ends
         UIApplication.shared.isIdleTimerDisabled = false
-        print("SlideshowView: Display sleep re-enabled")
+        debugLog("SlideshowView: Display sleep re-enabled")
 
         // Restart auto-slideshow timer when slideshow ends
         NotificationCenter.default.post(name: NSNotification.Name("restartAutoSlideshowTimer"), object: nil)
@@ -398,11 +398,11 @@ struct SlideshowView: View {
                 let actualStartingIndex = min(startingIndex, max(0, imageAssets.count - 1))
                 self.assetQueue = Array(imageAssets.dropFirst(actualStartingIndex))
                 self.hasMoreAssets = searchResult.nextPage != nil || (enableShuffle && !isSharedAlbum)
-                print("SlideshowView: Loaded \(imageAssets.count) assets, starting at index \(startingIndex)")
+                debugLog("SlideshowView: Loaded \(imageAssets.count) assets, starting at index \(startingIndex)")
             }
         } catch {
             await MainActor.run {
-                print("SlideshowView: Failed to load initial assets: \(error)")
+                debugLog("SlideshowView: Failed to load initial assets: \(error)")
                 self.isLoading = false
             }
         }
@@ -434,7 +434,7 @@ struct SlideshowView: View {
 
         do {
             guard let image = try await assetService.loadFullImage(asset: asset) else {
-                print("SlideshowView: loadFullImage returned nil for asset \(asset.id)")
+                debugLog("SlideshowView: loadFullImage returned nil for asset \(asset.id)")
                 return
             }
 
@@ -443,10 +443,10 @@ struct SlideshowView: View {
 
             await MainActor.run {
                 self.imageQueue.append((asset: asset, image: image, dominantColor: dominantColor))
-                print("SlideshowView: Loaded image for asset \(asset.id) into queue")
+                debugLog("SlideshowView: Loaded image for asset \(asset.id) into queue")
             }
         } catch {
-            print("SlideshowView: Failed to load image for asset \(asset.id): \(error)")
+            debugLog("SlideshowView: Failed to load image for asset \(asset.id): \(error)")
         }
     }
 
@@ -459,7 +459,7 @@ struct SlideshowView: View {
 
             // Move first image from queue to current
             guard !self.imageQueue.isEmpty else {
-                print("SlideshowView: No images in queue to show")
+                debugLog("SlideshowView: No images in queue to show")
                 self.isLoading = false
                 return
             }
@@ -520,15 +520,15 @@ struct SlideshowView: View {
     }
 
     private func nextImage() {
-        print("SlideshowView: nextImage() called")
+        debugLog("SlideshowView: nextImage() called")
 
         // Check if we have next image ready
         guard !imageQueue.isEmpty else {
-            print("SlideshowView: No more images in queue")
+            debugLog("SlideshowView: No more images in queue")
             return
         }
 
-        print("SlideshowView: Starting slide out animation")
+        debugLog("SlideshowView: Starting slide out animation")
         // Start slide out animation
         withAnimation(.easeInOut(duration: slideAnimationDuration)) {
             isTransitioning = true
@@ -541,7 +541,7 @@ struct SlideshowView: View {
 
             // Move next image from queue to current
             guard !self.imageQueue.isEmpty else {
-                print("SlideshowView: No more images in queue to advance")
+                debugLog("SlideshowView: No more images in queue to advance")
                 return
             }
             self.currentImageData = self.imageQueue.removeFirst()
@@ -572,7 +572,7 @@ struct SlideshowView: View {
                 await self.maintainImageQueue()
             }
 
-            print("SlideshowView: Advanced to next image, queue size: \(self.imageQueue.count)")
+            debugLog("SlideshowView: Advanced to next image, queue size: \(self.imageQueue.count)")
         }
     }
 
@@ -580,7 +580,7 @@ struct SlideshowView: View {
         stopAutoAdvance()
         // Start a one-shot timer after the image is loaded and visible
         autoAdvanceTimer = Timer.scheduledTimer(withTimeInterval: slideInterval, repeats: false) { _ in
-            print("SlideshowView: Timer fired - queue size: \(self.imageQueue.count)")
+            debugLog("SlideshowView: Timer fired - queue size: \(self.imageQueue.count)")
             self.nextImage()
         }
     }
@@ -651,7 +651,7 @@ struct SlideshowView: View {
         // Prevent multiple simultaneous loads
         let shouldLoad = await MainActor.run {
             guard !self.isLoadingAssets && self.hasMoreAssets else {
-                print("SlideshowView: Skipping asset load - already loading or no more assets")
+                debugLog("SlideshowView: Skipping asset load - already loading or no more assets")
                 return false
             }
             self.isLoadingAssets = true
@@ -681,11 +681,11 @@ struct SlideshowView: View {
                 self.assetQueue.append(contentsOf: imageAssets)
                 self.hasMoreAssets = searchResult.nextPage != nil || (enableShuffle && !isSharedAlbum)
                 self.isLoadingAssets = false
-                print("SlideshowView: Loaded \(imageAssets.count) more assets, total queue: \(self.assetQueue.count)")
+                debugLog("SlideshowView: Loaded \(imageAssets.count) more assets, total queue: \(self.assetQueue.count)")
             }
         } catch {
             await MainActor.run {
-                print("SlideshowView: Failed to load more assets: \(error)")
+                debugLog("SlideshowView: Failed to load more assets: \(error)")
                 self.isLoadingAssets = false
                 self.hasMoreAssets = enableShuffle && !isSharedAlbum // Keep trying for shuffle mode on non-shared albums
             }

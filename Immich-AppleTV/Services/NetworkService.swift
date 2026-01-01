@@ -25,7 +25,7 @@ class NetworkService: ObservableObject {
     // MARK: - Current User Credential Loading
     private func loadCurrentUserCredentials() {
         guard let userManager = userManager else {
-            print("NetworkService: No UserManager available")
+            debugLog("NetworkService: No UserManager available")
             return
         }
         
@@ -39,9 +39,9 @@ class NetworkService: ObservableObject {
                 self.currentAuthType = authType
             }
             
-            print("NetworkService: Loaded current user credentials - baseURL: \(serverURL), authType: \(authType)")
+            debugLog("NetworkService: Loaded current user credentials - baseURL: \(serverURL), authType: \(authType)")
         } else {
-            print("NetworkService: No current user credentials found")
+            debugLog("NetworkService: No current user credentials found")
             DispatchQueue.main.async {
                 self.baseURL = ""
                 self.accessToken = nil
@@ -62,7 +62,7 @@ class NetworkService: ObservableObject {
             self.accessToken = nil
             self.currentAuthType = .jwt
         }
-        print("NetworkService: Cleared all credentials")
+        debugLog("NetworkService: Cleared all credentials")
     }
     
     // MARK: - Network Requests
@@ -70,13 +70,13 @@ class NetworkService: ObservableObject {
     /// Builds an authenticated URLRequest with proper headers based on current auth type
     private func buildAuthenticatedRequest(endpoint: String, method: HTTPMethod = .GET, body: [String: Any]? = nil) throws -> URLRequest {
         guard let accessToken = accessToken, !baseURL.isEmpty else {
-            print("NetworkService: No access token or server URL available")
+            debugLog("NetworkService: No access token or server URL available")
             throw ImmichError.notAuthenticated
         }
         
         let urlString = "\(baseURL)\(endpoint)"
         guard let url = URL(string: urlString) else {
-            print("NetworkService: Invalid URL: \(urlString)")
+            debugLog("NetworkService: Invalid URL: \(urlString)")
             throw ImmichError.invalidURL
         }
         
@@ -102,17 +102,19 @@ class NetworkService: ObservableObject {
     /// Processes the HTTP response and handles status codes consistently
     private func processResponse(_ response: URLResponse, data: Data, context: String = "") throws -> Data {
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("NetworkService: Invalid HTTP response\(context.isEmpty ? "" : " in \(context)")")
+            debugLog("NetworkService: Invalid HTTP response\(context.isEmpty ? "" : " in \(context)")")
             throw ImmichError.networkError
         }
         
-        print("NetworkService: Response status code: \(httpResponse.statusCode)\(context.isEmpty ? "" : " (\(context))")")
+        debugLog("NetworkService: Response status code: \(httpResponse.statusCode)\(context.isEmpty ? "" : " (\(context))")")
         
         guard httpResponse.statusCode == 200 else {
-            print("NetworkService: HTTP error\(context.isEmpty ? "" : " in \(context)") with status \(httpResponse.statusCode)")
+            debugLog("NetworkService: HTTP error\(context.isEmpty ? "" : " in \(context)") with status \(httpResponse.statusCode)")
+            #if DEBUG
             if let responseString = String(data: data, encoding: .utf8) {
-                print("NetworkService: Response body: \(responseString)")
+                debugLog("NetworkService: Response body: \(responseString)")
             }
+            #endif
             
             // Classify HTTP status codes into appropriate ImmichError types
             switch httpResponse.statusCode {
@@ -139,13 +141,13 @@ class NetworkService: ObservableObject {
         responseType: T.Type
     ) async throws -> T {
         let request = try buildAuthenticatedRequest(endpoint: endpoint, method: method, body: body)
-        print("NetworkService: Making request to \(request.url?.absoluteString ?? endpoint)")
+        debugLog("NetworkService: Making request to \(request.url?.absoluteString ?? endpoint)")
         
         let (data, response): (Data, URLResponse)
         do {
             (data, response) = try await session.data(for: request)
         } catch {
-            print("NetworkService: Network error occurred: \(error)")
+            debugLog("NetworkService: Network error occurred: \(error)")
             // Handle network connectivity issues (timeouts, connection refused, DNS failures, etc.)
             throw ImmichError.networkError
         }
@@ -154,13 +156,15 @@ class NetworkService: ObservableObject {
         
         do {
             let result = try JSONDecoder().decode(responseType, from: validatedData)
-            print("NetworkService: Successfully decoded response")
+            debugLog("NetworkService: Successfully decoded response")
             return result
         } catch {
-            print("NetworkService: Failed to decode response: \(error)")
+            debugLog("NetworkService: Failed to decode response: \(error)")
+            #if DEBUG
             if let responseString = String(data: validatedData, encoding: .utf8) {
-                print("NetworkService: Raw response: \(responseString)")
+                debugLog("NetworkService: Raw response: \(responseString)")
             }
+            #endif
             throw error
         }
     }
@@ -175,7 +179,7 @@ class NetworkService: ObservableObject {
         do {
             (data, response) = try await session.data(for: request)
         } catch {
-            print("NetworkService: Network error occurred in makeDataRequest: \(error)")
+            debugLog("NetworkService: Network error occurred in makeDataRequest: \(error)")
             // Handle network connectivity issues (timeouts, connection refused, DNS failures, etc.)
             throw ImmichError.networkError
         }

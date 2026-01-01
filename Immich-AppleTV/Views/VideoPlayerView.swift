@@ -44,18 +44,18 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
         errorMessage = nil
         isReadyToPlay = false
         
-        print("🎬 Loading video for asset: \(asset.id)")
+        debugLog("🎬 Loading video for asset: \(asset.id)")
         
         Task {
             do {
                 let videoURL = try await assetService.loadVideoURL(asset: asset)
-                print("🎥 Video URL created: \(videoURL)")
+                debugLog("🎥 Video URL created: \(videoURL)")
                 
                 await MainActor.run {
                     self.setupPlayer(with: videoURL)
                 }
             } catch {
-                print("❌ Failed to load video: \(error)")
+                debugLog("❌ Failed to load video: \(error)")
                 await MainActor.run {
                     self.errorMessage = error.localizedDescription
                     self.isLoading = false
@@ -87,7 +87,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
                 DispatchQueue.main.async {
                     self?.isPlaybackBufferEmpty = bufferEmpty
                     if bufferEmpty {
-                        print("⚠️ Buffer is empty. Expect a hiccup on screen.")
+                        debugLog("⚠️ Buffer is empty. Expect a hiccup on screen.")
                     }
                 }
             }
@@ -98,7 +98,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
             .sink { [weak self] rate in
                 DispatchQueue.main.async {
                     self?.playbackRate = rate
-                    print("▶️ Playback rate: \(rate)")
+                    debugLog("▶️ Playback rate: \(rate)")
                 }
             }
             .store(in: &cancellables)
@@ -116,7 +116,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
         NotificationCenter.default.publisher(for: .AVPlayerItemPlaybackStalled, object: playerItem)
             .sink { [weak self] _ in
                 DispatchQueue.main.async {
-                    print("⚠️ Playback stalled. Possibly a slow connection.")
+                    debugLog("⚠️ Playback stalled. Possibly a slow connection.")
                     self?.errorMessage = "Playback stalled - check your connection"
                 }
             }
@@ -134,13 +134,13 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
         // Replace current item
         player.replaceCurrentItem(with: playerItem)
         
-        print("▶️ Video player setup completed")
+        debugLog("▶️ Video player setup completed")
     }
     
     private func handlePlayerItemStatusChange(_ status: AVPlayerItem.Status) {
         switch status {
         case .readyToPlay:
-            print("✅ Ready to play!")
+            debugLog("✅ Ready to play!")
             isReadyToPlay = true
             isLoading = false
             // Auto-play when ready after 4 seconds
@@ -148,11 +148,11 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
                 self?.player.play()
             }
         case .failed:
-            print("❌ Something went wrong with playback.")
+            debugLog("❌ Something went wrong with playback.")
             isLoading = false
             errorMessage = "Video failed to load"
         case .unknown:
-            print("⏳ Status changed: \(status.rawValue)")
+            debugLog("⏳ Status changed: \(status.rawValue)")
         @unknown default:
             break
         }
@@ -160,7 +160,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
     
     private func handlePlaybackFailure(_ notification: Notification) {
         if let error = notification.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error {
-            print("❌ Player item failed to play to end: \(error)")
+            debugLog("❌ Player item failed to play to end: \(error)")
             errorMessage = "Video playback failed: \(error.localizedDescription)"
             isLoading = false
         }
@@ -205,20 +205,19 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
         player = AVPlayer()
         playerItem = nil
         
-        print("🧹 Video player cleaned up")
+        debugLog("🧹 Video player cleaned up")
     }
     
     private func getVideoAuthHeaders() -> [String: String] {
         let headers = authenticationService.getAuthHeaders()
         
         if headers.isEmpty {
-            print("❌ Video auth: No access token available")
-            print("🔍 Auth service isAuthenticated: \(authenticationService.isAuthenticated)")
-            print("🔍 Current user: \(authenticationService.currentUser?.email ?? "nil")")
+            debugLog("❌ Video auth: No access token available")
+            debugLog("🔍 Auth service isAuthenticated: \(authenticationService.isAuthenticated)")
+            debugLog("🔍 Current user: \(authenticationService.currentUser?.email ?? "nil")")
         } else {
             let authType = headers.keys.contains("x-api-key") ? "API key" : "JWT token"
-            let token = headers.values.first ?? ""
-            print("✅ Video auth: Using \(authType)")
+            debugLog("✅ Video auth: Using \(authType)")
         }
         
         // Update cached headers
@@ -234,7 +233,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
     // MARK: - AVAssetResourceLoaderDelegate
     
     nonisolated func resourceLoader(_ resourceLoader: AVAssetResourceLoader, shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
-        print("🔐 Handling authentication request for video")
+        debugLog("🔐 Handling authentication request for video")
         
         guard let url = loadingRequest.request.url else {
             loadingRequest.finishLoading(with: NSError(domain: NSURLErrorDomain, code: NSURLErrorBadURL, userInfo: nil))
@@ -261,7 +260,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    print("❌ Video request failed: \(error)")
+                    debugLog("❌ Video request failed: \(error)")
                     loadingRequest.finishLoading(with: error)
                     return
                 }
@@ -272,7 +271,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
                     return
                 }
                 
-                print("📡 Video response status: \(response.statusCode)")
+                debugLog("📡 Video response status: \(response.statusCode)")
                 
                 if response.statusCode != 200 && response.statusCode != 206 {
                     let error = NSError(domain: NSURLErrorDomain, code: NSURLErrorBadServerResponse, userInfo: [NSLocalizedDescriptionKey: "Server returned status \(response.statusCode)"])
@@ -300,7 +299,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
                 
                 // Finish loading
                 loadingRequest.finishLoading()
-                print("✅ Video request completed successfully")
+                debugLog("✅ Video request completed successfully")
             }
         }
         
@@ -360,7 +359,7 @@ struct VideoPlayerView: View {
                 
                 // Optional: Show buffer status overlay
                 if playerManager.isPlaybackBufferEmpty {
-                    let _ = print(playerManager.isPlaybackBufferEmpty)
+                    let _ = debugLog("\(playerManager.isPlaybackBufferEmpty)")
                     VStack {
                         Spacer()
                         HStack {

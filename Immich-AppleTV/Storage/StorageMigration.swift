@@ -20,18 +20,18 @@ class StorageMigration {
         
         // Check if migration already completed
         if sharedDefaults.bool(forKey: migrationKey) {
-            print("StorageMigration: Token migration to Keychain already completed")
+            debugLog("StorageMigration: Token migration to Keychain already completed")
             return
         }
         
-        print("StorageMigration: Starting token migration from UserDefaults to Keychain...")
+        debugLog("StorageMigration: Starting token migration from UserDefaults to Keychain...")
         
         let userDefaultsStorage = UserDefaultsStorage()
         let keychainTokenStorage = KeychainTokenStorage()
         
         // Load all users to get their IDs for token migration
         let existingUsers = userDefaultsStorage.loadUsers()
-        print("StorageMigration: Found \(existingUsers.count) users, checking for tokens to migrate")
+        debugLog("StorageMigration: Found \(existingUsers.count) users, checking for tokens to migrate")
         
         var migratedTokens = 0
         var errors: [Error] = []
@@ -42,13 +42,13 @@ class StorageMigration {
                 if let token = userDefaultsStorage.getTokenForMigration(userId: user.id) {
                     try keychainTokenStorage.saveToken(token, forUserId: user.id)
                     migratedTokens += 1
-                    print("StorageMigration: Migrated token for user: \(user.email)")
+                    debugLog("StorageMigration: Migrated token for user: \(user.email)")
                 } else {
-                    print("StorageMigration: No token found for user: \(user.email)")
+                    debugLog("StorageMigration: No token found for user: \(user.email)")
                 }
                 
             } catch {
-                print("StorageMigration: Error migrating token for user \(user.email): \(error)")
+                debugLog("StorageMigration: Error migrating token for user \(user.email): \(error)")
                 errors.append(error)
             }
         }
@@ -62,7 +62,7 @@ class StorageMigration {
         }
         
         if verifiedTokens == migratedTokens {
-            print("StorageMigration: Token migration verification successful - \(verifiedTokens) tokens in Keychain")
+            debugLog("StorageMigration: Token migration verification successful - \(verifiedTokens) tokens in Keychain")
             
             // Clean up ALL UserDefaults tokens - TopShelf extension now uses Keychain
             let allKeys = sharedDefaults.dictionaryRepresentation().keys
@@ -70,29 +70,29 @@ class StorageMigration {
             
             for tokenKey in tokenKeys {
                 sharedDefaults.removeObject(forKey: tokenKey)
-                print("StorageMigration: Cleaned up UserDefaults token key: \(tokenKey)")
+                debugLog("StorageMigration: Cleaned up UserDefaults token key: \(tokenKey)")
             }
             
             if tokenKeys.count > 0 {
-                print("StorageMigration: Removed \(tokenKeys.count) UserDefaults tokens")
+                debugLog("StorageMigration: Removed \(tokenKeys.count) UserDefaults tokens")
             } else {
-                print("StorageMigration: No UserDefaults tokens found to clean up")
+                debugLog("StorageMigration: No UserDefaults tokens found to clean up")
             }
             
             // Mark migration as completed
             sharedDefaults.set(true, forKey: migrationKey)
-            print("StorageMigration: Token migration completed successfully - tokens now Keychain-only")
+            debugLog("StorageMigration: Token migration completed successfully - tokens now Keychain-only")
             
         } else {
-            print("StorageMigration: Token migration verification failed - expected \(migratedTokens), found \(verifiedTokens)")
+            debugLog("StorageMigration: Token migration verification failed - expected \(migratedTokens), found \(verifiedTokens)")
             // Don't throw here, allow partial migration
         }
         
         // Report results
-        print("StorageMigration: Final results - Tokens migrated: \(migratedTokens), Verified: \(verifiedTokens), Errors: \(errors.count)")
+        debugLog("StorageMigration: Final results - Tokens migrated: \(migratedTokens), Verified: \(verifiedTokens), Errors: \(errors.count)")
         
         if !errors.isEmpty {
-            print("StorageMigration: Encountered \(errors.count) errors during token migration")
+            debugLog("StorageMigration: Encountered \(errors.count) errors during token migration")
             // Don't throw here as partial migration might still be useful
         }
     }
@@ -103,11 +103,11 @@ class StorageMigration {
             // Always try to migrate tokens first (safe to call multiple times)
             try migrateTokensToKeychain()
             
-            print("StorageMigration: Using HybridUserStorage (UserDefaults + Keychain)")
+            debugLog("StorageMigration: Using HybridUserStorage (UserDefaults + Keychain)")
             return HybridUserStorage()
             
         } catch {
-            print("StorageMigration: Token migration failed, falling back to UserDefaults: \(error)")
+            debugLog("StorageMigration: Token migration failed, falling back to UserDefaults: \(error)")
             return UserDefaultsStorage()
         }
     }

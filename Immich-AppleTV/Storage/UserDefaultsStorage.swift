@@ -63,10 +63,11 @@ class UserDefaultsStorage: UserStorage {
         print("UserDefaultsStorage: Removed user with ID \(id)")
     }
     
-    // MARK: - Deprecated Token Methods (Migration Only)
+    // MARK: - Migration-Only Token Methods
     
-    @available(*, deprecated, message: "Token storage moved to Keychain. This method is only for migration.")
-    func getToken(forUserId id: String) -> String? {
+    /// Retrieves a token from UserDefaults for migration purposes only.
+    /// Tokens are now stored in Keychain; this method exists solely to support one-time migration.
+    func getTokenForMigration(userId id: String) -> String? {
         let key = "immich_token_\(id)"
         return userDefaults.string(forKey: key)
     }

@@ -39,7 +39,7 @@ class StorageMigration {
         for user in existingUsers {
             do {
                 // Only migrate token if it exists in UserDefaults
-                if let token = userDefaultsStorage.getToken(forUserId: user.id) {
+                if let token = userDefaultsStorage.getTokenForMigration(userId: user.id) {
                     try keychainTokenStorage.saveToken(token, forUserId: user.id)
                     migratedTokens += 1
                     print("StorageMigration: Migrated token for user: \(user.email)")

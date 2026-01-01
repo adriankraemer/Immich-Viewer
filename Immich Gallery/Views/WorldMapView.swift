@@ -160,6 +160,9 @@ struct ClusterAnnotationView: View {
     @ObservedObject private var thumbnailCache = ThumbnailCache.shared
     @State private var thumbnailImages: [String: UIImage] = [:]
     @State private var loadingAssets: Set<String> = []
+    @State private var previousZoomState: Bool?
+    @State private var loadingTasks: [String: Task<Void, Never>] = [:]
+    @State private var debounceTask: Task<Void, Never>?
     
     // Size configuration
     private let imageSize: CGFloat = 80
@@ -228,44 +231,100 @@ struct ClusterAnnotationView: View {
             }
         }
         .onAppear {
+            previousZoomState = isZoomedIn
             loadThumbnails()
         }
         .onChange(of: mapSpan.latitudeDelta) { _ in
-            // Reload thumbnails when zoom level changes
-            loadThumbnails()
+            handleZoomChange()
         }
         .onChange(of: mapSpan.longitudeDelta) { _ in
-            // Reload thumbnails when zoom level changes
-            loadThumbnails()
+            handleZoomChange()
+        }
+        .onDisappear {
+            // Cancel all loading tasks when view disappears
+            cancelAllLoading()
+        }
+    }
+    
+    private func handleZoomChange() {
+        // Cancel previous debounce task
+        debounceTask?.cancel()
+        
+        // Debounce the zoom change check
+        debounceTask = Task {
+            try? await Task.sleep(nanoseconds: 100_000_000) // 100ms debounce
+            
+            // Check if zoom state actually changed (crossed threshold)
+            let currentZoomState = isZoomedIn
+            if previousZoomState != currentZoomState {
+                previousZoomState = currentZoomState
+                // Only reload if display mode changed
+                loadThumbnails()
+            }
         }
     }
     
     private func loadThumbnails() {
-        for asset in displayAssets {
-            guard !loadingAssets.contains(asset.id) && thumbnailImages[asset.id] == nil else {
+        let assetsToLoad = displayAssets
+        
+        // Cancel loading for assets that are no longer needed
+        for (assetId, task) in loadingTasks {
+            if !assetsToLoad.contains(where: { $0.id == assetId }) {
+                task.cancel()
+                loadingTasks.removeValue(forKey: assetId)
+                loadingAssets.remove(assetId)
+            }
+        }
+        
+        // Load thumbnails for current display assets
+        for asset in assetsToLoad {
+            // Skip if already loaded or currently loading
+            guard thumbnailImages[asset.id] == nil && !loadingAssets.contains(asset.id) else {
                 continue
             }
             
             loadingAssets.insert(asset.id)
             
-            Task {
+            let task = Task {
                 do {
                     let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
                         return try await assetService.loadImage(assetId: asset.id, size: "thumbnail")
                     }
                     
+                    // Check if task was cancelled before updating UI
+                    try Task.checkCancellation()
+                    
                     await MainActor.run {
                         self.thumbnailImages[asset.id] = thumbnail
                         self.loadingAssets.remove(asset.id)
+                        self.loadingTasks.removeValue(forKey: asset.id)
+                    }
+                } catch is CancellationError {
+                    // Task was cancelled - clean up silently
+                    await MainActor.run {
+                        self.loadingAssets.remove(asset.id)
+                        self.loadingTasks.removeValue(forKey: asset.id)
                     }
                 } catch {
                     print("Failed to load thumbnail for asset \(asset.id): \(error)")
                     await MainActor.run {
                         self.loadingAssets.remove(asset.id)
+                        self.loadingTasks.removeValue(forKey: asset.id)
                     }
                 }
             }
+            
+            loadingTasks[asset.id] = task
         }
+    }
+    
+    private func cancelAllLoading() {
+        debounceTask?.cancel()
+        for task in loadingTasks.values {
+            task.cancel()
+        }
+        loadingTasks.removeAll()
+        loadingAssets.removeAll()
     }
 }
 
@@ -391,6 +450,7 @@ struct ClusterDetailView: View {
         authService: authService
     )
 }
+
 
 
 

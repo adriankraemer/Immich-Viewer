@@ -218,7 +218,7 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
         } else {
             let authType = headers.keys.contains("x-api-key") ? "API key" : "JWT token"
             let token = headers.values.first ?? ""
-            print("✅ Video auth: Using \(authType): \(String(token.prefix(20)))...")
+            print("✅ Video auth: Using \(authType)")
         }
         
         // Update cached headers

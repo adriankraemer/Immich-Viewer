@@ -8,7 +8,7 @@
 import Foundation
 
 struct AppConstants {
-    static let appGroupIdentifier = "group.com.sanketh.dev.Immich-Gallery"
+    static let appGroupIdentifier = "group.app.immich.photo"
 }
 
 struct UserDefaultsKeys {

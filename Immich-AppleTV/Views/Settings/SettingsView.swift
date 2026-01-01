@@ -209,6 +209,7 @@ struct SettingsView: View {
                             .foregroundColor(user.authType == .apiKey ? .orange : .blue)
                             .font(.title3)
                     }
+
                 }
                 .padding()
                 .background {
@@ -612,3 +613,4 @@ struct SettingsView: View {
     
     return SettingsView(authService: authService, userManager: userManager)
 }
+

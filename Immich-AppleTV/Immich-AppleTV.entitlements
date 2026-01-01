@@ -3,8 +3,12 @@
 <plist version="1.0">
 <dict>
 	<key>com.apple.security.application-groups</key>
-	<array/>
+	<array>
+		<string>group.immich.gallery</string>
+	</array>
 	<key>keychain-access-groups</key>
-	<array/>
+	<array>
+		<string>$(AppIdentifierPrefix)app.immich.photo</string>
+	</array>
 </dict>
 </plist>

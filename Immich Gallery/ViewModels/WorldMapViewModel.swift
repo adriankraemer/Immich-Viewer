@@ -17,20 +17,62 @@ enum PanDirection {
     case right
 }
 
+/// Loading state for progressive map data loading
+enum MapLoadingState: Equatable {
+    case idle
+    case loadingMarkers      // Initial fast load of lightweight markers
+    case loadingDetails      // Loading full asset details for visible region
+    case ready
+    case error(String)
+    
+    static func == (lhs: MapLoadingState, rhs: MapLoadingState) -> Bool {
+        switch (lhs, rhs) {
+        case (.idle, .idle), (.loadingMarkers, .loadingMarkers),
+             (.loadingDetails, .loadingDetails), (.ready, .ready):
+            return true
+        case (.error(let lhsMsg), .error(let rhsMsg)):
+            return lhsMsg == rhsMsg
+        default:
+            return false
+        }
+    }
+}
+
 @MainActor
 class WorldMapViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var clusters: [PhotoCluster] = []
-    @Published var isLoading = false
+    @Published var loadingState: MapLoadingState = .idle
     @Published var errorMessage: String?
     @Published var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
         span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 100.0)
     )
     @Published var selectedCluster: PhotoCluster?
+    @Published var loadingProgress: String = ""
+    
+    /// Computed property for backward compatibility
+    var isLoading: Bool {
+        switch loadingState {
+        case .loadingMarkers, .loadingDetails:
+            return true
+        default:
+            return false
+        }
+    }
     
     // MARK: - Private Properties
-    /// All clusters loaded from the server (never filtered)
+    
+    /// Spatial index for efficient marker lookups
+    private let spatialIndex = SpatialMarkerIndex()
+    
+    /// Lightweight clusters for fast initial rendering
+    private var lightweightClusters: [LightweightCluster] = []
+    
+    /// Cache of loaded assets by ID for detail views
+    private var assetCache: [String: ImmichAsset] = [:]
+    
+    /// All clusters with full data (populated progressively)
     private var allClusters: [PhotoCluster] = []
     
     /// All assets with location data (for re-clustering at different zoom levels)
@@ -46,8 +88,17 @@ class WorldMapViewModel: ObservableObject {
     /// If span is larger than this, show all clusters; otherwise filter by region
     private let overviewModeThreshold: Double = 50.0 // degrees
     
+    /// Minimum cluster radius in meters (100km as per requirement)
+    private let minimumClusterRadius: Double = 100_000
+    
     /// Cancellables for Combine subscriptions
     private var cancellables = Set<AnyCancellable>()
+    
+    /// Task for loading details (can be cancelled when region changes)
+    private var detailLoadingTask: Task<Void, Never>?
+    
+    /// Currently loaded region (to avoid redundant loads)
+    private var loadedRegion: MKCoordinateRegion?
     
     // MARK: - Dependencies
     private let mapService: MapService
@@ -61,30 +112,94 @@ class WorldMapViewModel: ObservableObject {
         // Watch for region changes to update visible clusters
         $region
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
-            .sink { [weak self] _ in
+            .sink { [weak self] newRegion in
                 Task { @MainActor [weak self] in
-                    // Don't update during initial load
                     guard let self = self, !self.isInitialLoad else { return }
-                    await self.updateVisibleClusters()
+                    await self.handleRegionChange(newRegion)
                 }
             }
             .store(in: &cancellables)
     }
     
     // MARK: - Public Methods
+    
+    /// Loads map data progressively - first lightweight markers, then details on demand
     func loadMapData() async {
-        guard !isLoading else { return }
+        guard loadingState != .loadingMarkers else { return }
         
-        isLoading = true
+        loadingState = .loadingMarkers
         isInitialLoad = true
         errorMessage = nil
+        loadingProgress = "Loading location data..."
+        
+        do {
+            // Phase 1: Load lightweight markers (fast)
+            let markers = try await mapService.fetchMapMarkers()
+            
+            guard !markers.isEmpty else {
+                loadingState = .ready
+                isInitialLoad = false
+                loadingProgress = ""
+                return
+            }
+            
+            loadingProgress = "Indexing \(markers.count) locations..."
+            
+            // Index markers for fast spatial queries
+            spatialIndex.index(markers: markers)
+            
+            // Phase 2: Create lightweight clusters with 100km minimum radius
+            loadingProgress = "Clustering locations..."
+            lightweightClusters = MapClusterer.clusterMarkers(markers, clusterRadius: minimumClusterRadius)
+            
+            // Convert to PhotoClusters with placeholder assets for display
+            clusters = lightweightClusters.map { lightweight in
+                // Create minimal placeholder assets for initial display
+                let placeholderAssets = lightweight.markerIds.prefix(5).map { markerId in
+                    createPlaceholderAsset(id: markerId, cluster: lightweight)
+                }
+                return PhotoCluster(from: lightweight, assets: placeholderAssets)
+            }
+            
+            allClusters = clusters
+            isOverviewMode = true
+            
+            // Update map region to show all clusters
+            if !clusters.isEmpty {
+                updateRegionToFitClusters()
+            }
+            
+            loadingState = .ready
+            isInitialLoad = false
+            loadingProgress = ""
+            
+            print("WorldMapViewModel: Loaded \(markers.count) markers into \(clusters.count) clusters")
+            
+        } catch {
+            errorMessage = error.localizedDescription
+            loadingState = .error(error.localizedDescription)
+            isInitialLoad = false
+            loadingProgress = ""
+        }
+    }
+    
+    /// Loads full asset data using the legacy method (for compatibility)
+    func loadFullMapData() async {
+        guard loadingState != .loadingMarkers else { return }
+        
+        loadingState = .loadingMarkers
+        isInitialLoad = true
+        errorMessage = nil
+        loadingProgress = "Loading all photo data..."
         
         do {
             let assets = try await mapService.fetchGeodata()
             allAssets = assets
             
-            // Initial clustering with default radius for overview
-            let photoClusters = MapClusterer.clusterPhotos(assets, clusterRadius: 50000)
+            loadingProgress = "Clustering \(assets.count) photos..."
+            
+            // Initial clustering with 100km minimum radius for overview
+            let photoClusters = MapClusterer.clusterPhotos(assets, clusterRadius: minimumClusterRadius)
             allClusters = photoClusters
             clusters = photoClusters
             isOverviewMode = true
@@ -94,16 +209,21 @@ class WorldMapViewModel: ObservableObject {
                 updateRegionToFitClusters()
             }
             
-            isLoading = false
+            loadingState = .ready
             isInitialLoad = false
+            loadingProgress = ""
         } catch {
             errorMessage = error.localizedDescription
-            isLoading = false
+            loadingState = .error(error.localizedDescription)
             isInitialLoad = false
+            loadingProgress = ""
         }
     }
     
     func refresh() async {
+        mapService.invalidateCache()
+        assetCache.removeAll()
+        loadedRegion = nil
         await loadMapData()
     }
     
@@ -121,8 +241,6 @@ class WorldMapViewModel: ObservableObject {
             center: region.center,
             span: MKCoordinateSpan(latitudeDelta: newLatDelta, longitudeDelta: newLonDelta)
         )
-        
-        // Update clusters when zooming in (will be handled by region change observer)
     }
     
     func zoomOut() {
@@ -134,8 +252,6 @@ class WorldMapViewModel: ObservableObject {
             center: region.center,
             span: MKCoordinateSpan(latitudeDelta: newLatDelta, longitudeDelta: newLonDelta)
         )
-        
-        // Update clusters when zooming out (will be handled by region change observer)
     }
     
     func pan(direction: PanDirection) {
@@ -152,13 +268,11 @@ class WorldMapViewModel: ObservableObject {
             newCenter.latitude = max(newCenter.latitude - latOffset, -85.0)
         case .left:
             newCenter.longitude = newCenter.longitude - lonOffset
-            // Handle longitude wrapping
             if newCenter.longitude < -180 {
                 newCenter.longitude += 360
             }
         case .right:
             newCenter.longitude = newCenter.longitude + lonOffset
-            // Handle longitude wrapping
             if newCenter.longitude > 180 {
                 newCenter.longitude -= 360
             }
@@ -172,31 +286,73 @@ class WorldMapViewModel: ObservableObject {
     
     // MARK: - Private Methods
     
-    /// Updates visible clusters based on current region and zoom level
-    private func updateVisibleClusters() async {
-        guard !allClusters.isEmpty else { return }
+    /// Handles region changes - updates clusters and loads details as needed
+    private func handleRegionChange(_ newRegion: MKCoordinateRegion) async {
+        // Cancel any pending detail loading
+        detailLoadingTask?.cancel()
         
-        let currentSpan = region.span
-        let isNowOverviewMode = currentSpan.latitudeDelta >= overviewModeThreshold || 
+        let currentSpan = newRegion.span
+        let isNowOverviewMode = currentSpan.latitudeDelta >= overviewModeThreshold ||
                                 currentSpan.longitudeDelta >= overviewModeThreshold
         
         // If we're in overview mode, show all clusters
         if isNowOverviewMode {
             if !isOverviewMode {
-                // Switching back to overview - use original clusters
                 clusters = allClusters
                 isOverviewMode = true
             }
             return
         }
         
-        // We're zoomed in - filter clusters by visible region and potentially re-cluster
+        // We're zoomed in - update clusters based on visible region
         isOverviewMode = false
         
-        // Calculate visible bounds
-        let visibleBounds = calculateVisibleBounds()
+        // Use spatial index for fast marker lookup
+        if !spatialIndex.isEmpty {
+            await updateClustersFromMarkers(in: newRegion)
+        } else if !allAssets.isEmpty {
+            await updateClustersFromAssets(in: newRegion)
+        }
+    }
+    
+    /// Updates clusters from lightweight markers (fast path)
+    private func updateClustersFromMarkers(in region: MKCoordinateRegion) async {
+        let visibleMarkers = spatialIndex.markers(in: region)
         
-        // Filter assets that are within visible region
+        // Calculate appropriate cluster radius for zoom level
+        let clusterRadius = MapClusterer.calculateClusterRadius(for: region.span)
+        
+        // Re-cluster visible markers
+        let visibleLightweightClusters = MapClusterer.clusterMarkers(visibleMarkers, clusterRadius: clusterRadius)
+        
+        // Convert to PhotoClusters
+        clusters = visibleLightweightClusters.map { lightweight in
+            // Check cache for any loaded assets
+            let cachedAssets = lightweight.markerIds.compactMap { assetCache[$0] }
+            
+            if !cachedAssets.isEmpty {
+                return PhotoCluster(from: lightweight, assets: cachedAssets)
+            } else {
+                // Use placeholder assets
+                let placeholderAssets = lightweight.markerIds.prefix(5).map { markerId in
+                    createPlaceholderAsset(id: markerId, cluster: lightweight)
+                }
+                return PhotoCluster(from: lightweight, assets: placeholderAssets)
+            }
+        }
+        
+        // Optionally load full asset details in background for zoomed-in views
+        if region.span.latitudeDelta < 10.0 && region.span.longitudeDelta < 10.0 {
+            detailLoadingTask = Task {
+                await loadDetailsForVisibleClusters(visibleLightweightClusters)
+            }
+        }
+    }
+    
+    /// Updates clusters from full assets (fallback path)
+    private func updateClustersFromAssets(in region: MKCoordinateRegion) async {
+        let visibleBounds = calculateVisibleBounds(for: region)
+        
         let visibleAssets = allAssets.filter { asset in
             guard let exifInfo = asset.exifInfo,
                   let latitude = exifInfo.latitude,
@@ -209,45 +365,125 @@ class WorldMapViewModel: ObservableObject {
             )
         }
         
-        // Determine cluster radius based on zoom level
-        // Smaller span = more zoomed in = smaller cluster radius
-        let clusterRadius = calculateClusterRadius(for: currentSpan)
-        
-        // Re-cluster visible assets with appropriate radius
-        let visibleClusters = MapClusterer.clusterPhotos(visibleAssets, clusterRadius: clusterRadius)
-        clusters = visibleClusters
+        let clusterRadius = MapClusterer.calculateClusterRadius(for: region.span)
+        clusters = MapClusterer.clusterPhotos(visibleAssets, clusterRadius: clusterRadius)
     }
     
-    /// Calculates the cluster radius based on current zoom level
-    private func calculateClusterRadius(for span: MKCoordinateSpan) -> Double {
-        // Use the average of lat/lon delta to determine zoom level
-        let avgSpan = (span.latitudeDelta + span.longitudeDelta) / 2
+    /// Loads full asset details for visible clusters (background task)
+    private func loadDetailsForVisibleClusters(_ lightweightClusters: [LightweightCluster]) async {
+        // Collect IDs that need loading (not in cache)
+        var idsToLoad: [String] = []
+        for cluster in lightweightClusters {
+            for markerId in cluster.markerIds {
+                if assetCache[markerId] == nil && !idsToLoad.contains(markerId) {
+                    idsToLoad.append(markerId)
+                }
+            }
+        }
         
-        // Convert degrees to approximate meters (1 degree ≈ 111km at equator)
-        let spanInMeters = avgSpan * 111000
+        guard !idsToLoad.isEmpty else { return }
         
-        // Cluster radius should be proportional to visible area
-        // At high zoom (small span), use smaller radius (e.g., 1-5km)
-        // At medium zoom, use medium radius (e.g., 10-20km)
-        // At low zoom (large span), use larger radius (e.g., 50km+)
+        // Limit to reasonable batch size
+        let limitedIds = Array(idsToLoad.prefix(200))
         
-        if avgSpan < 1.0 {
-            // Very zoomed in - use small clusters (1-2km)
-            return 2000
-        } else if avgSpan < 5.0 {
-            // Medium zoom - use medium clusters (5-10km)
-            return 10000
-        } else if avgSpan < 20.0 {
-            // Low zoom - use larger clusters (20-30km)
-            return 30000
-        } else {
-            // Very low zoom - use large clusters (50km)
-            return 50000
+        do {
+            loadingState = .loadingDetails
+            
+            let assets = try await mapService.fetchAssetsById(ids: limitedIds)
+            
+            // Check for cancellation
+            try Task.checkCancellation()
+            
+            // Update cache
+            for asset in assets {
+                assetCache[asset.id] = asset
+            }
+            
+            // Update clusters with loaded assets
+            clusters = lightweightClusters.map { lightweight in
+                let loadedAssets = lightweight.markerIds.compactMap { assetCache[$0] }
+                if !loadedAssets.isEmpty {
+                    return PhotoCluster(from: lightweight, assets: loadedAssets)
+                } else {
+                    let placeholderAssets = lightweight.markerIds.prefix(5).map { markerId in
+                        createPlaceholderAsset(id: markerId, cluster: lightweight)
+                    }
+                    return PhotoCluster(from: lightweight, assets: placeholderAssets)
+                }
+            }
+            
+            loadingState = .ready
+            
+        } catch is CancellationError {
+            // Task was cancelled - this is expected when region changes
+            loadingState = .ready
+        } catch {
+            print("WorldMapViewModel: Failed to load asset details: \(error)")
+            loadingState = .ready
         }
     }
     
+    /// Creates a placeholder asset for initial display before full data is loaded
+    private func createPlaceholderAsset(id: String, cluster: LightweightCluster) -> ImmichAsset {
+        let exifInfo = ExifInfo(
+            make: nil,
+            model: nil,
+            imageName: nil,
+            exifImageWidth: nil,
+            exifImageHeight: nil,
+            dateTimeOriginal: nil,
+            modifyDate: nil,
+            lensModel: nil,
+            fNumber: nil,
+            focalLength: nil,
+            iso: nil,
+            exposureTime: nil,
+            latitude: cluster.coordinate.latitude,
+            longitude: cluster.coordinate.longitude,
+            city: cluster.city,
+            state: cluster.state,
+            country: cluster.country,
+            timeZone: nil,
+            description: nil,
+            fileSizeInByte: nil,
+            orientation: nil,
+            projectionType: nil,
+            rating: nil
+        )
+        
+        return ImmichAsset(
+            id: id,
+            deviceAssetId: id,
+            deviceId: "",
+            ownerId: "",
+            libraryId: nil,
+            type: .image,
+            originalPath: "",
+            originalFileName: "",
+            originalMimeType: nil,
+            resized: nil,
+            thumbhash: nil,
+            fileModifiedAt: "",
+            fileCreatedAt: "",
+            localDateTime: "",
+            updatedAt: "",
+            isFavorite: false,
+            isArchived: false,
+            isOffline: false,
+            isTrashed: false,
+            checksum: "",
+            duration: nil,
+            hasMetadata: true,
+            livePhotoVideoId: nil,
+            people: [],
+            visibility: "timeline",
+            duplicateId: nil,
+            exifInfo: exifInfo
+        )
+    }
+    
     /// Calculates the visible bounds of the current map region
-    private func calculateVisibleBounds() -> (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double) {
+    private func calculateVisibleBounds(for region: MKCoordinateRegion) -> (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double) {
         let center = region.center
         let span = region.span
         
@@ -261,7 +497,6 @@ class WorldMapViewModel: ObservableObject {
     
     /// Checks if a coordinate is within the given bounds
     private func isCoordinateInBounds(_ coordinate: CLLocationCoordinate2D, bounds: (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double)) -> Bool {
-        // Handle longitude wrapping
         var lon = coordinate.longitude
         if lon < -180 {
             lon += 360
@@ -269,7 +504,6 @@ class WorldMapViewModel: ObservableObject {
             lon -= 360
         }
         
-        // Normalize bounds for longitude wrapping
         var minLon = bounds.minLon
         var maxLon = bounds.maxLon
         
@@ -285,13 +519,10 @@ class WorldMapViewModel: ObservableObject {
             maxLon -= 360
         }
         
-        // Check if coordinate is in bounds
         let latInBounds = coordinate.latitude >= bounds.minLat && coordinate.latitude <= bounds.maxLat
         
-        // Handle longitude wrapping case
         let lonInBounds: Bool
         if minLon > maxLon {
-            // Wraps around the date line
             lonInBounds = lon >= minLon || lon <= maxLon
         } else {
             lonInBounds = lon >= minLon && lon <= maxLon
@@ -302,7 +533,6 @@ class WorldMapViewModel: ObservableObject {
     
     func updateRegionToFitClusters() {
         guard !clusters.isEmpty else {
-            // Default world view if no clusters
             region = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
                 span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 180.0)
@@ -321,30 +551,24 @@ class WorldMapViewModel: ObservableObject {
         let centerLat = (minLat + maxLat) / 2
         let centerLon = (minLon + maxLon) / 2
         
-        // Calculate span with padding to show all clusters
         var latDelta = (maxLat - minLat) * 1.5
         var lonDelta = (maxLon - minLon) * 1.5
         
-        // Ensure minimum span values - use larger defaults to show more of the world
-        latDelta = max(latDelta, 100.0)  // Show more of the world by default
-        lonDelta = max(lonDelta, 180.0)   // Show entire world width
+        latDelta = max(latDelta, 100.0)
+        lonDelta = max(lonDelta, 180.0)
         
-        // Clamp to MapKit's maximum valid values
-        let maxLatDelta: Double = 90.0   // Half the globe
-        let maxLonDelta: Double = 180.0  // Half the globe
+        let maxLatDelta: Double = 90.0
+        let maxLonDelta: Double = 180.0
         
         latDelta = min(latDelta, maxLatDelta)
         lonDelta = min(lonDelta, maxLonDelta)
         
-        // Always use a world view that shows everything
-        // If clusters span a large area, use full world view
         if latDelta >= maxLatDelta * 0.8 || lonDelta >= maxLonDelta * 0.8 {
             region = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
                 span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 180.0)
             )
         } else {
-            // For smaller areas, still use a generous view but centered on clusters
             region = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon),
                 span: MKCoordinateSpan(latitudeDelta: max(latDelta, 100.0), longitudeDelta: max(lonDelta, 180.0))

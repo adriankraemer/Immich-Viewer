@@ -26,10 +26,20 @@ struct WorldMapView: View {
         ZStack {
             SharedGradientBackground()
             
-            if viewModel.isLoading {
-                ProgressView("Loading map data...")
-                    .foregroundColor(.white)
-                    .scaleEffect(1.5)
+            if case .loadingMarkers = viewModel.loadingState {
+                // Initial loading state with progress indicator
+                VStack(spacing: 20) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text("Loading map data...")
+                        .font(.title3)
+                        .foregroundColor(.white)
+                    if !viewModel.loadingProgress.isEmpty {
+                        Text(viewModel.loadingProgress)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                }
             } else if let errorMessage = viewModel.errorMessage {
                 VStack(spacing: 20) {
                     Image(systemName: "exclamationmark.triangle")
@@ -76,6 +86,29 @@ struct WorldMapView: View {
                     #if os(iOS) || os(macOS)
                     .mapStyle(.standard(elevation: .realistic))
                     #endif
+                    
+                    // Loading indicator for detail fetching
+                    if case .loadingDetails = viewModel.loadingState {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                HStack(spacing: 8) {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                    Text("Loading details...")
+                                        .font(.caption)
+                                        .foregroundColor(.white)
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.black.opacity(0.7))
+                                .cornerRadius(8)
+                                .padding(.trailing, 30)
+                                .padding(.top, 30)
+                            }
+                            Spacer()
+                        }
+                    }
                     
                     // Brief navigation legend
                     VStack {

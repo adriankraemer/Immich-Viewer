@@ -478,15 +478,11 @@ struct SettingsView: View {
                 if !newValue && defaultStartupTab == "albums" {
                     defaultStartupTab = "photos"
                 }
-                
-                NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
             }
             .onChange(of: showFoldersTab) { _, newValue in
                 if !newValue && defaultStartupTab == "folders" {
                     defaultStartupTab = "photos"
                 }
-                
-                NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
             }
             .onAppear {
                 userManager.loadUsers()

@@ -208,17 +208,15 @@ struct ContentView: View {
                         startInactivityTimer()
                     }
                     .onChange(of: showAlbumsTab) { _, enabled in
+                        // Only switch away if the tab is disabled AND user is currently on it
                         if !enabled && selectedTab == TabName.albums.rawValue {
                             selectedTab = TabName.photos.rawValue
-                        } else if enabled && defaultStartupTab == "albums" {
-                            selectedTab = TabName.albums.rawValue
                         }
                     }
                     .onChange(of: showFoldersTab) { _, enabled in
+                        // Only switch away if the tab is disabled AND user is currently on it
                         if !enabled && selectedTab == TabName.folders.rawValue {
                             selectedTab = TabName.photos.rawValue
-                        } else if enabled && defaultStartupTab == "folders" {
-                            selectedTab = TabName.folders.rawValue
                         }
                     }
                     .id(refreshTrigger) // Force refresh when user switches

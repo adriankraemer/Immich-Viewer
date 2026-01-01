@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "svgviewer-png-output-4.png",
+      "filename" : "icon.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "svgviewer-png-output-4 1.png",
+      "filename" : "icon@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "svgviewer-png-output-4 2.png",
+      "filename" : "icon@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

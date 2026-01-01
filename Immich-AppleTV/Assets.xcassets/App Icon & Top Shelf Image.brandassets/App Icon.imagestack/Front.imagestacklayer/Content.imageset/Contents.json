@@ -1,12 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "svgviewer-png-output-11.png",
+      "filename" : "icon-front.png",
       "idiom" : "tv",
       "scale" : "1x"
     },
     {
-      "filename" : "svgviewer-png-output-11 1.png",
+      "filename" : "icon-front@2x.png",
       "idiom" : "tv",
       "scale" : "2x"
     }

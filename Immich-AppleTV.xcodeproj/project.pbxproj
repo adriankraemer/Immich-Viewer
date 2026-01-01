@@ -78,13 +78,6 @@
 			);
 			target = 2F2862FC2E4971C90032B966 /* TopShelfExtension */;
 		};
-		2F766F112E3AEC6400AEF3B2 /* Exceptions for "Immich-AppleTV" folder in "Immich-AppleTV" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"svg-icon.svg",
-			);
-			target = 2F23BA6C2E1234C8005C563C /* Immich-AppleTV */;
-		};
 		2FDBDAF42E4AC9DB00344677 /* Exceptions for "Shared" folder in "TopShelfExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -98,7 +91,6 @@
 		2F23BA6F2E1234C8005C563C /* Immich-AppleTV */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				2F766F112E3AEC6400AEF3B2 /* Exceptions for "Immich-AppleTV" folder in "Immich-AppleTV" target */,
 				2F0443162E639D0C00BFB354 /* Exceptions for "Immich-AppleTV" folder in "TopShelfExtension" target */,
 			);
 			path = "Immich-AppleTV";

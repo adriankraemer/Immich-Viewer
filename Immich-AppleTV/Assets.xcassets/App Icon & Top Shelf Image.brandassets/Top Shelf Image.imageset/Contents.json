@@ -1,12 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "svgviewer-png-output-10.jpg",
+      "filename" : "topshelf.png",
       "idiom" : "tv",
       "scale" : "1x"
     },
     {
-      "filename" : "svgviewer-png-output-10 1.jpg",
+      "filename" : "topshelf@2x.png",
       "idiom" : "tv",
       "scale" : "2x"
     }

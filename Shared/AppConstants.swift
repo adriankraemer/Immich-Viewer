@@ -1,6 +1,6 @@
 //
 //  AppConstants.swift
-//  Immich Gallery
+//  Immich-AppleTV
 //
 //  Created by Adrian Kraemer on 2025-08-12.
 //

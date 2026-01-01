@@ -14,8 +14,6 @@ struct WorldMapView: View {
     @ObservedObject var authService: AuthenticationService
     
     @StateObject private var viewModel: WorldMapViewModel
-    @State private var selectedCluster: PhotoCluster?
-    @State private var showingClusterDetail = false
     
     init(mapService: MapService, assetService: AssetService, authService: AuthenticationService) {
         self.mapService = mapService
@@ -68,11 +66,11 @@ struct WorldMapView: View {
                 ZStack {
                     Map(coordinateRegion: $viewModel.region, annotationItems: viewModel.clusters) { cluster in
                         MapAnnotation(coordinate: cluster.coordinate) {
-                            ClusterAnnotationView(cluster: cluster, assetService: assetService)
-                                .onTapGesture {
-                                    selectedCluster = cluster
-                                    showingClusterDetail = true
-                                }
+                            ClusterAnnotationView(
+                                cluster: cluster,
+                                assetService: assetService,
+                                mapSpan: viewModel.region.span
+                            )
                         }
                     }
                     #if os(iOS) || os(macOS)
@@ -144,15 +142,6 @@ struct WorldMapView: View {
                 )
             }
         }
-        .fullScreenCover(isPresented: $showingClusterDetail) {
-            if let cluster = selectedCluster {
-                ClusterDetailView(
-                    cluster: cluster,
-                    assetService: assetService,
-                    authService: authService
-                )
-            }
-        }
         .onAppear {
             if viewModel.clusters.isEmpty {
                 Task {
@@ -167,58 +156,152 @@ struct WorldMapView: View {
 struct ClusterAnnotationView: View {
     let cluster: PhotoCluster
     @ObservedObject var assetService: AssetService
+    let mapSpan: MKCoordinateSpan
     @ObservedObject private var thumbnailCache = ThumbnailCache.shared
-    @State private var thumbnailImage: UIImage?
-    @State private var isLoading = true
+    @State private var thumbnailImages: [String: UIImage] = [:]
+    @State private var loadingAssets: Set<String> = []
+    
+    // Size configuration
+    private let imageSize: CGFloat = 80
+    private let maxDisplayCount = 5
+    private let spreadRadius: CGFloat = 45 // Distance from center for multiple images
+    
+    // Threshold for showing multiple images (smaller span = more zoomed in)
+    // Only show multiple images when span is less than 5 degrees (zoomed in)
+    private let multiImageZoomThreshold: Double = 5.0
+    
+    var isZoomedIn: Bool {
+        let avgSpan = (mapSpan.latitudeDelta + mapSpan.longitudeDelta) / 2
+        return avgSpan < multiImageZoomThreshold
+    }
+    
+    var displayAssets: [ImmichAsset] {
+        // Get unique assets (in case of duplicates)
+        var uniqueAssets: [ImmichAsset] = []
+        var seenIds: Set<String> = []
+        
+        for asset in cluster.assets {
+            if !seenIds.contains(asset.id) {
+                uniqueAssets.append(asset)
+                seenIds.insert(asset.id)
+            }
+        }
+        
+        // Only show multiple images when zoomed in
+        if isZoomedIn && uniqueAssets.count > 1 {
+            return Array(uniqueAssets.prefix(maxDisplayCount))
+        } else {
+            // When zoomed out or only one image, show just the first one
+            return Array(uniqueAssets.prefix(1))
+        }
+    }
+    
+    var body: some View {
+        ZStack {
+            if displayAssets.count == 1 {
+                // Single image - display centered
+                SingleImageView(
+                    asset: displayAssets[0],
+                    imageSize: imageSize,
+                    thumbnailImage: thumbnailImages[displayAssets[0].id],
+                    isLoading: loadingAssets.contains(displayAssets[0].id),
+                    thumbnailCache: thumbnailCache,
+                    assetService: assetService
+                )
+            } else {
+                // Multiple images - arrange in a circle
+                ForEach(Array(displayAssets.enumerated()), id: \.element.id) { index, asset in
+                    let angle = Double(index) * 2.0 * .pi / Double(displayAssets.count)
+                    let offsetX = cos(angle) * spreadRadius
+                    let offsetY = sin(angle) * spreadRadius
+                    
+                    SingleImageView(
+                        asset: asset,
+                        imageSize: imageSize,
+                        thumbnailImage: thumbnailImages[asset.id],
+                        isLoading: loadingAssets.contains(asset.id),
+                        thumbnailCache: thumbnailCache,
+                        assetService: assetService
+                    )
+                    .offset(x: offsetX, y: offsetY)
+                }
+            }
+        }
+        .onAppear {
+            loadThumbnails()
+        }
+        .onChange(of: mapSpan.latitudeDelta) { _ in
+            // Reload thumbnails when zoom level changes
+            loadThumbnails()
+        }
+        .onChange(of: mapSpan.longitudeDelta) { _ in
+            // Reload thumbnails when zoom level changes
+            loadThumbnails()
+        }
+    }
+    
+    private func loadThumbnails() {
+        for asset in displayAssets {
+            guard !loadingAssets.contains(asset.id) && thumbnailImages[asset.id] == nil else {
+                continue
+            }
+            
+            loadingAssets.insert(asset.id)
+            
+            Task {
+                do {
+                    let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
+                        return try await assetService.loadImage(assetId: asset.id, size: "thumbnail")
+                    }
+                    
+                    await MainActor.run {
+                        self.thumbnailImages[asset.id] = thumbnail
+                        self.loadingAssets.remove(asset.id)
+                    }
+                } catch {
+                    print("Failed to load thumbnail for asset \(asset.id): \(error)")
+                    await MainActor.run {
+                        self.loadingAssets.remove(asset.id)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Single Image View Component
+struct SingleImageView: View {
+    let asset: ImmichAsset
+    let imageSize: CGFloat
+    let thumbnailImage: UIImage?
+    let isLoading: Bool
+    @ObservedObject var thumbnailCache: ThumbnailCache
+    @ObservedObject var assetService: AssetService
     
     var body: some View {
         ZStack {
             Circle()
                 .fill(Color.blue.opacity(0.8))
-                .frame(width: 50, height: 50)
+                .frame(width: imageSize + 10, height: imageSize + 10)
             
             if isLoading {
                 ProgressView()
-                    .scaleEffect(0.5)
-                    .frame(width: 40, height: 40)
+                    .scaleEffect(0.6)
+                    .frame(width: imageSize, height: imageSize)
             } else if let image = thumbnailImage {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 40, height: 40)
+                    .frame(width: imageSize, height: imageSize)
                     .clipShape(Circle())
+                    .overlay(
+                        Circle()
+                            .stroke(Color.white, lineWidth: 2)
+                    )
             } else {
                 Image(systemName: "photo.stack")
                     .foregroundColor(.white)
-                    .frame(width: 40, height: 40)
-            }
-        }
-        .onAppear {
-            loadThumbnail()
-        }
-    }
-    
-    private func loadThumbnail() {
-        guard let asset = cluster.representativeAsset else {
-            isLoading = false
-            return
-        }
-        
-        Task {
-            do {
-                let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
-                    return try await assetService.loadImage(assetId: asset.id, size: "thumbnail")
-                }
-                
-                await MainActor.run {
-                    self.thumbnailImage = thumbnail
-                    self.isLoading = false
-                }
-            } catch {
-                print("Failed to load thumbnail for cluster: \(error)")
-                await MainActor.run {
-                    self.isLoading = false
-                }
+                    .frame(width: imageSize, height: imageSize)
             }
         }
     }

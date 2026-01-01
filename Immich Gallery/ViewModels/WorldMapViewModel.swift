@@ -29,6 +29,26 @@ class WorldMapViewModel: ObservableObject {
     )
     @Published var selectedCluster: PhotoCluster?
     
+    // MARK: - Private Properties
+    /// All clusters loaded from the server (never filtered)
+    private var allClusters: [PhotoCluster] = []
+    
+    /// All assets with location data (for re-clustering at different zoom levels)
+    private var allAssets: [ImmichAsset] = []
+    
+    /// Whether we're in overview mode (showing all clusters) or zoomed mode (filtered)
+    private var isOverviewMode: Bool = true
+    
+    /// Whether we're currently loading initial data (to prevent region updates during load)
+    private var isInitialLoad: Bool = false
+    
+    /// Threshold span to determine if we're in overview mode
+    /// If span is larger than this, show all clusters; otherwise filter by region
+    private let overviewModeThreshold: Double = 50.0 // degrees
+    
+    /// Cancellables for Combine subscriptions
+    private var cancellables = Set<AnyCancellable>()
+    
     // MARK: - Dependencies
     private let mapService: MapService
     private let assetService: AssetService
@@ -37,6 +57,18 @@ class WorldMapViewModel: ObservableObject {
     init(mapService: MapService, assetService: AssetService) {
         self.mapService = mapService
         self.assetService = assetService
+        
+        // Watch for region changes to update visible clusters
+        $region
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .sink { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    // Don't update during initial load
+                    guard let self = self, !self.isInitialLoad else { return }
+                    await self.updateVisibleClusters()
+                }
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Public Methods
@@ -44,14 +76,18 @@ class WorldMapViewModel: ObservableObject {
         guard !isLoading else { return }
         
         isLoading = true
+        isInitialLoad = true
         errorMessage = nil
         
         do {
             let assets = try await mapService.fetchGeodata()
+            allAssets = assets
             
-            // Cluster the photos
-            let photoClusters = MapClusterer.clusterPhotos(assets)
+            // Initial clustering with default radius for overview
+            let photoClusters = MapClusterer.clusterPhotos(assets, clusterRadius: 50000)
+            allClusters = photoClusters
             clusters = photoClusters
+            isOverviewMode = true
             
             // Update map region to show all clusters
             if !clusters.isEmpty {
@@ -59,9 +95,11 @@ class WorldMapViewModel: ObservableObject {
             }
             
             isLoading = false
+            isInitialLoad = false
         } catch {
             errorMessage = error.localizedDescription
             isLoading = false
+            isInitialLoad = false
         }
     }
     
@@ -83,6 +121,8 @@ class WorldMapViewModel: ObservableObject {
             center: region.center,
             span: MKCoordinateSpan(latitudeDelta: newLatDelta, longitudeDelta: newLonDelta)
         )
+        
+        // Update clusters when zooming in (will be handled by region change observer)
     }
     
     func zoomOut() {
@@ -94,6 +134,8 @@ class WorldMapViewModel: ObservableObject {
             center: region.center,
             span: MKCoordinateSpan(latitudeDelta: newLatDelta, longitudeDelta: newLonDelta)
         )
+        
+        // Update clusters when zooming out (will be handled by region change observer)
     }
     
     func pan(direction: PanDirection) {
@@ -129,6 +171,135 @@ class WorldMapViewModel: ObservableObject {
     }
     
     // MARK: - Private Methods
+    
+    /// Updates visible clusters based on current region and zoom level
+    private func updateVisibleClusters() async {
+        guard !allClusters.isEmpty else { return }
+        
+        let currentSpan = region.span
+        let isNowOverviewMode = currentSpan.latitudeDelta >= overviewModeThreshold || 
+                                currentSpan.longitudeDelta >= overviewModeThreshold
+        
+        // If we're in overview mode, show all clusters
+        if isNowOverviewMode {
+            if !isOverviewMode {
+                // Switching back to overview - use original clusters
+                clusters = allClusters
+                isOverviewMode = true
+            }
+            return
+        }
+        
+        // We're zoomed in - filter clusters by visible region and potentially re-cluster
+        isOverviewMode = false
+        
+        // Calculate visible bounds
+        let visibleBounds = calculateVisibleBounds()
+        
+        // Filter assets that are within visible region
+        let visibleAssets = allAssets.filter { asset in
+            guard let exifInfo = asset.exifInfo,
+                  let latitude = exifInfo.latitude,
+                  let longitude = exifInfo.longitude else {
+                return false
+            }
+            return isCoordinateInBounds(
+                CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+                bounds: visibleBounds
+            )
+        }
+        
+        // Determine cluster radius based on zoom level
+        // Smaller span = more zoomed in = smaller cluster radius
+        let clusterRadius = calculateClusterRadius(for: currentSpan)
+        
+        // Re-cluster visible assets with appropriate radius
+        let visibleClusters = MapClusterer.clusterPhotos(visibleAssets, clusterRadius: clusterRadius)
+        clusters = visibleClusters
+    }
+    
+    /// Calculates the cluster radius based on current zoom level
+    private func calculateClusterRadius(for span: MKCoordinateSpan) -> Double {
+        // Use the average of lat/lon delta to determine zoom level
+        let avgSpan = (span.latitudeDelta + span.longitudeDelta) / 2
+        
+        // Convert degrees to approximate meters (1 degree ≈ 111km at equator)
+        let spanInMeters = avgSpan * 111000
+        
+        // Cluster radius should be proportional to visible area
+        // At high zoom (small span), use smaller radius (e.g., 1-5km)
+        // At medium zoom, use medium radius (e.g., 10-20km)
+        // At low zoom (large span), use larger radius (e.g., 50km+)
+        
+        if avgSpan < 1.0 {
+            // Very zoomed in - use small clusters (1-2km)
+            return 2000
+        } else if avgSpan < 5.0 {
+            // Medium zoom - use medium clusters (5-10km)
+            return 10000
+        } else if avgSpan < 20.0 {
+            // Low zoom - use larger clusters (20-30km)
+            return 30000
+        } else {
+            // Very low zoom - use large clusters (50km)
+            return 50000
+        }
+    }
+    
+    /// Calculates the visible bounds of the current map region
+    private func calculateVisibleBounds() -> (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double) {
+        let center = region.center
+        let span = region.span
+        
+        let minLat = center.latitude - span.latitudeDelta / 2
+        let maxLat = center.latitude + span.latitudeDelta / 2
+        let minLon = center.longitude - span.longitudeDelta / 2
+        let maxLon = center.longitude + span.longitudeDelta / 2
+        
+        return (minLat, maxLat, minLon, maxLon)
+    }
+    
+    /// Checks if a coordinate is within the given bounds
+    private func isCoordinateInBounds(_ coordinate: CLLocationCoordinate2D, bounds: (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double)) -> Bool {
+        // Handle longitude wrapping
+        var lon = coordinate.longitude
+        if lon < -180 {
+            lon += 360
+        } else if lon > 180 {
+            lon -= 360
+        }
+        
+        // Normalize bounds for longitude wrapping
+        var minLon = bounds.minLon
+        var maxLon = bounds.maxLon
+        
+        if minLon < -180 {
+            minLon += 360
+        } else if minLon > 180 {
+            minLon -= 360
+        }
+        
+        if maxLon < -180 {
+            maxLon += 360
+        } else if maxLon > 180 {
+            maxLon -= 360
+        }
+        
+        // Check if coordinate is in bounds
+        let latInBounds = coordinate.latitude >= bounds.minLat && coordinate.latitude <= bounds.maxLat
+        
+        // Handle longitude wrapping case
+        let lonInBounds: Bool
+        if minLon > maxLon {
+            // Wraps around the date line
+            lonInBounds = lon >= minLon || lon <= maxLon
+        } else {
+            lonInBounds = lon >= minLon && lon <= maxLon
+        }
+        
+        return latInBounds && lonInBounds
+    }
+    
     func updateRegionToFitClusters() {
         guard !clusters.isEmpty else {
             // Default world view if no clusters

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 class ExploreService: ObservableObject {
     private let networkService: NetworkService
@@ -20,8 +21,19 @@ class ExploreService: ObservableObject {
     
     private let cacheValidityDuration: TimeInterval = 300 // 5 minutes
     
+    /// Cancellables for notification subscriptions
+    private var cancellables = Set<AnyCancellable>()
+    
     init(networkService: NetworkService) {
         self.networkService = networkService
+        
+        // Listen for user switch notifications to invalidate cache
+        NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))
+            .sink { [weak self] _ in
+                self?.invalidateCache()
+                print("ExploreService: Cache invalidated due to user switch")
+            }
+            .store(in: &cancellables)
     }
     
     /// Fetch lightweight location summaries using the map markers API (FAST)

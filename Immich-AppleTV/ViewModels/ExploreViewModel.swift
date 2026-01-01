@@ -45,6 +45,8 @@ class ExploreViewModel: ObservableObject {
     }
     
     func refresh() async {
+        // Clear existing data to show loading state
+        continents = []
         await loadExploreData()
     }
 }

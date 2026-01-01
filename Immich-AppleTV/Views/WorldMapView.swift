@@ -185,6 +185,12 @@ struct WorldMapView: View {
                 }
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))) { _ in
+            // Reset state and reload data when user switches
+            Task {
+                await viewModel.refresh()
+            }
+        }
     }
 }
 

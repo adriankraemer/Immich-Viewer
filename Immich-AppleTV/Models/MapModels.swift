@@ -158,6 +158,11 @@ class SpatialMarkerIndex {
     var isEmpty: Bool { allMarkers.isEmpty }
     var count: Int { allMarkers.count }
     
+    func clear() {
+        allMarkers.removeAll()
+        tileToMarkers.removeAll()
+    }
+    
     func index(markers: [MapMarker]) {
         allMarkers = markers
         tileToMarkers.removeAll()

@@ -231,6 +231,12 @@ class WorldMapViewModel: ObservableObject {
         mapService.invalidateCache()
         assetCache.removeAll()
         loadedRegion = nil
+        // Clear existing data to show loading state
+        clusters = []
+        allClusters = []
+        allAssets = []
+        lightweightClusters = []
+        spatialIndex.clear()
         await loadMapData()
     }
     

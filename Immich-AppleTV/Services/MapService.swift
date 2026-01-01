@@ -7,6 +7,7 @@
 
 import Foundation
 import MapKit
+import Combine
 
 class MapService: ObservableObject {
     private let networkService: NetworkService
@@ -16,8 +17,19 @@ class MapService: ObservableObject {
     private var markersCacheTime: Date?
     private let cacheValidityDuration: TimeInterval = 300 // 5 minutes
     
+    /// Cancellables for notification subscriptions
+    private var cancellables = Set<AnyCancellable>()
+    
     init(networkService: NetworkService) {
         self.networkService = networkService
+        
+        // Listen for user switch notifications to invalidate cache
+        NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))
+            .sink { [weak self] _ in
+                self?.invalidateCache()
+                print("MapService: Cache invalidated due to user switch")
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Lightweight Map Markers (Fast Initial Load)

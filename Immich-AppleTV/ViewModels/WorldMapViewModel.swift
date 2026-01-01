@@ -55,6 +55,9 @@ class WorldMapViewModel: ObservableObject {
     @Published var selectedCluster: PhotoCluster?
     @Published var loadingProgress: String = ""
     
+    /// Whether we have any location data at all (to distinguish "no data" from "zoomed into empty area")
+    var hasLocationData: Bool { !allClusters.isEmpty }
+    
     /// Computed property for backward compatibility
     var isLoading: Bool {
         switch loadingState {
@@ -235,6 +238,19 @@ class WorldMapViewModel: ObservableObject {
         selectedCluster = cluster
     }
     
+    /// Updates the region from camera changes (called by onMapCameraChange)
+    func updateRegionFromCamera(_ newRegion: MKCoordinateRegion) {
+        // Only update if there's a meaningful change to avoid feedback loops
+        let centerChanged = abs(region.center.latitude - newRegion.center.latitude) > 0.001 ||
+                           abs(region.center.longitude - newRegion.center.longitude) > 0.001
+        let spanChanged = abs(region.span.latitudeDelta - newRegion.span.latitudeDelta) > 0.01 ||
+                         abs(region.span.longitudeDelta - newRegion.span.longitudeDelta) > 0.01
+        
+        if centerChanged || spanChanged {
+            region = newRegion
+        }
+    }
+    
     // MARK: - Map Navigation Methods
     func zoomIn() {
         let currentSpan = region.span
@@ -328,6 +344,16 @@ class WorldMapViewModel: ObservableObject {
     /// Updates clusters from lightweight markers (fast path)
     private func updateClustersFromMarkers(in region: MKCoordinateRegion) async {
         let visibleMarkers = spatialIndex.markers(in: region)
+        
+        // If no markers in visible region, keep showing all clusters
+        // This prevents the map from appearing empty when panning to an area without photos
+        guard !visibleMarkers.isEmpty else {
+            // Keep current clusters visible, or show all if empty
+            if clusters.isEmpty {
+                clusters = allClusters
+            }
+            return
+        }
         
         // Calculate appropriate cluster radius for zoom level
         let clusterRadius = MapClusterer.calculateClusterRadius(for: region.span)

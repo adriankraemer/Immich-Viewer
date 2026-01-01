@@ -59,7 +59,7 @@ struct WorldMapView: View {
                     }
                     .buttonStyle(.borderedProminent)
                 }
-            } else if viewModel.clusters.isEmpty {
+            } else if viewModel.clusters.isEmpty && !viewModel.hasLocationData {
                 VStack(spacing: 20) {
                     Image(systemName: "map")
                         .font(.system(size: 60))
@@ -86,6 +86,9 @@ struct WorldMapView: View {
                         }
                     }
                     .mapStyle(.standard(elevation: .realistic))
+                    .onMapCameraChange { context in
+                        viewModel.updateRegionFromCamera(context.region)
+                    }
                     
                     // Loading indicator for detail fetching
                     if case .loadingDetails = viewModel.loadingState {

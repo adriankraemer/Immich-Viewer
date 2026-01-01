@@ -216,7 +216,7 @@ class ContentProvider: TVTopShelfContentProvider {
         
         print("TopShelf: enabled=\(isTopShelfEnabledFromDefaults), imageSelection=\(imageSelection)")
         
-        print("TopShelf: Credentials check - serverURL: \(serverURL), accessToken: \(accessToken != nil ? "✓" : "✗"), authType: \(authType?.rawValue ?? "nil")")
+        print("TopShelf: Credentials check - serverURL: \(serverURL ?? "nil"), accessToken: \(accessToken != nil ? "✓" : "✗"), authType: \(authType?.rawValue ?? "nil")")
         if let url = serverURL { print("TopShelf: Server URL: \(url)") }
         if let token = accessToken { 
             print("TopShelf: Access token: \(String(token.prefix(20)))... (length: \(token.count))")

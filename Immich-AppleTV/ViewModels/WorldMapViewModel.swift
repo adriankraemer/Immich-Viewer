@@ -48,6 +48,10 @@ class WorldMapViewModel: ObservableObject {
         center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
         span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 100.0)
     )
+    @Published var mapCameraPosition: MapCameraPosition = .region(MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
+        span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 100.0)
+    ))
     @Published var selectedCluster: PhotoCluster?
     @Published var loadingProgress: String = ""
     
@@ -237,10 +241,12 @@ class WorldMapViewModel: ObservableObject {
         let newLatDelta = max(currentSpan.latitudeDelta * 0.7, 0.1)
         let newLonDelta = max(currentSpan.longitudeDelta * 0.7, 0.1)
         
-        region = MKCoordinateRegion(
+        let newRegion = MKCoordinateRegion(
             center: region.center,
             span: MKCoordinateSpan(latitudeDelta: newLatDelta, longitudeDelta: newLonDelta)
         )
+        region = newRegion
+        mapCameraPosition = .region(newRegion)
     }
     
     func zoomOut() {
@@ -248,10 +254,12 @@ class WorldMapViewModel: ObservableObject {
         let newLatDelta = min(currentSpan.latitudeDelta * 2.0, 90.0)
         let newLonDelta = min(currentSpan.longitudeDelta * 2.0, 180.0)
         
-        region = MKCoordinateRegion(
+        let newRegion = MKCoordinateRegion(
             center: region.center,
             span: MKCoordinateSpan(latitudeDelta: newLatDelta, longitudeDelta: newLonDelta)
         )
+        region = newRegion
+        mapCameraPosition = .region(newRegion)
     }
     
     func pan(direction: PanDirection) {
@@ -278,10 +286,12 @@ class WorldMapViewModel: ObservableObject {
             }
         }
         
-        region = MKCoordinateRegion(
+        let newRegion = MKCoordinateRegion(
             center: newCenter,
             span: currentSpan
         )
+        region = newRegion
+        mapCameraPosition = .region(newRegion)
     }
     
     // MARK: - Private Methods
@@ -533,10 +543,12 @@ class WorldMapViewModel: ObservableObject {
     
     func updateRegionToFitClusters() {
         guard !clusters.isEmpty else {
-            region = MKCoordinateRegion(
+            let defaultRegion = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
                 span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 180.0)
             )
+            region = defaultRegion
+            mapCameraPosition = .region(defaultRegion)
             return
         }
         
@@ -563,17 +575,20 @@ class WorldMapViewModel: ObservableObject {
         latDelta = min(latDelta, maxLatDelta)
         lonDelta = min(lonDelta, maxLonDelta)
         
+        let newRegion: MKCoordinateRegion
         if latDelta >= maxLatDelta * 0.8 || lonDelta >= maxLonDelta * 0.8 {
-            region = MKCoordinateRegion(
+            newRegion = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
                 span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 180.0)
             )
         } else {
-            region = MKCoordinateRegion(
+            newRegion = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon),
                 span: MKCoordinateSpan(latitudeDelta: max(latDelta, 100.0), longitudeDelta: max(lonDelta, 180.0))
             )
         }
+        region = newRegion
+        mapCameraPosition = .region(newRegion)
     }
 }
 

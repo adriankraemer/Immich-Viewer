@@ -702,40 +702,6 @@ struct SlideshowView: View {
     UserDefaults.standard.set(true, forKey: "hideImageOverlay")
     UserDefaults.standard.set(true, forKey: "enableReflectionsInSlideshow")
     UserDefaults.standard.set(true, forKey: "enableKenBurnsEffect")
-    let (_, _, _, assetService, _, _, _, _) = MockServiceFactory.createMockServices()
-
-    // Create mock assets for preview
-    let mockAssets = [
-        ImmichAsset(
-            id: "mock-1",
-            deviceAssetId: "mock-device-1",
-            deviceId: "mock-device",
-            ownerId: "mock-owner",
-            libraryId: nil,
-            type: .image,
-            originalPath: "/mock/path1",
-            originalFileName: "mock1.jpg",
-            originalMimeType: "image/jpeg",
-            resized: false,
-            thumbhash: nil,
-            fileModifiedAt: "2023-01-01",
-            fileCreatedAt: "2023-01-01",
-            localDateTime: "2023-01-01",
-            updatedAt: "2023-01-01",
-            isFavorite: false,
-            isArchived: false,
-            isOffline: false,
-            isTrashed: false,
-            checksum: "mock-checksum-1",
-            duration: nil,
-            hasMetadata: false,
-            livePhotoVideoId: nil,
-            people: [],
-            visibility: "public",
-            duplicateId: nil,
-            exifInfo: nil
-        )
-    ]
-
-     return SlideshowView(albumId: nil, personId: nil, tagId: nil, city: nil, startingIndex: 0, isFavorite: false)
+    
+    return SlideshowView(albumId: nil, personId: nil, tagId: nil, city: nil, startingIndex: 0, isFavorite: false)
 }

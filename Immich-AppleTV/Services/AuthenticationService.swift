@@ -8,6 +8,7 @@
 import Foundation
 
 /// Service responsible for authentication and user management
+@MainActor
 class AuthenticationService: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: Owner?
@@ -56,7 +57,7 @@ class AuthenticationService: ObservableObject {
     func signIn(serverURL: String, email: String, password: String, completion: @escaping (Bool, String?) -> Void) {
         Task {
             do {
-                let token = try await userManager.authenticateWithCredentials(
+                _ = try await userManager.authenticateWithCredentials(
                     serverURL: serverURL,
                     email: email,
                     password: password
@@ -104,7 +105,7 @@ class AuthenticationService: ObservableObject {
     func signInWithApiKey(serverURL: String, email: String, apiKey: String, completion: @escaping (Bool, String?) -> Void) {
         Task {
             do {
-                let token = try await userManager.authenticateWithApiKey(
+                _ = try await userManager.authenticateWithApiKey(
                     serverURL: serverURL,
                     email: email,
                     apiKey: apiKey
@@ -197,7 +198,7 @@ class AuthenticationService: ObservableObject {
     }
     
     func switchUser(_ user: SavedUser) async throws {
-        let token = try await userManager.switchToUser(user)
+        _ = try await userManager.switchToUser(user)
         
         // Update network service with current user credentials
         networkService.updateCredentialsFromCurrentUser()
@@ -254,10 +255,8 @@ class AuthenticationService: ObservableObject {
             avatarColor: user.avatarColor
         )
         
-        DispatchQueue.main.async {
-            print("AuthenticationService: Updating currentUser to \(owner.email)")
-            self.currentUser = owner
-        }
+        print("AuthenticationService: Updating currentUser to \(owner.email)")
+        self.currentUser = owner
     }
     
     private func validateTokenIfNeeded() {
@@ -266,7 +265,7 @@ class AuthenticationService: ObservableObject {
             return 
         }
         
-        Task {
+        Task { @MainActor in
             do {
                 try await fetchUserInfo()
                 print("AuthenticationService: Token validation successful")
@@ -275,16 +274,12 @@ class AuthenticationService: ObservableObject {
                 
                 if error.shouldLogout {
                     print("AuthenticationService: Logging out user due to authentication error: \(error)")
-                    DispatchQueue.main.async {
-                        self.signOut()
-                           Task {
-            if let bundleID = Bundle.main.bundleIdentifier {
-                print("removing all shared data")
-                UserDefaults.standard.removePersistentDomain(forName: bundleID)
-                UserDefaults.standard.removePersistentDomain(forName: AppConstants.appGroupIdentifier)
-                UserDefaults.standard.synchronize()
-            }
-          }
+                    self.signOut()
+                    if let bundleID = Bundle.main.bundleIdentifier {
+                        print("removing all shared data")
+                        UserDefaults.standard.removePersistentDomain(forName: bundleID)
+                        UserDefaults.standard.removePersistentDomain(forName: AppConstants.appGroupIdentifier)
+                        UserDefaults.standard.synchronize()
                     }
                 } else {
                     print("AuthenticationService: Preserving authentication state despite error: \(error)")

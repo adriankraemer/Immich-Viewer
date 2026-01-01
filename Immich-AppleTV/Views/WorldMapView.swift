@@ -74,18 +74,18 @@ struct WorldMapView: View {
                 }
             } else {
                 ZStack {
-                    Map(coordinateRegion: $viewModel.region, annotationItems: viewModel.clusters) { cluster in
-                        MapAnnotation(coordinate: cluster.coordinate) {
-                            ClusterAnnotationView(
-                                cluster: cluster,
-                                assetService: assetService,
-                                mapSpan: viewModel.region.span
-                            )
+                    Map(position: $viewModel.mapCameraPosition) {
+                        ForEach(viewModel.clusters) { cluster in
+                            Annotation("", coordinate: cluster.coordinate) {
+                                ClusterAnnotationView(
+                                    cluster: cluster,
+                                    assetService: assetService,
+                                    mapSpan: viewModel.region.span
+                                )
+                            }
                         }
                     }
-                    #if os(iOS) || os(macOS)
                     .mapStyle(.standard(elevation: .realistic))
-                    #endif
                     
                     // Loading indicator for detail fetching
                     if case .loadingDetails = viewModel.loadingState {
@@ -298,10 +298,10 @@ struct ClusterAnnotationView: View {
             previousZoomState = isZoomedIn
             loadThumbnails()
         }
-        .onChange(of: mapSpan.latitudeDelta) { _ in
+        .onChange(of: mapSpan.latitudeDelta) {
             handleZoomChange()
         }
-        .onChange(of: mapSpan.longitudeDelta) { _ in
+        .onChange(of: mapSpan.longitudeDelta) {
             handleZoomChange()
         }
         .onDisappear {

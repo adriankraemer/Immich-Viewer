@@ -613,7 +613,6 @@ struct SettingsView: View {
     
     let networkService = NetworkService(userManager: userManager)
     let authService = AuthenticationService(networkService: networkService, userManager: userManager)
-    let assetService = AssetService(networkService: networkService)
     
     return SettingsView(authService: authService, userManager: userManager)
 }

@@ -32,7 +32,7 @@ struct ContinentDetailView: View {
                     isLoading: viewModel.isLoading,
                     errorMessage: viewModel.errorMessage,
                     onItemSelected: { country in
-                        selectedCountry = country as? Country
+                        selectedCountry = country
                     },
                     onRetry: {
                         Task {

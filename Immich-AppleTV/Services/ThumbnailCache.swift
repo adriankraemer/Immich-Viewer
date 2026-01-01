@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 
+@MainActor
 class ThumbnailCache: NSObject, ObservableObject {
     static let shared = ThumbnailCache()
     
@@ -83,10 +84,8 @@ class ThumbnailCache: NSObject, ObservableObject {
             memoryCache.setObject(cachedImage, forKey: cacheKey as NSString, cost: cachedImage.size)
             
             // Update memory cache statistics
-            DispatchQueue.main.async {
-                self.memoryCacheSize += cachedImage.size
-                self.memoryCacheCount += 1
-            }
+            self.memoryCacheSize += cachedImage.size
+            self.memoryCacheCount += 1
             return diskImage
         }
         
@@ -105,8 +104,8 @@ class ThumbnailCache: NSObject, ObservableObject {
     }
     
     /// Preload thumbnails for better performance
-    func preloadThumbnails(for assets: [ImmichAsset], size: String = "thumbnail") {
-        Task {
+    nonisolated func preloadThumbnails(for assets: [ImmichAsset], size: String = "thumbnail") {
+        Task { @MainActor in
             for asset in assets {
                 let cacheKey = cacheKey(for: asset.id, size: size)
                 
@@ -120,17 +119,10 @@ class ThumbnailCache: NSObject, ObservableObject {
                     continue
                 }
                 
-                // Preload in background
-                Task.detached(priority: .background) {
-                    do {
-                        // This will be implemented to call the actual server loading
-                        // For now, we'll just check if it's already cached
-                        if await self.isCachedOnDisk(cacheKey: cacheKey) {
-                            return
-                        }
-                    } catch {
-                        print("Failed to preload thumbnail for asset \(asset.id): \(error)")
-                    }
+                // Preload in background - just check if cached, actual loading happens elsewhere
+                let isCached = await isCachedOnDisk(cacheKey: cacheKey)
+                if !isCached {
+                    print("Asset \(asset.id) not cached, will be loaded on demand")
                 }
             }
         }
@@ -142,32 +134,30 @@ class ThumbnailCache: NSObject, ObservableObject {
         memoryCache.removeAllObjects()
         
         // Reset memory cache statistics
-        DispatchQueue.main.async {
-            self.memoryCacheSize = 0
-            self.memoryCacheCount = 0
-        }
+        self.memoryCacheSize = 0
+        self.memoryCacheCount = 0
         
         // Clear disk cache
+        let cacheDir = self.cacheDirectory
         diskCacheQueue.async {
-            try? FileManager.default.removeItem(at: self.cacheDirectory)
-            try? FileManager.default.createDirectory(at: self.cacheDirectory, withIntermediateDirectories: true)
-            self.calculateDiskCacheSize()
+            try? FileManager.default.removeItem(at: cacheDir)
+            try? FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
         }
         
         // Force refresh statistics
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 500_000_000)
             self.refreshCacheStatistics()
         }
     }
     
     /// Clear expired cache entries
     func clearExpiredCache() {
-        diskCacheQueue.async {
-            self.removeExpiredCacheEntries()
-        }
+        removeExpiredCacheEntries()
         
         // Force refresh statistics after clearing
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 500_000_000)
             self.refreshCacheStatistics()
         }
     }
@@ -193,22 +183,22 @@ class ThumbnailCache: NSObject, ObservableObject {
         memoryCache.setObject(cachedImage, forKey: cacheKey as NSString, cost: cachedImage.size)
         
         // Update memory cache statistics
-        DispatchQueue.main.async {
-            self.memoryCacheSize += cachedImage.size
-            self.memoryCacheCount += 1
-        }
+        self.memoryCacheSize += cachedImage.size
+        self.memoryCacheCount += 1
         
         // Store on disk
         await storeOnDisk(imageData: imageData, cacheKey: cacheKey)
     }
     
-    private func loadFromDisk(cacheKey: String) async -> UIImage? {
+    private nonisolated func loadFromDisk(cacheKey: String) async -> UIImage? {
         return await withCheckedContinuation { (continuation: CheckedContinuation<UIImage?, Never>) in
-            diskCacheQueue.async {
+            diskCacheQueue.async { [cacheDirectory] in
                 // Ensure directory exists before checking for files
-                self.ensureCacheDirectoryExists()
+                if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
+                    try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
+                }
                 
-                let fileURL = self.cacheDirectory.appendingPathComponent(cacheKey)
+                let fileURL = cacheDirectory.appendingPathComponent(cacheKey)
                 
                 guard FileManager.default.fileExists(atPath: fileURL.path),
                       let imageData = try? Data(contentsOf: fileURL),
@@ -222,29 +212,50 @@ class ThumbnailCache: NSObject, ObservableObject {
         }
     }
     
-    private func storeOnDisk(imageData: Data, cacheKey: String) async {
+    private nonisolated func storeOnDisk(imageData: Data, cacheKey: String) async {
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            diskCacheQueue.async {
+            diskCacheQueue.async { [cacheDirectory, maxDiskCacheSize] in
                 // Ensure directory exists before writing
-                self.ensureCacheDirectoryExists()
+                if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
+                    try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
+                }
                 
-                let fileURL = self.cacheDirectory.appendingPathComponent(cacheKey)
+                let fileURL = cacheDirectory.appendingPathComponent(cacheKey)
                 
                 // Check if directory exists and is writable
-                let directoryExists = FileManager.default.fileExists(atPath: self.cacheDirectory.path)
-                let isWritable = FileManager.default.isWritableFile(atPath: self.cacheDirectory.path)
+                let directoryExists = FileManager.default.fileExists(atPath: cacheDirectory.path)
+                let isWritable = FileManager.default.isWritableFile(atPath: cacheDirectory.path)
                 print("📁 Directory exists: \(directoryExists), writable: \(isWritable)")
                 print("📁 Writing to: \(fileURL.path)")
                 
                 do {
                     try imageData.write(to: fileURL)
                     print("✅ Cached thumbnail to disk: \(cacheKey) (\(imageData.count) bytes)")
-                    print("📊 Cache directory now contains: \(try? FileManager.default.contentsOfDirectory(at: self.cacheDirectory, includingPropertiesForKeys: nil).count ?? 0) files")
-                    self.calculateDiskCacheSize()
+                    let fileCount = (try? FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil).count) ?? 0
+                    print("📊 Cache directory now contains: \(fileCount) files")
                     
-                    // Check if we need to clean up old files
-                    if self.diskCacheSize > self.maxDiskCacheSize {
-                        self.cleanupDiskCache()
+                    // Calculate current disk size and cleanup if needed
+                    let fileURLs = try? FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: [.fileSizeKey])
+                    let totalSize = fileURLs?.reduce(0) { total, url in
+                        let fileSize = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                        return total + fileSize
+                    } ?? 0
+                    
+                    if totalSize > maxDiskCacheSize {
+                        // Cleanup old files
+                        if let sortedFiles = fileURLs?.sorted(by: { url1, url2 in
+                            let date1 = (try? url1.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
+                            let date2 = (try? url2.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
+                            return date1 < date2
+                        }) {
+                            var currentSize = totalSize
+                            for fileURL in sortedFiles {
+                                if currentSize <= maxDiskCacheSize { break }
+                                let fileSize = (try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                                try? FileManager.default.removeItem(at: fileURL)
+                                currentSize -= fileSize
+                            }
+                        }
                     }
                 } catch {
                     print("❌ Failed to store thumbnail on disk: \(error)")
@@ -256,13 +267,15 @@ class ThumbnailCache: NSObject, ObservableObject {
         }
     }
     
-    private func isCachedOnDisk(cacheKey: String) async -> Bool {
+    private nonisolated func isCachedOnDisk(cacheKey: String) async -> Bool {
         return await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
-            diskCacheQueue.async {
+            diskCacheQueue.async { [cacheDirectory] in
                 // Ensure directory exists before checking for files
-                self.ensureCacheDirectoryExists()
+                if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
+                    try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
+                }
                 
-                let fileURL = self.cacheDirectory.appendingPathComponent(cacheKey)
+                let fileURL = cacheDirectory.appendingPathComponent(cacheKey)
                 let exists = FileManager.default.fileExists(atPath: fileURL.path)
                 continuation.resume(returning: exists)
             }
@@ -270,96 +283,98 @@ class ThumbnailCache: NSObject, ObservableObject {
     }
     
     private func calculateDiskCacheSize() {
-        do {
-            let fileURLs = try FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: [.fileSizeKey])
-            let totalSize = fileURLs.reduce(0) { total, url in
-                let fileSize = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-                return total + fileSize
+        let cacheDir = cacheDirectory
+        Task.detached { @MainActor [weak self] in
+            do {
+                let fileURLs = try FileManager.default.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: [.fileSizeKey])
+                let totalSize = fileURLs.reduce(0) { total, url in
+                    let fileSize = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                    return total + fileSize
+                }
+                
+                print("📊 Disk cache calculation: \(fileURLs.count) files, \(totalSize) bytes")
+                print("📊 Cache directory: \(cacheDir.path)")
+                
+                self?.diskCacheSize = totalSize
+                print("📊 Updated disk cache size: \(totalSize) bytes")
+            } catch {
+                print("❌ Failed to calculate disk cache size: \(error)")
+                print("❌ Cache directory: \(cacheDir.path)")
+                print("❌ Error details: \(error.localizedDescription)")
             }
-            
-            print("📊 Disk cache calculation: \(fileURLs.count) files, \(totalSize) bytes")
-            print("📊 Cache directory: \(cacheDirectory.path)")
-            
-            DispatchQueue.main.async {
-                self.diskCacheSize = totalSize
-                print("📊 Updated disk cache size: \(self.diskCacheSize) bytes")
-            }
-        } catch {
-            print("❌ Failed to calculate disk cache size: \(error)")
-            print("❌ Cache directory: \(cacheDirectory.path)")
-            print("❌ Error details: \(error.localizedDescription)")
         }
     }
     
     private func cleanupDiskCache() {
-        do {
-            let fileURLs = try FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: [.fileSizeKey, .creationDateKey])
-            
-            // Sort files by creation date (oldest first)
-            let sortedFiles = fileURLs.sorted { url1, url2 in
-                let date1 = (try? url1.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
-                let date2 = (try? url2.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
-                return date1 < date2
-            }
-            
-            var currentSize = diskCacheSize
-            
-            for fileURL in sortedFiles {
-                if currentSize <= maxDiskCacheSize {
-                    break
+        let cacheDir = cacheDirectory
+        let maxSize = maxDiskCacheSize
+        let currentDiskSize = diskCacheSize
+        
+        Task.detached { @MainActor [weak self] in
+            do {
+                let fileURLs = try FileManager.default.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: [.fileSizeKey, .creationDateKey])
+                
+                // Sort files by creation date (oldest first)
+                let sortedFiles = fileURLs.sorted { url1, url2 in
+                    let date1 = (try? url1.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
+                    let date2 = (try? url2.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
+                    return date1 < date2
                 }
                 
-                let fileSize = (try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-                try? FileManager.default.removeItem(at: fileURL)
-                currentSize -= fileSize
+                var currentSize = currentDiskSize
+                
+                for fileURL in sortedFiles {
+                    if currentSize <= maxSize {
+                        break
+                    }
+                    
+                    let fileSize = (try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                    try? FileManager.default.removeItem(at: fileURL)
+                    currentSize -= fileSize
+                }
+                
+                self?.diskCacheSize = currentSize
+            } catch {
+                print("Failed to cleanup disk cache: \(error)")
             }
-            
-            DispatchQueue.main.async {
-                self.diskCacheSize = currentSize
-            }
-        } catch {
-            print("Failed to cleanup disk cache: \(error)")
         }
     }
     
     private func removeExpiredCacheEntries() {
         let expirationDate = Date().addingTimeInterval(-7 * 24 * 60 * 60) // 7 days
+        let cacheDir = cacheDirectory
         
-        do {
-            let fileURLs = try FileManager.default.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: [.creationDateKey])
-            
-            for fileURL in fileURLs {
-                if let creationDate = try? fileURL.resourceValues(forKeys: [.creationDateKey]).creationDate,
-                   creationDate < expirationDate {
-                    try? FileManager.default.removeItem(at: fileURL)
+        Task.detached {
+            do {
+                let fileURLs = try FileManager.default.contentsOfDirectory(at: cacheDir, includingPropertiesForKeys: [.creationDateKey])
+                
+                for fileURL in fileURLs {
+                    if let creationDate = try? fileURL.resourceValues(forKeys: [.creationDateKey]).creationDate,
+                       creationDate < expirationDate {
+                        try? FileManager.default.removeItem(at: fileURL)
+                    }
                 }
+            } catch {
+                print("Failed to remove expired cache entries: \(error)")
             }
-            
-            calculateDiskCacheSize()
-        } catch {
-            print("Failed to remove expired cache entries: \(error)")
         }
+        
+        calculateDiskCacheSize()
     }
     
     private func updateMemoryCacheStatistics() {
-        // Calculate actual memory cache statistics from the NSCache
-        var totalSize = 0
-        var count = 0
-        
         // Note: NSCache doesn't provide direct access to all objects, so we'll use our tracking
         // but also recalculate disk cache size periodically
-        DispatchQueue.main.async {
-            // Only log if there are significant changes or for debugging
-            if self.memoryCacheSize > 0 || self.memoryCacheCount > 0 {
-                print("📊 Memory cache stats - Size: \(self.memoryCacheSize), Count: \(self.memoryCacheCount)")
-            }
+        // Only log if there are significant changes or for debugging
+        if self.memoryCacheSize > 0 || self.memoryCacheCount > 0 {
+            print("📊 Memory cache stats - Size: \(self.memoryCacheSize), Count: \(self.memoryCacheCount)")
         }
         
         // Recalculate disk cache size periodically
         calculateDiskCacheSize()
     }
     
-    private func ensureCacheDirectoryExists() {
+    private nonisolated func ensureCacheDirectoryExists() {
         if !FileManager.default.fileExists(atPath: cacheDirectory.path) {
             do {
                 try FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true, attributes: nil)
@@ -373,7 +388,7 @@ class ThumbnailCache: NSObject, ObservableObject {
 }
 
 // MARK: - CachedImage Class
-class CachedImage {
+final class CachedImage: @unchecked Sendable {
     let image: UIImage
     let size: Int
     let timestamp: Date
@@ -387,11 +402,12 @@ class CachedImage {
 
 // MARK: - NSCacheDelegate
 extension ThumbnailCache: NSCacheDelegate {
-    func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
+    nonisolated func cache(_ cache: NSCache<AnyObject, AnyObject>, willEvictObject obj: Any) {
         if let cachedImage = obj as? CachedImage {
-            DispatchQueue.main.async {
-                self.memoryCacheSize -= cachedImage.size
-                self.memoryCacheCount -= 1
+            let size = cachedImage.size
+            Task { @MainActor [weak self] in
+                self?.memoryCacheSize -= size
+                self?.memoryCacheCount -= 1
             }
         }
     }

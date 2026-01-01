@@ -234,17 +234,17 @@ struct SlideshowSettings: View {
 
 
 #Preview {
-    @State var slideshowInterval: Double = 8.0
-    @State var slideshowBackgroundColor = "white"
-    @State var use24HourClock = true
-    @State var hideOverlay = true
-    @State var enableReflections = true
-    @State var enableKenBurns = false
-    @State var enableShuffle = false
-    @State var autoSlideshowTimeout = 5
-    @FocusState var isMinusFocused: Bool
-    @FocusState var isPlusFocused: Bool
-    @FocusState var focusedColor: String?
+    @Previewable @State var slideshowInterval: Double = 8.0
+    @Previewable @State var slideshowBackgroundColor = "white"
+    @Previewable @State var use24HourClock = true
+    @Previewable @State var hideOverlay = true
+    @Previewable @State var enableReflections = true
+    @Previewable @State var enableKenBurns = false
+    @Previewable @State var enableShuffle = false
+    @Previewable @State var autoSlideshowTimeout = 5
+    @Previewable @FocusState var isMinusFocused: Bool
+    @Previewable @FocusState var isPlusFocused: Bool
+    @Previewable @FocusState var focusedColor: String?
     
     return SlideshowSettings(
         slideshowInterval: $slideshowInterval,

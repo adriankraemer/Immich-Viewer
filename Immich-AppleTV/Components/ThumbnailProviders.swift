@@ -8,17 +8,18 @@
 import SwiftUI
 
 // MARK: - Album Thumbnail Provider
+@MainActor
 class AlbumThumbnailProvider: ThumbnailProvider {
     private let albumService: AlbumService
     private let assetService: AssetService
-    private let thumbnailCache = ThumbnailCache.shared
+    private var thumbnailCache: ThumbnailCache { ThumbnailCache.shared }
     
     init(albumService: AlbumService, assetService: AssetService) {
         self.albumService = albumService
         self.assetService = assetService
     }
     
-    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+    func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let album = item as? ImmichAlbum else { return [] }
         
         if shouldUseStaticThumbnail(),
@@ -78,15 +79,16 @@ class AlbumThumbnailProvider: ThumbnailProvider {
 }
 
 // MARK: - People Thumbnail Provider
+@MainActor
 class PeopleThumbnailProvider: ThumbnailProvider {
     private let assetService: AssetService
-    private let thumbnailCache = ThumbnailCache.shared
+    private var thumbnailCache: ThumbnailCache { ThumbnailCache.shared }
     
     init(assetService: AssetService) {
         self.assetService = assetService
     }
     
-    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+    func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let person = item as? Person else { return [] }
         
         do {
@@ -117,15 +119,16 @@ class PeopleThumbnailProvider: ThumbnailProvider {
 }
 
 // MARK: - Tag Thumbnail Provider
+@MainActor
 class TagThumbnailProvider: ThumbnailProvider {
     private let assetService: AssetService
-    private let thumbnailCache = ThumbnailCache.shared
+    private var thumbnailCache: ThumbnailCache { ThumbnailCache.shared }
     
     init(assetService: AssetService) {
         self.assetService = assetService
     }
     
-    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+    func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let tag = item as? Tag else { return [] }
         
         do {
@@ -156,15 +159,16 @@ class TagThumbnailProvider: ThumbnailProvider {
 }
 
 // MARK: - Folder Thumbnail Provider
+@MainActor
 class FolderThumbnailProvider: ThumbnailProvider {
     private let assetService: AssetService
-    private let thumbnailCache = ThumbnailCache.shared
+    private var thumbnailCache: ThumbnailCache { ThumbnailCache.shared }
     
     init(assetService: AssetService) {
         self.assetService = assetService
     }
     
-    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+    func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let folder = item as? ImmichFolder else { return [] }
         
         do {
@@ -195,15 +199,16 @@ class FolderThumbnailProvider: ThumbnailProvider {
 }
 
 // MARK: - Continent Thumbnail Provider
+@MainActor
 class ContinentThumbnailProvider: ThumbnailProvider {
     private let assetService: AssetService
-    private let thumbnailCache = ThumbnailCache.shared
+    private var thumbnailCache: ThumbnailCache { ThumbnailCache.shared }
     
     init(assetService: AssetService) {
         self.assetService = assetService
     }
     
-    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+    func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let continent = item as? Continent else { return [] }
         
         // Collect representative assets from all countries in the continent
@@ -245,15 +250,16 @@ class ContinentThumbnailProvider: ThumbnailProvider {
 }
 
 // MARK: - Country Thumbnail Provider
+@MainActor
 class CountryThumbnailProvider: ThumbnailProvider {
     private let assetService: AssetService
-    private let thumbnailCache = ThumbnailCache.shared
+    private var thumbnailCache: ThumbnailCache { ThumbnailCache.shared }
     
     init(assetService: AssetService) {
         self.assetService = assetService
     }
     
-    func loadThumbnails(for item: GridDisplayable) async -> [UIImage] {
+    func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let country = item as? Country else { return [] }
         
         var allAssets = country.assets

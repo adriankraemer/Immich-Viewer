@@ -139,7 +139,7 @@ struct AssetGridView: View {
                         .padding(.horizontal)
                         .padding(.top, 20)
                         .padding(.bottom, 40)
-                        .onChange(of: focusedAssetId) { newFocusedId in
+                        .onChange(of: focusedAssetId) { oldValue, newFocusedId in
                             print("AssetGridView: focusedAssetId changed to \(newFocusedId ?? "nil"), isProgrammatic: \(isProgrammaticFocusChange)")
                             
                             // Update currentAssetIndex when focus changes
@@ -166,7 +166,7 @@ struct AssetGridView: View {
                                 }
                             }
                         }
-                        .onChange(of: shouldScrollToAsset) { assetId in
+                        .onChange(of: shouldScrollToAsset) { oldValue, assetId in
                             if let assetId = assetId {
                                 print("AssetGridView: shouldScrollToAsset triggered - scrolling to asset ID: \(assetId)")
                                 // Use a more robust scrolling approach with proper timing
@@ -179,9 +179,9 @@ struct AssetGridView: View {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                                     shouldScrollToAsset = nil
                                 }
-                                }
                             }
-                        .onChange(of: deepLinkAssetId) { assetId in
+                        }
+                        .onChange(of: deepLinkAssetId) { oldValue, assetId in
                             if let assetId = assetId {
                                 print("AssetGridView: Deep link asset ID received: \(assetId)")
                                 handleDeepLinkAsset(assetId)

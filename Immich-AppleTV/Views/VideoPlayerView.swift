@@ -10,6 +10,7 @@ import AVKit
 import Combine
 
 
+@MainActor
 class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
     @Published var player = AVPlayer()
     @Published var isLoading = true
@@ -25,11 +26,17 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
     let assetService: AssetService
     let authenticationService: AuthenticationService
     
+    // Stored auth headers for nonisolated access in delegate methods
+    // Using nonisolated(unsafe) since we only write from MainActor and read from delegate
+    nonisolated(unsafe) private var cachedAuthHeaders: [String: String] = [:]
+    
     init(asset: ImmichAsset, assetService: AssetService, authenticationService: AuthenticationService) {
         self.asset = asset
         self.assetService = assetService
         self.authenticationService = authenticationService
         super.init()
+        // Cache auth headers at initialization for nonisolated access
+        self.cachedAuthHeaders = authenticationService.getAuthHeaders()
     }
     
     func initializePlayer() {
@@ -214,12 +221,19 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
             print("✅ Video auth: Using \(authType): \(String(token.prefix(20)))...")
         }
         
+        // Update cached headers
+        cachedAuthHeaders = headers
         return headers
+    }
+    
+    // Nonisolated version for delegate methods
+    private nonisolated func getVideoAuthHeadersNonisolated() -> [String: String] {
+        return cachedAuthHeaders
     }
     
     // MARK: - AVAssetResourceLoaderDelegate
     
-    func resourceLoader(_ resourceLoader: AVAssetResourceLoader, shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
+    nonisolated func resourceLoader(_ resourceLoader: AVAssetResourceLoader, shouldWaitForLoadingOfRequestedResource loadingRequest: AVAssetResourceLoadingRequest) -> Bool {
         print("🔐 Handling authentication request for video")
         
         guard let url = loadingRequest.request.url else {
@@ -227,8 +241,8 @@ class PlayerManager: NSObject, ObservableObject, AVAssetResourceLoaderDelegate {
             return false
         }
         
-        // Get authentication headers
-        let authHeaders = getVideoAuthHeaders()
+        // Get authentication headers synchronously by accessing stored credentials
+        let authHeaders = getVideoAuthHeadersNonisolated()
         
         // Create authenticated request
         var request = URLRequest(url: url)

@@ -196,15 +196,14 @@ struct SignInView: View {
             do {
                 if mode == .addUser {
                     // Add user mode: authenticate, save user, and switch to them
-                    let token: String
                     if authType == .password {
-                        token = try await userManager.authenticateWithCredentials(
+                        _ = try await userManager.authenticateWithCredentials(
                             serverURL: cleanURL,
                             email: email,
                             password: password
                         )
                     } else {
-                        token = try await userManager.authenticateWithApiKey(
+                        _ = try await userManager.authenticateWithApiKey(
                             serverURL: cleanURL,
                             email: email,
                             apiKey: apiKey

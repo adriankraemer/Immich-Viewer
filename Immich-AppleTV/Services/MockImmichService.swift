@@ -290,6 +290,7 @@ class MockPeopleService: PeopleService {
 }
 
 // MARK: - Convenience Factory
+@MainActor
 class MockServiceFactory {
     static func createMockServices() -> (NetworkService, UserManager, AuthenticationService, AssetService, AlbumService, PeopleService, TagService, FolderService) {
         let userManager = UserManager()

@@ -48,8 +48,15 @@ class WorldMapViewModel: ObservableObject {
         center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
         span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 100.0)
     )
+    @Published var mapCameraPosition: MapCameraPosition = .region(MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
+        span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 100.0)
+    ))
     @Published var selectedCluster: PhotoCluster?
     @Published var loadingProgress: String = ""
+    
+    /// Whether we have any location data at all (to distinguish "no data" from "zoomed into empty area")
+    var hasLocationData: Bool { !allClusters.isEmpty }
     
     /// Computed property for backward compatibility
     var isLoading: Bool {
@@ -231,16 +238,31 @@ class WorldMapViewModel: ObservableObject {
         selectedCluster = cluster
     }
     
+    /// Updates the region from camera changes (called by onMapCameraChange)
+    func updateRegionFromCamera(_ newRegion: MKCoordinateRegion) {
+        // Only update if there's a meaningful change to avoid feedback loops
+        let centerChanged = abs(region.center.latitude - newRegion.center.latitude) > 0.001 ||
+                           abs(region.center.longitude - newRegion.center.longitude) > 0.001
+        let spanChanged = abs(region.span.latitudeDelta - newRegion.span.latitudeDelta) > 0.01 ||
+                         abs(region.span.longitudeDelta - newRegion.span.longitudeDelta) > 0.01
+        
+        if centerChanged || spanChanged {
+            region = newRegion
+        }
+    }
+    
     // MARK: - Map Navigation Methods
     func zoomIn() {
         let currentSpan = region.span
         let newLatDelta = max(currentSpan.latitudeDelta * 0.7, 0.1)
         let newLonDelta = max(currentSpan.longitudeDelta * 0.7, 0.1)
         
-        region = MKCoordinateRegion(
+        let newRegion = MKCoordinateRegion(
             center: region.center,
             span: MKCoordinateSpan(latitudeDelta: newLatDelta, longitudeDelta: newLonDelta)
         )
+        region = newRegion
+        mapCameraPosition = .region(newRegion)
     }
     
     func zoomOut() {
@@ -248,10 +270,12 @@ class WorldMapViewModel: ObservableObject {
         let newLatDelta = min(currentSpan.latitudeDelta * 2.0, 90.0)
         let newLonDelta = min(currentSpan.longitudeDelta * 2.0, 180.0)
         
-        region = MKCoordinateRegion(
+        let newRegion = MKCoordinateRegion(
             center: region.center,
             span: MKCoordinateSpan(latitudeDelta: newLatDelta, longitudeDelta: newLonDelta)
         )
+        region = newRegion
+        mapCameraPosition = .region(newRegion)
     }
     
     func pan(direction: PanDirection) {
@@ -278,10 +302,12 @@ class WorldMapViewModel: ObservableObject {
             }
         }
         
-        region = MKCoordinateRegion(
+        let newRegion = MKCoordinateRegion(
             center: newCenter,
             span: currentSpan
         )
+        region = newRegion
+        mapCameraPosition = .region(newRegion)
     }
     
     // MARK: - Private Methods
@@ -318,6 +344,16 @@ class WorldMapViewModel: ObservableObject {
     /// Updates clusters from lightweight markers (fast path)
     private func updateClustersFromMarkers(in region: MKCoordinateRegion) async {
         let visibleMarkers = spatialIndex.markers(in: region)
+        
+        // If no markers in visible region, keep showing all clusters
+        // This prevents the map from appearing empty when panning to an area without photos
+        guard !visibleMarkers.isEmpty else {
+            // Keep current clusters visible, or show all if empty
+            if clusters.isEmpty {
+                clusters = allClusters
+            }
+            return
+        }
         
         // Calculate appropriate cluster radius for zoom level
         let clusterRadius = MapClusterer.calculateClusterRadius(for: region.span)
@@ -533,10 +569,12 @@ class WorldMapViewModel: ObservableObject {
     
     func updateRegionToFitClusters() {
         guard !clusters.isEmpty else {
-            region = MKCoordinateRegion(
+            let defaultRegion = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
                 span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 180.0)
             )
+            region = defaultRegion
+            mapCameraPosition = .region(defaultRegion)
             return
         }
         
@@ -563,17 +601,20 @@ class WorldMapViewModel: ObservableObject {
         latDelta = min(latDelta, maxLatDelta)
         lonDelta = min(lonDelta, maxLonDelta)
         
+        let newRegion: MKCoordinateRegion
         if latDelta >= maxLatDelta * 0.8 || lonDelta >= maxLonDelta * 0.8 {
-            region = MKCoordinateRegion(
+            newRegion = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 20.0, longitude: 0.0),
                 span: MKCoordinateSpan(latitudeDelta: 100.0, longitudeDelta: 180.0)
             )
         } else {
-            region = MKCoordinateRegion(
+            newRegion = MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon),
                 span: MKCoordinateSpan(latitudeDelta: max(latDelta, 100.0), longitudeDelta: max(lonDelta, 180.0))
             )
         }
+        region = newRegion
+        mapCameraPosition = .region(newRegion)
     }
 }
 

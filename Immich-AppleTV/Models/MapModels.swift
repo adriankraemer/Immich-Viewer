@@ -301,9 +301,6 @@ struct MapClusterer {
     static func calculateClusterRadius(for span: MKCoordinateSpan) -> Double {
         let avgSpan = (span.latitudeDelta + span.longitudeDelta) / 2
         
-        // Convert span to approximate meters
-        let spanInMeters = avgSpan * 111_000
-        
         // Cluster radius proportional to view span, with minimum of 100km
         if avgSpan >= 50.0 {
             // Overview mode - use large clusters (100km+)

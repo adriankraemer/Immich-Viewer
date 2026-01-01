@@ -71,7 +71,7 @@ struct ExploreView: View {
                     isLoading: viewModel.isLoading,
                     errorMessage: viewModel.errorMessage,
                     onItemSelected: { continent in
-                        selectedContinent = continent as? Continent
+                        selectedContinent = continent
                     },
                     onRetry: {
                         Task {

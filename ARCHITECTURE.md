@@ -1,6 +1,6 @@
 # Architecture Documentation
 
-This document provides a detailed overview of the Immich Gallery for Apple TV architecture, design patterns, and implementation details.
+This document provides a detailed overview of the Immich-AppleTV architecture, design patterns, and implementation details.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ This document provides a detailed overview of the Immich Gallery for Apple TV ar
 
 ## Overview
 
-Immich Gallery follows a **service-oriented architecture** with clear separation between:
+Immich-AppleTV follows a **service-oriented architecture** with clear separation between:
 - **Presentation Layer**: SwiftUI views
 - **Business Logic Layer**: Service classes
 - **Data Layer**: Storage and network abstractions
@@ -355,7 +355,7 @@ enum ImmichError: Error {
 ### View Hierarchy
 
 ```
-Immich_GalleryApp
+Immich_AppleTVApp
 └── ContentView
     ├── SignInView (if not authenticated)
     └── TabView (if authenticated)

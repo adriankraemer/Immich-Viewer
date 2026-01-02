@@ -45,6 +45,14 @@ struct StatsView: View {
             .onAppear {
                 loadStatsIfNeeded()
             }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))) { _ in
+                // Clear cached data and refresh when user switches
+                StatsCache.shared.clearCache()
+                statsData = nil
+                lastUpdated = nil
+                error = nil
+                refreshStats()
+            }
         }
         
     }

@@ -168,7 +168,7 @@ struct ContentView: View {
                                 .tag(TabName.folders.rawValue)
                         }
                         
-                        ExploreView(exploreService: exploreService, assetService: assetService, authService: authService, userManager: userManager)
+                        ExploreView(exploreService: exploreService, assetService: assetService, authService: authService)
                             .errorBoundary(context: "Explore Tab")
                             .tabItem {
                                 Image(systemName: TabName.explore.iconName)

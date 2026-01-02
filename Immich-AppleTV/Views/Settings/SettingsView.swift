@@ -63,6 +63,7 @@ struct SettingsView: View {
     @State private var showingDeleteUserAlert = false
     @State private var userToDelete: SavedUser?
     @State private var showingSignIn = false
+    @State private var showingStats = false
     @AppStorage("hideImageOverlay") private var hideImageOverlay = true
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "white"
@@ -426,6 +427,42 @@ struct SettingsView: View {
                             })
                         }
                         
+                        // Statistics Section
+                        SettingsSection(title: "Statistics") {
+                            AnyView(
+                                Button(action: {
+                                    showingStats = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: "chart.bar.xaxis")
+                                            .foregroundColor(.blue)
+                                            .font(.title3)
+                                            .frame(width: 24)
+                                            .padding()
+                                        
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("View Library Statistics")
+                                                .font(.subheadline)
+                                                .foregroundColor(.primary)
+                                            Text("See detailed stats about your photos, videos, people, and locations")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(.secondary)
+                                            .font(.caption)
+                                    }
+                                    .padding(16)
+                                    .background(Color.gray.opacity(0.05))
+                                    .cornerRadius(12)
+                                }
+                                .buttonStyle(CardButtonStyle())
+                            )
+                        }
+                        
                         // Cache Section (Debug only)
                         
 #if DEBUG
@@ -440,6 +477,9 @@ struct SettingsView: View {
             }
             .fullScreenCover(isPresented: $showingSignIn) {
                 SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
+            }
+            .fullScreenCover(isPresented: $showingStats) {
+                StatsView(statsService: createStatsService())
             }
             .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -570,6 +610,13 @@ struct SettingsView: View {
                 // You could add an alert here to show the error to the user
             }
         }
+    }
+    
+    private func createStatsService() -> StatsService {
+        let networkService = NetworkService(userManager: userManager)
+        let exploreService = ExploreService(networkService: networkService)
+        let peopleService = PeopleService(networkService: networkService)
+        return StatsService(exploreService: exploreService, peopleService: peopleService, networkService: networkService)
     }
 }
 

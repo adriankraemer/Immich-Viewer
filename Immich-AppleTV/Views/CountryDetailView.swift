@@ -69,7 +69,7 @@ struct CountryDetailView: View {
                 personId: nil,
                 tagId: nil,
                 city: nil,
-                startingIndex: 0,
+                startingAssetId: nil,
                 isFavorite: false
             )
         }

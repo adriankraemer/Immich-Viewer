@@ -123,7 +123,7 @@ struct PersonPhotosView: View {
             }
         }
         .fullScreenCover(isPresented: $slideshowTrigger) {
-            SlideshowView(albumId: nil, personId: person.id, tagId: nil, city: nil, startingIndex: 0, isFavorite: false)
+            SlideshowView(albumId: nil, personId: person.id, tagId: nil, city: nil, startingAssetId: nil, isFavorite: false)
         }
     }
     

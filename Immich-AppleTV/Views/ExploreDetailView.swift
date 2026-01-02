@@ -61,7 +61,7 @@ struct ExploreDetailView: View {
                 personId: nil, 
                 tagId: nil,
                 city: city,
-                startingIndex: 0,
+                startingAssetId: nil,
                 isFavorite: false
             )
         }

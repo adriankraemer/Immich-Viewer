@@ -1,10 +1,3 @@
-//
-//  ContentProvider.swift
-//  TopShelfExtension
-//
-//  Created by Adrian Kraemer on 2025-08-11.
-//
-
 import TVServices
 import Foundation
 

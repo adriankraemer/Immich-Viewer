@@ -1,10 +1,3 @@
-//
-//  ExploreViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for Explore feature following MVVM pattern
-//
-
 import Foundation
 import SwiftUI
 import Combine

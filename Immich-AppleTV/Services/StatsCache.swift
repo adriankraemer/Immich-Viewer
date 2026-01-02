@@ -1,10 +1,3 @@
-//
-//  StatsCache.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-09-05.
-//
-
 import Foundation
 
 // MARK: - Stats Data Models

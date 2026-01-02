@@ -1,10 +1,3 @@
-//
-//  HybridUserStorage.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-08-31
-//
-
 import Foundation
 
 /// Hybrid storage implementation combining UserDefaults for user data and Keychain for secure tokens

@@ -1,10 +1,3 @@
-//
-//  SharedGradientBackground.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-06-29.
-//
-
 import SwiftUI
 
 // Shared background gradient for consistent styling across the app
@@ -66,6 +59,18 @@ struct ColorSelectionButtonStyle: ButtonStyle {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
             .animation(.easeInOut(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
+// Card button style for Apple TV - removes default focus ring and adds smooth scaling
+struct CardButtonStyle: ButtonStyle {
+    @Environment(\.isFocused) var isFocused
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : (isFocused ? 1.05 : 1.0))
+            .animation(.easeInOut(duration: 0.2), value: isFocused)
+            .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 

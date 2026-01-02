@@ -1,8 +1,3 @@
-//
-//  PeopleService.swift
-//  Immich-AppleTV
-//
-
 import Foundation
 import UIKit
 

@@ -1,11 +1,3 @@
-//
-//  SignInViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for SignIn feature following MVVM pattern
-//  Handles authentication logic, URL validation, and user management
-//
-
 import Foundation
 import SwiftUI
 import Combine

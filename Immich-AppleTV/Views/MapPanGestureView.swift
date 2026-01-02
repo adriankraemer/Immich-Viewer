@@ -1,10 +1,3 @@
-//
-//  MapPanGestureView.swift
-//  Immich-AppleTV
-//
-//  UIViewRepresentable wrapper for touchpad pan gestures on Apple TV remote
-//
-
 import SwiftUI
 import UIKit
 

@@ -1,10 +1,3 @@
-//
-//  TechnicalInfoItem.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-07-25.
-//
-
 import SwiftUI
 
 struct TechnicalInfoItem: View {

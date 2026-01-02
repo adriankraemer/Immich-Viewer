@@ -1,10 +1,3 @@
-//
-//  LocationHierarchy.swift
-//  Immich-AppleTV
-//
-//  Created for hierarchical location organization
-//
-
 import Foundation
 import SwiftUI
 

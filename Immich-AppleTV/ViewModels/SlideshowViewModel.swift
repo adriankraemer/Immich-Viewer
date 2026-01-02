@@ -1,11 +1,3 @@
-//
-//  SlideshowViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for Slideshow feature following MVVM pattern
-//  Handles image queue management, asset loading, and slideshow state
-//
-
 import Foundation
 import SwiftUI
 import UIKit

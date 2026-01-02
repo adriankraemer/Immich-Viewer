@@ -1,8 +1,3 @@
-//
-//  TagsGridView.swift
-//  Immich-AppleTV
-//
-
 import SwiftUI
 
 struct TagsGridView: View {

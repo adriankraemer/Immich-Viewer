@@ -1,10 +1,3 @@
-//
-//  FoldersView.swift
-//  Immich-AppleTV
-//
-//  Created by Codex on 2025-09-12.
-//
-
 import SwiftUI
 
 struct FoldersView: View {

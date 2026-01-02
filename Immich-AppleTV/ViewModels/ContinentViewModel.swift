@@ -1,10 +1,3 @@
-//
-//  ContinentViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for Continent detail view following MVVM pattern
-//
-
 import Foundation
 import SwiftUI
 

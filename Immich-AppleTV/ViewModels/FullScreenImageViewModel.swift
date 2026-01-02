@@ -1,11 +1,3 @@
-//
-//  FullScreenImageViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for FullScreenImage feature following MVVM pattern
-//  Handles image loading, navigation, and state management
-//
-
 import Foundation
 import SwiftUI
 import Combine

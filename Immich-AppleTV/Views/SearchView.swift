@@ -1,10 +1,3 @@
-//
-//  SearchView.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-08-09.
-//
-
 import SwiftUI
 import UIKit
 

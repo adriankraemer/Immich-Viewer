@@ -1,10 +1,3 @@
-//
-//  UserDefaults.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-07-28.
-//
-
 import Foundation
 // Extension to make overlay setting easily accessible throughout the app
 extension UserDefaults {

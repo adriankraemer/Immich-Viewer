@@ -1,10 +1,3 @@
-//
-//  Immich_AppleTVUITests.swift
-//  Immich-AppleTVUITests
-//
-//  Created by Adrian Kraemer on 2025-06-29.
-//
-
 import XCTest
 
 final class Immich_AppleTVUITests: XCTestCase {

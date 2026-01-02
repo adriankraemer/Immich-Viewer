@@ -1,8 +1,3 @@
-//
-//  NavigationStyle.swift
-//  Immich-AppleTV
-//
-
 import Foundation
 
 enum NavigationStyle: String, CaseIterable {

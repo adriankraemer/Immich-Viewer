@@ -1,10 +1,3 @@
-//
-//  SlideShowSettings.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-07-28.
-//
-
 import Foundation
 import SwiftUI
 
@@ -182,7 +175,7 @@ struct SlideshowSettings: View {
             SettingsRow(
                 icon: "shuffle",
                 title: "Shuffle Images (beta)",
-                subtitle: "Randomly shuffle image order during slideshow (This uses `/search/random` endpoint. Does not work when viewing an album that is shared-in. To my knowledge, this is a limitation of Immich random endpoint. If you disagree, open a GH issue with details.) ",
+                subtitle: "Randomly shuffle image order during slideshow",
                 content: AnyView(
                     Picker("Shuffle Images", selection: $enableShuffle) {
                         Text("Off").tag(false)

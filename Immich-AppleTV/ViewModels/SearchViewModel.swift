@@ -1,11 +1,3 @@
-//
-//  SearchViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for Search feature following MVVM pattern
-//  Handles search functionality and result state management
-//
-
 import Foundation
 import SwiftUI
 import Combine

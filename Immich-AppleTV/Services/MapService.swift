@@ -1,10 +1,3 @@
-//
-//  MapService.swift
-//  Immich-AppleTV
-//
-//  Service for fetching geodata from Immich API
-//
-
 import Foundation
 import MapKit
 import Combine

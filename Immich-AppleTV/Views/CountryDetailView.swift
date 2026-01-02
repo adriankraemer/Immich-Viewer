@@ -1,10 +1,3 @@
-//
-//  CountryDetailView.swift
-//  Immich-AppleTV
-//
-//  View showing photos within a country
-//
-
 import SwiftUI
 
 struct CountryDetailView: View {

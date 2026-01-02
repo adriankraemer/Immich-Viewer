@@ -1,10 +1,3 @@
-//
-//  CacheSection.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-07-28.
-//
-
 import Foundation
 import SwiftUI
 // MARK: - Cache Section Component
@@ -138,16 +131,21 @@ struct SettingsSection: View {
     let content: () -> AnyView
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(title)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+        VStack(alignment: .leading, spacing: 20) {
+            HStack {
+                Text(title)
+                    .font(.system(size: 36, weight: .bold))
+                    .foregroundColor(.white)
+                
+                Spacer()
+            }
+            .padding(.bottom, 4)
             
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 content()
             }
         }
+        .padding(.vertical, 8)
     }
 }
 

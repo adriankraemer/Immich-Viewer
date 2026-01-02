@@ -1,11 +1,3 @@
-//
-//  TagsGridViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for TagsGrid feature following MVVM pattern
-//  Handles tags loading and state management
-//
-
 import Foundation
 import SwiftUI
 

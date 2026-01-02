@@ -1,10 +1,3 @@
-//
-//  UserModels.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-08-30
-//
-
 import Foundation
 
 /// Represents a saved user account for multi-user support

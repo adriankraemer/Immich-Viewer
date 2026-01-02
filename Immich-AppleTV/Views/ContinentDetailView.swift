@@ -1,10 +1,3 @@
-//
-//  ContinentDetailView.swift
-//  Immich-AppleTV
-//
-//  View showing countries within a continent
-//
-
 import SwiftUI
 
 struct ContinentDetailView: View {

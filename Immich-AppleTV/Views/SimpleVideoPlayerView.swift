@@ -67,47 +67,33 @@ struct SimpleVideoPlayerView: View {
     // MARK: - Subviews
     
     private var loadingView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
             ProgressView()
                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 .scaleEffect(1.5)
             
-            Text("Loading video…")
+            Text("Loading…")
                 .foregroundColor(.white.opacity(0.8))
-                .font(.title3)
-            
-            // Show buffer progress
-            if viewModel.loadingProgress > 0 {
-                VStack(spacing: 8) {
-                    ProgressView(value: viewModel.loadingProgress)
-                        .progressViewStyle(LinearProgressViewStyle(tint: .blue))
-                        .frame(width: 200)
-                    
-                    Text("Buffering: \(Int(viewModel.loadingProgress * 100))%")
-                        .foregroundColor(.white.opacity(0.6))
-                        .font(.caption)
-                }
-            }
+                .font(.headline)
         }
+        .padding(30)
+        .background(.ultraThinMaterial.opacity(0.8))
+        .cornerRadius(16)
     }
     
     private var bufferingOverlay: some View {
-        VStack {
-            Spacer()
-            HStack(spacing: 12) {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                    .scaleEffect(0.8)
-                Text("Buffering…")
-                    .foregroundColor(.white)
-                    .font(.callout)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(Color.black.opacity(0.7))
-            .cornerRadius(10)
-            .padding(.bottom, 60)
+        VStack(spacing: 12) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+            
+            Text("Buffering…")
+                .foregroundColor(.white.opacity(0.9))
+                .font(.callout)
         }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 16)
+        .background(.ultraThinMaterial.opacity(0.8))
+        .cornerRadius(12)
     }
     
     private func errorView(message: String) -> some View {

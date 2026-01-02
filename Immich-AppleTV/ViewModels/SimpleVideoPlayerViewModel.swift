@@ -19,6 +19,7 @@ class SimpleVideoPlayerViewModel: ObservableObject {
     @Published var isBuffering = false
     @Published var errorMessage: String?
     @Published var loadingProgress: Double = 0.0
+    @Published var bufferStatus: String = ""
     
     // MARK: - Dependencies
     private let assetService: AssetService
@@ -31,6 +32,8 @@ class SimpleVideoPlayerViewModel: ObservableObject {
     private var hasAttemptedLoad = false
     private var playerItem: AVPlayerItem?
     private var cancellables = Set<AnyCancellable>()
+    private var timeObserver: Any?
+    private var shouldBePlaying = false  // Track intended playback state
     
     // MARK: - Initialization
     
@@ -55,6 +58,7 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         isBuffering = false
         errorMessage = nil
         loadingProgress = 0.0
+        bufferStatus = "Initializing..."
         
         debugLog("SimpleVideoPlayerViewModel: Loading video for asset \(asset.id)")
         
@@ -62,48 +66,98 @@ class SimpleVideoPlayerViewModel: ObservableObject {
             let videoURL = try await assetService.loadVideoURL(asset: asset)
             let headers = authenticationService.getAuthHeaders()
             
-            // Create AVURLAsset with optimized options
-            var assetOptions: [String: Any] = [:]
+            debugLog("SimpleVideoPlayerViewModel: Video URL: \(videoURL)")
+            debugLog("SimpleVideoPlayerViewModel: Auth headers: \(headers)")
+            
+            // Build URL with authentication token as query parameter (most reliable for AVPlayer)
+            var finalURL = videoURL
+            if let apiKey = headers["x-api-key"] {
+                // API key auth - add as query parameter
+                var components = URLComponents(url: videoURL, resolvingAgainstBaseURL: false)
+                var queryItems = components?.queryItems ?? []
+                queryItems.append(URLQueryItem(name: "apiKey", value: apiKey))
+                components?.queryItems = queryItems
+                if let urlWithKey = components?.url {
+                    finalURL = urlWithKey
+                    debugLog("SimpleVideoPlayerViewModel: Using API key in URL")
+                }
+            } else if let bearer = headers["Authorization"]?.replacingOccurrences(of: "Bearer ", with: "") {
+                // JWT auth - add as query parameter  
+                var components = URLComponents(url: videoURL, resolvingAgainstBaseURL: false)
+                var queryItems = components?.queryItems ?? []
+                queryItems.append(URLQueryItem(name: "token", value: bearer))
+                components?.queryItems = queryItems
+                if let urlWithToken = components?.url {
+                    finalURL = urlWithToken
+                    debugLog("SimpleVideoPlayerViewModel: Using JWT token in URL")
+                }
+            }
+            
+            // Create AVURLAsset with the authenticated URL
+            // Also pass headers as backup for servers that support it
+            var options: [String: Any] = [:]
             if !headers.isEmpty {
-                assetOptions["AVURLAssetHTTPHeaderFieldsKey"] = headers
+                options["AVURLAssetHTTPHeaderFieldsKey"] = headers
             }
             
-            let urlAsset = AVURLAsset(url: videoURL, options: assetOptions)
+            let urlAsset = AVURLAsset(url: finalURL, options: options)
             
-            // Pre-load essential properties for faster startup using modern async API
-            let isPlayable = try await urlAsset.load(.isPlayable)
-            if !isPlayable {
-                throw ImmichError.videoPlaybackFailed
-            }
+            debugLog("SimpleVideoPlayerViewModel: Created AVURLAsset with authenticated URL")
             
-            // Load duration for progress tracking
-            _ = try? await urlAsset.load(.duration)
+            bufferStatus = "Loading video..."
             
-            // Create player item with buffer optimization
+            // Create player item
             let playerItem = AVPlayerItem(asset: urlAsset)
             self.playerItem = playerItem
             
             // Configure buffer settings for smoother playback
             configureBufferSettings(playerItem)
             
-            // Set up observers
+            // Set up observers BEFORE creating player
             setupPlayerItemObservers(playerItem)
             
-            // Create and configure player
+            bufferStatus = "Preparing player..."
+            
+            // Create and configure player with optimized settings
             let player = AVPlayer(playerItem: playerItem)
-            player.automaticallyWaitsToMinimizeStalling = true
+            configurePlayer(player)
             
-            debugLog("SimpleVideoPlayerViewModel: Video loaded successfully, waiting for buffer")
+            debugLog("SimpleVideoPlayerViewModel: Player created, waiting for ready state")
             self.player = player
-            self.isLoading = false
             
-            // Don't auto-play - wait for buffer to fill
-            // Player will auto-play when buffer is ready (handled by observer)
+            // Set up periodic time observer for buffer monitoring
+            setupTimeObserver(player)
+            
+            // Observe player rate changes to detect unexpected stops
+            setupPlayerRateObserver(player)
+            
+            // Add a timeout to detect if player never becomes ready
+            Task {
+                try? await Task.sleep(nanoseconds: 15_000_000_000) // 15 seconds
+                await MainActor.run {
+                    if self.isLoading && self.errorMessage == nil {
+                        debugLog("SimpleVideoPlayerViewModel: Timeout waiting for player to become ready")
+                        // Check player status
+                        if let status = self.playerItem?.status {
+                            debugLog("SimpleVideoPlayerViewModel: PlayerItem status: \(status.rawValue)")
+                        }
+                        if let error = self.playerItem?.error {
+                            debugLog("SimpleVideoPlayerViewModel: PlayerItem error: \(error)")
+                            self.errorMessage = error.localizedDescription
+                        } else {
+                            self.errorMessage = "Video is taking too long to load. Please try again."
+                        }
+                        self.isLoading = false
+                        self.bufferStatus = ""
+                    }
+                }
+            }
             
         } catch {
             debugLog("SimpleVideoPlayerViewModel: Failed to load video: \(error)")
             self.errorMessage = error.localizedDescription
             self.isLoading = false
+            self.bufferStatus = ""
         }
     }
     
@@ -115,20 +169,38 @@ class SimpleVideoPlayerViewModel: ObservableObject {
     
     /// Starts playback
     func play() {
+        shouldBePlaying = true
         player?.play()
     }
     
     /// Pauses playback
     func pause() {
+        shouldBePlaying = false
         player?.pause()
+    }
+    
+    /// Seeks to a specific time (useful for resuming)
+    func seek(to time: CMTime, completion: ((Bool) -> Void)? = nil) {
+        player?.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero) { finished in
+            completion?(finished)
+        }
     }
     
     /// Cleans up the player
     func cleanup() {
         debugLog("SimpleVideoPlayerViewModel: Cleaning up player")
         
+        // Mark that we don't want playback anymore
+        shouldBePlaying = false
+        
         // Cancel all subscriptions
         cancellables.removeAll()
+        
+        // Remove time observer
+        if let observer = timeObserver, let player = player {
+            player.removeTimeObserver(observer)
+            timeObserver = nil
+        }
         
         // Clean up player
         player?.pause()
@@ -136,25 +208,153 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         player = nil
         playerItem = nil
         hasAttemptedLoad = false
+        bufferStatus = ""
     }
     
     // MARK: - Private Methods
     
+    private func configurePlayer(_ player: AVPlayer) {
+        // Disable automatic waiting - we'll handle stalling ourselves
+        // This allows the player to continue even with lower buffer levels
+        player.automaticallyWaitsToMinimizeStalling = false
+        
+        // Prevent display from sleeping during video playback
+        player.preventsDisplaySleepDuringVideoPlayback = true
+        
+        debugLog("SimpleVideoPlayerViewModel: Player configured with manual stall handling")
+    }
+    
     private func configureBufferSettings(_ playerItem: AVPlayerItem) {
         // Set preferred buffer duration (in seconds)
-        // Higher value = more buffering before playback, but smoother playback
-        playerItem.preferredForwardBufferDuration = 10.0
+        // Use 0 to let AVPlayer manage buffer size automatically based on network conditions
+        // This allows it to buffer as much as it can without artificial limits
+        playerItem.preferredForwardBufferDuration = 0
         
-        // Configure for network streaming
+        // Configure for network streaming - continue buffering even when paused
         playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = true
         
         // Set preferred peak bit rate (0 = no limit, let it adapt)
         playerItem.preferredPeakBitRate = 0
         
-        // For 4K content, you might want to limit this:
-        // playerItem.preferredMaximumResolution = CGSize(width: 1920, height: 1080)
+        // Set preferred maximum resolution (0 = no limit)
+        playerItem.preferredMaximumResolution = .zero
         
-        debugLog("SimpleVideoPlayerViewModel: Buffer configured - forward duration: 10s")
+        debugLog("SimpleVideoPlayerViewModel: Buffer configured - automatic buffer duration")
+    }
+    
+    private func setupPlayerRateObserver(_ player: AVPlayer) {
+        // Observe rate changes to detect when playback stops unexpectedly
+        player.publisher(for: \.rate)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] rate in
+                guard let self = self else { return }
+                
+                // If rate dropped to 0 but we should be playing, try to recover
+                if rate == 0 && self.shouldBePlaying && !self.isLoading {
+                    debugLog("SimpleVideoPlayerViewModel: Rate dropped to 0, checking if recovery needed")
+                    
+                    // Check if this is due to buffering or an actual stop
+                    if let playerItem = self.playerItem,
+                       playerItem.status == .readyToPlay {
+                        
+                        // If buffer is not empty, this might be a temporary stall
+                        if !playerItem.isPlaybackBufferEmpty {
+                            self.isBuffering = true
+                            self.bufferStatus = "Buffering..."
+                            
+                            // Schedule recovery attempt
+                            Task { @MainActor in
+                                try? await Task.sleep(nanoseconds: 300_000_000) // 0.3 seconds
+                                self.attemptPlaybackRecovery()
+                            }
+                        }
+                    }
+                } else if rate > 0 && self.shouldBePlaying {
+                    // Playback resumed successfully
+                    self.isBuffering = false
+                    self.bufferStatus = ""
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func setupTimeObserver(_ player: AVPlayer) {
+        // Monitor buffer status every 0.5 seconds
+        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] _ in
+            self?.updateBufferStatusDisplay()
+            self?.ensurePlaybackContinues()
+        }
+    }
+    
+    /// Ensures playback continues if it should be playing and conditions are met
+    private func ensurePlaybackContinues() {
+        guard shouldBePlaying,
+              let player = player,
+              let playerItem = playerItem,
+              playerItem.status == .readyToPlay else { return }
+        
+        // Check if player has stalled (rate is 0 but we want it playing)
+        if player.rate == 0 {
+            // Check if we have enough buffer to resume
+            if playerItem.isPlaybackLikelyToKeepUp || playerItem.isPlaybackBufferFull {
+                debugLog("SimpleVideoPlayerViewModel: Auto-resuming stalled playback")
+                isBuffering = false
+                bufferStatus = ""
+                player.play()
+            } else if !playerItem.isPlaybackBufferEmpty {
+                // We have some buffer, try to resume anyway
+                // AVPlayer will handle re-buffering if needed
+                debugLog("SimpleVideoPlayerViewModel: Attempting to resume with partial buffer")
+                player.play()
+            }
+        }
+    }
+    
+    /// Attempts to recover playback after a stall
+    private func attemptPlaybackRecovery() {
+        guard shouldBePlaying,
+              let player = player,
+              let playerItem = playerItem,
+              playerItem.status == .readyToPlay else { return }
+        
+        // Try to resume playback
+        if player.rate == 0 {
+            debugLog("SimpleVideoPlayerViewModel: Attempting playback recovery")
+            
+            // If buffer has any data, try to play
+            if playerItem.isPlaybackLikelyToKeepUp || !playerItem.isPlaybackBufferEmpty {
+                player.play()
+                
+                // Schedule another check to ensure playback resumed
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                    if self.shouldBePlaying && self.player?.rate == 0 {
+                        debugLog("SimpleVideoPlayerViewModel: Playback still stalled, retrying")
+                        self.player?.play()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func updateBufferStatusDisplay() {
+        guard let playerItem = playerItem,
+              let duration = playerItem.duration.seconds.isNaN ? nil : playerItem.duration.seconds,
+              duration > 0 else { return }
+        
+        // Calculate total buffered time
+        var totalBuffered: Double = 0
+        for value in playerItem.loadedTimeRanges {
+            let range = value.timeRangeValue
+            totalBuffered += range.duration.seconds
+        }
+        
+        let percentBuffered = Int((totalBuffered / duration) * 100)
+        
+        if isBuffering {
+            bufferStatus = "Buffering: \(percentBuffered)%"
+        }
     }
     
     private func setupPlayerItemObservers(_ playerItem: AVPlayerItem) {
@@ -162,9 +362,11 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         playerItem.publisher(for: \.isPlaybackBufferEmpty)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isEmpty in
-                if isEmpty {
-                    debugLog("SimpleVideoPlayerViewModel: Buffer empty - pausing for rebuffer")
-                    self?.isBuffering = true
+                guard let self = self else { return }
+                if isEmpty && !self.isLoading && self.shouldBePlaying {
+                    self.isBuffering = true
+                    self.bufferStatus = "Buffering..."
+                    debugLog("SimpleVideoPlayerViewModel: Buffer empty, waiting for data")
                 }
             }
             .store(in: &cancellables)
@@ -174,11 +376,12 @@ class SimpleVideoPlayerViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isLikelyToKeepUp in
                 guard let self = self else { return }
-                if isLikelyToKeepUp {
-                    debugLog("SimpleVideoPlayerViewModel: Buffer ready - playback can continue")
+                if isLikelyToKeepUp && self.shouldBePlaying {
                     self.isBuffering = false
-                    // Auto-play when buffer is ready
-                    if self.player?.rate == 0 && self.player?.currentItem?.status == .readyToPlay {
+                    self.bufferStatus = ""
+                    // Resume playback if we should be playing
+                    if self.player?.currentItem?.status == .readyToPlay {
+                        debugLog("SimpleVideoPlayerViewModel: Buffer ready, resuming playback")
                         self.player?.play()
                     }
                 }
@@ -189,9 +392,15 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         playerItem.publisher(for: \.isPlaybackBufferFull)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isFull in
-                if isFull {
-                    debugLog("SimpleVideoPlayerViewModel: Buffer full")
-                    self?.isBuffering = false
+                guard let self = self else { return }
+                if isFull && self.shouldBePlaying {
+                    self.isBuffering = false
+                    self.bufferStatus = ""
+                    // Resume playback if buffer is full
+                    if self.player?.currentItem?.status == .readyToPlay {
+                        debugLog("SimpleVideoPlayerViewModel: Buffer full, resuming playback")
+                        self.player?.play()
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -216,8 +425,16 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         NotificationCenter.default.publisher(for: .AVPlayerItemPlaybackStalled, object: playerItem)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                debugLog("SimpleVideoPlayerViewModel: Playback stalled - rebuffering")
-                self?.isBuffering = true
+                guard let self = self else { return }
+                debugLog("SimpleVideoPlayerViewModel: Playback stalled, attempting recovery")
+                self.isBuffering = true
+                self.bufferStatus = "Buffering..."
+                
+                // Schedule a recovery attempt after a short delay
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                    self.attemptPlaybackRecovery()
+                }
             }
             .store(in: &cancellables)
         
@@ -228,7 +445,17 @@ class SimpleVideoPlayerViewModel: ObservableObject {
                 if let error = notification.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] as? Error {
                     debugLog("SimpleVideoPlayerViewModel: Playback failed: \(error)")
                     self?.errorMessage = "Playback failed: \(error.localizedDescription)"
+                    self?.bufferStatus = ""
                 }
+            }
+            .store(in: &cancellables)
+        
+        // Observe when playback reaches the end
+        NotificationCenter.default.publisher(for: .AVPlayerItemDidPlayToEndTime, object: playerItem)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                debugLog("SimpleVideoPlayerViewModel: Playback completed")
+                self?.bufferStatus = ""
             }
             .store(in: &cancellables)
     }
@@ -238,16 +465,43 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         case .readyToPlay:
             debugLog("SimpleVideoPlayerViewModel: Player ready to play")
             isLoading = false
-            // Start playback when buffer is likely to keep up
-            if playerItem?.isPlaybackLikelyToKeepUp == true {
-                player?.play()
-            }
+            bufferStatus = ""
+            
+            // Start playback immediately when ready
+            debugLog("SimpleVideoPlayerViewModel: Starting playback")
+            shouldBePlaying = true
+            player?.play()
+            
         case .failed:
             debugLog("SimpleVideoPlayerViewModel: Player failed")
             isLoading = false
-            errorMessage = playerItem?.error?.localizedDescription ?? "Video failed to load"
+            bufferStatus = ""
+            
+            // Provide more detailed error message
+            if let error = playerItem?.error {
+                let nsError = error as NSError
+                debugLog("SimpleVideoPlayerViewModel: Error domain: \(nsError.domain), code: \(nsError.code)")
+                
+                if nsError.domain == NSURLErrorDomain {
+                    switch nsError.code {
+                    case NSURLErrorTimedOut:
+                        errorMessage = "Connection timed out. Please check your network."
+                    case NSURLErrorNotConnectedToInternet:
+                        errorMessage = "No internet connection."
+                    case NSURLErrorNetworkConnectionLost:
+                        errorMessage = "Network connection lost."
+                    default:
+                        errorMessage = "Network error: \(error.localizedDescription)"
+                    }
+                } else {
+                    errorMessage = error.localizedDescription
+                }
+            } else {
+                errorMessage = "Video failed to load"
+            }
         case .unknown:
             debugLog("SimpleVideoPlayerViewModel: Player status unknown")
+            bufferStatus = "Preparing..."
         @unknown default:
             break
         }
@@ -266,6 +520,13 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         }
         
         loadingProgress = min(totalBuffered / duration.seconds, 1.0)
+        
+        // Update buffer status with more detail during initial load
+        if isLoading || isBuffering {
+            let bufferedSeconds = Int(totalBuffered)
+            let totalSeconds = Int(duration.seconds)
+            bufferStatus = "Buffered: \(bufferedSeconds)s / \(totalSeconds)s"
+        }
     }
 }
 

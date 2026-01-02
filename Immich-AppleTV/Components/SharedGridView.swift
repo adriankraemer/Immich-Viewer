@@ -7,11 +7,17 @@
 import SwiftUI
 
 // MARK: - Thumbnail Provider Protocol
+
+/// Protocol for loading thumbnails for grid items
+/// Different implementations handle different item types (albums, people, tags, etc.)
 protocol ThumbnailProvider {
     func loadThumbnails(for item: any GridDisplayable) async -> [UIImage]
 }
 
 // MARK: - Main Grid View
+
+/// Reusable grid view component for displaying albums, people, tags, folders, etc.
+/// Handles loading states, errors, empty states, and focus management
 struct SharedGridView<Item: GridDisplayable>: View {
     let items: [Item]
     let config: GridConfig
@@ -23,6 +29,7 @@ struct SharedGridView<Item: GridDisplayable>: View {
     
     @FocusState private var focusedItemId: String?
     @State private var globalAnimationTimer: Timer?
+    /// Trigger for thumbnail animations (incremented periodically)
     @State private var animationTrigger: Int = 0
     @AppStorage("enableThumbnailAnimation") private var enableThumbnailAnimation = true
     

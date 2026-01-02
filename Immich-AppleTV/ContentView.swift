@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// Enumeration of all available tabs in the app
 enum TabName: Int, CaseIterable {
     case photos = 0
     case albums = 1
@@ -52,7 +53,8 @@ extension Notification.Name {
 }
 
 struct ContentView: View {
-    // Auto slideshow state
+    // MARK: - Auto Slideshow State
+    /// Timeout in minutes before auto-slideshow starts (0 = disabled)
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0
     @State private var inactivityTimer: Timer? = nil
     @State private var lastInteractionDate = Date()
@@ -67,7 +69,9 @@ struct ContentView: View {
     @StateObject private var exploreService: ExploreService
     @StateObject private var mapService: MapService
     @StateObject private var searchService: SearchService
+    // MARK: - Tab Management
     @State private var selectedTab = 0
+    /// UUID used to force refresh of all tabs when changed
     @State private var refreshTrigger = UUID()
     @AppStorage(UserDefaultsKeys.showTagsTab) private var showTagsTab = false
     @AppStorage(UserDefaultsKeys.showFoldersTab) private var showFoldersTab = false
@@ -75,6 +79,7 @@ struct ContentView: View {
     @AppStorage(UserDefaultsKeys.defaultStartupTab) private var defaultStartupTab = "photos"
     @AppStorage(UserDefaultsKeys.navigationStyle) private var navigationStyle = NavigationStyle.tabs.rawValue
     @State private var searchTabHighlighted = false
+    /// Asset ID from deep link to highlight when opening Photos tab
     @State private var deepLinkAssetId: String?
     
     init() {
@@ -208,18 +213,19 @@ struct ContentView: View {
                         startInactivityTimer()
                     }
                     .onChange(of: showAlbumsTab) { _, enabled in
-                        // Only switch away if the tab is disabled AND user is currently on it
+                        // Switch to Photos tab if Albums tab is disabled while user is viewing it
                         if !enabled && selectedTab == TabName.albums.rawValue {
                             selectedTab = TabName.photos.rawValue
                         }
                     }
                     .onChange(of: showFoldersTab) { _, enabled in
-                        // Only switch away if the tab is disabled AND user is currently on it
+                        // Switch to Photos tab if Folders tab is disabled while user is viewing it
                         if !enabled && selectedTab == TabName.folders.rawValue {
                             selectedTab = TabName.photos.rawValue
                         }
                     }
-                    .id(refreshTrigger) // Force refresh when user switches
+                    /// Force refresh when refreshTrigger changes (used by refreshAllTabs notification)
+                    .id(refreshTrigger)
                     // .accentColor(.blue)
                 }
             }
@@ -228,18 +234,19 @@ struct ContentView: View {
         }
         .navigationViewStyle(StackNavigationViewStyle())
         .onReceive(NotificationCenter.default.publisher(for: .refreshAllTabs)) { _ in
-            // Refresh all tabs by generating a new UUID
+            // Refresh all tabs by generating a new UUID (triggers view refresh via .id modifier)
             refreshTrigger = UUID()
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.openAsset))) { notification in
+            // Handle deep link to open a specific asset
             if let assetId = notification.userInfo?["assetId"] as? String {
                 debugLog("ContentView: Received OpenAsset notification for asset: \(assetId)")
                 
-                // Switch to Photos tab and set deep link asset ID
+                // Switch to Photos tab and set deep link asset ID for highlighting
                 selectedTab = TabName.photos.rawValue
                 deepLinkAssetId = assetId
                 
-                // Clear the deep link after a moment to avoid stale state
+                // Clear deep link after 1 second to prevent stale state
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                     deepLinkAssetId = nil
                 }
@@ -261,11 +268,14 @@ struct ContentView: View {
     }
     
     // MARK: - Inactivity Timer Logic
+    
+    /// Starts the inactivity timer that triggers auto-slideshow after timeout
     private func startInactivityTimer() {
         inactivityTimer?.invalidate()
         inactivityTimer = nil
         if autoSlideshowTimeout > 0 {
             debugLog("ContentView: Starting inactivity timer with timeout: \(autoSlideshowTimeout) minutes")
+            // Check every second if timeout has been reached
             inactivityTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
                 let elapsed = Date().timeIntervalSince(lastInteractionDate)
                 if elapsed > Double(autoSlideshowTimeout * 60) {
@@ -274,7 +284,7 @@ struct ContentView: View {
                     inactivityTimer = nil
                     // Switch to Photos tab and start auto slideshow
                     selectedTab = TabName.photos.rawValue
-                    // Wait 5 seconds for tab switch to complete, then start slideshow
+                    // Wait 5 seconds for tab switch animation to complete before starting slideshow
                     DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
                         NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.startAutoSlideshow), object: nil)
                     }
@@ -285,12 +295,15 @@ struct ContentView: View {
         }
     }
     
+    /// Resets the inactivity timer when user interacts with the app
+    
     private func resetInactivityTimer() {
         debugLog("ContentView: Resetting inactivity timer")
         lastInteractionDate = Date()
         startInactivityTimer() // Restart the timer
     }
     
+    /// Sets the initial tab based on user preference, falling back to Photos if preferred tab is disabled
     private func setDefaultTab() {
         switch defaultStartupTab {
         case "photos":
@@ -307,7 +320,8 @@ struct ContentView: View {
             if showTagsTab {
                 selectedTab = TabName.tags.rawValue
             } else {
-                selectedTab = TabName.photos.rawValue // Default to photos if tags tab is disabled
+                // Default to photos if tags tab is disabled
+                selectedTab = TabName.photos.rawValue
             }
         case "folders":
             if showFoldersTab {
@@ -329,14 +343,17 @@ struct ContentView: View {
     }
 }
 
+/// View modifier to apply different navigation styles to TabView
 private struct TabNavigationStyleModifier: ViewModifier {
     let style: NavigationStyle
     
     func body(content: Content) -> some View {
         switch style {
         case .sidebar:
+            // Use sidebar style for Apple TV (more traditional navigation)
             content.tabViewStyle(.sidebarAdaptable)
         case .tabs:
+            // Use default tab style
             content
         }
     }

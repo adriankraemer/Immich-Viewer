@@ -7,18 +7,22 @@
 
 import Foundation
 
+/// App-wide constants
 struct AppConstants {
+    /// App group identifier for sharing data between main app and TopShelf extension
     static let appGroupIdentifier = "group.app.immich.photo"
 }
 
+/// Keys used for UserDefaults storage
 struct UserDefaultsKeys {
-    // Immich credentials
+    // MARK: - Immich Credentials (Legacy - now using multi-user storage)
     static let serverURL = "immich_server_url"
     static let accessToken = "immich_access_token"
     static let userEmail = "immich_user_email"
+    /// Prefix for user data keys (format: "immich_user_{userId}")
     static let userPrefix = "immich_user_"
     
-    // Settings
+    // MARK: - Settings
     static let hideImageOverlay = "hideImageOverlay"
     static let slideshowInterval = "slideshowInterval"
     static let autoSlideshowTimeout = "autoSlideshowTimeout" // in minutes, 0 = off
@@ -41,12 +45,17 @@ struct UserDefaultsKeys {
     static let assetSortOrder = "assetSortOrder"
 }
 
+/// URL schemes supported by the app for deep linking
 struct AppSchemes {
     static let immichGallery = "immichgallery"
 }
 
+/// Notification names used for app-wide communication
 struct NotificationNames {
+    /// Notification to open a specific asset (userInfo: ["assetId": String])
     static let openAsset = "OpenAsset"
+    /// Notification to refresh all tabs
     static let refreshAllTabs = "refreshAllTabs"
+    /// Notification to start auto-slideshow
     static let startAutoSlideshow = "startAutoSlideshow"
 }

@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// Factory for creating appropriate AssetProvider instances
+/// Chooses between AlbumAssetProvider (for albums) and GeneralAssetProvider (for other filters)
 struct AssetProviderFactory {
     static func createProvider(
         albumId: String? = nil,
@@ -20,9 +22,11 @@ struct AssetProviderFactory {
         albumService: AlbumService? = nil
     ) -> AssetProvider {
         
+        // Use specialized provider for albums (handles caching and sorting)
         if let albumId = albumId, let albumService = albumService {
             return AlbumAssetProvider(albumService: albumService, albumId: albumId)
         } else {
+            // Use general provider for other filters (person, tag, city, favorites, etc.)
             return GeneralAssetProvider(
                 assetService: assetService,
                 personId: personId,
@@ -36,14 +40,19 @@ struct AssetProviderFactory {
     }
 }
 
+/// Protocol for fetching assets with pagination and random selection
+/// Different implementations handle different data sources (albums, search, etc.)
 protocol AssetProvider {
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult
     func fetchRandomAssets(limit: Int) async throws -> SearchResult
 }
 
+/// Asset provider for album assets with client-side pagination and caching
+/// Fetches full album once, then paginates locally for better performance
 class AlbumAssetProvider: AssetProvider {
     private let albumService: AlbumService
     private let albumId: String
+    /// Cached album assets to avoid refetching on pagination
     private var cachedAssets: [ImmichAsset]?
     
     private enum SortOrder {
@@ -68,17 +77,21 @@ class AlbumAssetProvider: AssetProvider {
         self.albumId = albumId
     }
 
+    /// Loads album assets, using cache if available
+    /// Fetches full album once and caches for subsequent pagination requests
     private func loadAlbumAssets() async throws -> [ImmichAsset] {
         if let cachedAssets {
             return cachedAssets
         }
 
-        // Fetch the album with full asset list; Immich includes assets unless withoutAssets is true
+        // Fetch the album with full asset list (Immich includes assets unless withoutAssets is true)
         let album = try await albumService.getAlbumInfo(albumId: albumId, withoutAssets: false)
         cachedAssets = album.assets
         return album.assets
     }
     
+    /// Fetches a page of assets from the album with client-side pagination
+    /// Sorts assets before paginating to ensure consistent ordering
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
         let assets = try await loadAlbumAssets()
         let sortedAssets = sortAssets(assets)
@@ -86,6 +99,7 @@ class AlbumAssetProvider: AssetProvider {
             return SearchResult(assets: [], total: 0, nextPage: nil)
         }
 
+        // Calculate pagination indices
         let pageSize = max(limit, 1)
         let startIndex = max((page - 1) * pageSize, 0)
         let endIndex = min(startIndex + pageSize, sortedAssets.count)
@@ -97,6 +111,7 @@ class AlbumAssetProvider: AssetProvider {
             pageAssets = []
         }
 
+        // Determine if there's a next page
         let nextPage: String? = endIndex < sortedAssets.count ? String(page + 1) : nil
 
         return SearchResult(
@@ -173,14 +188,15 @@ class AlbumAssetProvider: AssetProvider {
 }
 
 /// Asset provider that fetches assets for a country on-demand with pagination
-/// Uses map markers to get asset IDs first (fast), then fetches assets in batches
+/// Optimized for performance: uses map markers to get asset IDs first (fast),
+/// then fetches full asset data in batches as needed
 class OnDemandCountryAssetProvider: AssetProvider {
     private let countryName: String
     private let exploreService: ExploreService
     
-    /// Asset IDs for this country (from map markers - fast to get)
+    /// Asset IDs for this country (from map markers - fast to get, cached after first fetch)
     private var assetIds: [String]?
-    /// Cached fetched assets keyed by ID
+    /// Cached fetched assets keyed by ID to avoid refetching
     private var fetchedAssets: [String: ImmichAsset] = [:]
     
     private enum SortOrder {
@@ -205,7 +221,8 @@ class OnDemandCountryAssetProvider: AssetProvider {
         self.exploreService = exploreService
     }
     
-    /// Get asset IDs for this country (uses cached map markers - very fast)
+    /// Gets asset IDs for this country (uses cached map markers - very fast)
+    /// Caches IDs after first fetch to avoid repeated API calls
     private func getAssetIds() async throws -> [String] {
         if let ids = assetIds {
             return ids
@@ -217,6 +234,8 @@ class OnDemandCountryAssetProvider: AssetProvider {
         return ids
     }
     
+    /// Fetches a page of assets with smart caching
+    /// Only fetches asset details for IDs not already cached
     func fetchAssets(page: Int, limit: Int) async throws -> SearchResult {
         // First, get all asset IDs for this country (fast - uses map markers cache)
         let ids = try await getAssetIds()
@@ -225,6 +244,7 @@ class OnDemandCountryAssetProvider: AssetProvider {
             return SearchResult(assets: [], total: 0, nextPage: nil)
         }
         
+        // Calculate pagination indices
         let pageSize = max(limit, 1)
         let startIndex = max((page - 1) * pageSize, 0)
         let endIndex = min(startIndex + pageSize, ids.count)
@@ -235,7 +255,7 @@ class OnDemandCountryAssetProvider: AssetProvider {
         
         let pageIds = Array(ids[startIndex..<endIndex])
         
-        // Check which assets we already have cached
+        // Check which assets we already have cached vs need to fetch
         var assetsToFetch: [String] = []
         var cachedAssets: [ImmichAsset] = []
         
@@ -247,7 +267,7 @@ class OnDemandCountryAssetProvider: AssetProvider {
             }
         }
         
-        // Fetch missing assets
+        // Fetch only missing assets to minimize API calls
         if !assetsToFetch.isEmpty {
             let result = try await exploreService.fetchAssetsByIds(assetsToFetch, page: 1, limit: assetsToFetch.count)
             for asset in result.assets {
@@ -255,7 +275,7 @@ class OnDemandCountryAssetProvider: AssetProvider {
             }
         }
         
-        // Build final page assets in order
+        // Build final page assets in original ID order
         var pageAssets: [ImmichAsset] = []
         for id in pageIds {
             if let asset = fetchedAssets[id] {
@@ -263,7 +283,7 @@ class OnDemandCountryAssetProvider: AssetProvider {
             }
         }
         
-        // Sort the page
+        // Sort the page before returning
         let sortedAssets = sortAssets(pageAssets)
         
         let hasMore = endIndex < ids.count
@@ -352,6 +372,8 @@ class OnDemandCountryAssetProvider: AssetProvider {
     }
 }
 
+/// General asset provider that delegates to AssetService for server-side filtering
+/// Used for person, tag, city, favorites, and folder-based asset queries
 class GeneralAssetProvider: AssetProvider {
     private let assetService: AssetService
     private let personId: String?

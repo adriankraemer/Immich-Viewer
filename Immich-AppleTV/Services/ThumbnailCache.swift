@@ -8,6 +8,8 @@
 import Foundation
 import UIKit
 
+/// Two-tier thumbnail cache (memory + disk) for efficient image loading
+/// Uses NSCache for memory (auto-evicts under memory pressure) and file system for disk cache
 @MainActor
 class ThumbnailCache: NSObject, ObservableObject {
     static let shared = ThumbnailCache()
@@ -19,11 +21,14 @@ class ThumbnailCache: NSObject, ObservableObject {
     private let cacheDirectoryName = "ThumbnailCache"
     
     // MARK: - Cache Storage
+    /// Memory cache using NSCache (automatically evicts under memory pressure)
     private var memoryCache = NSCache<NSString, CachedImage>()
+    /// Serial queue for disk cache operations
     private let diskCacheQueue = DispatchQueue(label: "com.immich.thumbnailcache.disk", qos: .utility)
     private let cacheDirectory: URL
     
     // MARK: - Cache Statistics
+    /// Published properties for cache monitoring/debugging
     @Published var memoryCacheSize: Int = 0
     @Published var diskCacheSize: Int = 0
     @Published var memoryCacheCount: Int = 0
@@ -65,19 +70,20 @@ class ThumbnailCache: NSObject, ObservableObject {
     
     // MARK: - Public Methods
     
-    /// Get thumbnail from cache or load from server
+    /// Gets thumbnail from cache (memory first, then disk) or loads from server
+    /// Implements three-tier lookup: memory -> disk -> network
     func getThumbnail(for assetId: String, size: String = "thumbnail", loadFromServer: @escaping () async throws -> UIImage?) async throws -> UIImage? {
         let cacheKey = cacheKey(for: assetId, size: size)
         
         debugLog("🔍 Looking for thumbnail: \(cacheKey)")
         
-        // Check memory cache first
+        // Check memory cache first (fastest)
         if let cachedImage = memoryCache.object(forKey: cacheKey as NSString) {
             debugLog("⚡ Memory cache hit: \(cacheKey)")
             return cachedImage.image
         }
         
-        // Check disk cache
+        // Check disk cache (slower but no network)
         if let diskImage = await loadFromDisk(cacheKey: cacheKey) {
             // Store in memory cache
             let cachedImage = CachedImage(image: diskImage, size: diskImage.jpegData(compressionQuality: 0.8)?.count ?? 0)

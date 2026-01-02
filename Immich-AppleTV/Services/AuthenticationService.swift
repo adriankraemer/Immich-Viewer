@@ -152,17 +152,18 @@ class AuthenticationService: ObservableObject {
     
     /// Internal sign out method - logs out current user and switches to next available user if any exist
     /// For UI-initiated logout, use UserManager.logoutCurrentUser() directly
+    /// Handles multi-user scenarios by automatically switching to another user if available
     func signOut() {
         debugLog("AuthenticationService: Signing out user")
         
         Task {
             do {
-                // Logout current user from UserManager (this will switch to another user if available)
+                // Logout current user from UserManager (switches to another user if available)
                 try await userManager.logoutCurrentUser()
                 
-                // Check if we still have a current user after logout
+                // Check if we still have a current user after logout (multi-user scenario)
                 if userManager.hasCurrentUser {
-                    // Switch to the new current user
+                    // Switch to the next available user
                     debugLog("AuthenticationService: Switching to next available user after logout")
                     networkService.updateCredentialsFromCurrentUser()
                     
@@ -187,7 +188,7 @@ class AuthenticationService: ObservableObject {
             } catch {
                 debugLog("AuthenticationService: Error during signout: \(error)")
                 
-                // Even if logout fails, still clear the auth state
+                // Even if logout fails, still clear the auth state to prevent inconsistent state
                 networkService.clearCredentials()
                 await MainActor.run {
                     self.isAuthenticated = false
@@ -259,6 +260,8 @@ class AuthenticationService: ObservableObject {
         self.currentUser = owner
     }
     
+    /// Validates the current authentication token by fetching user info
+    /// Automatically logs out if token is invalid, but preserves state for network/server errors
     private func validateTokenIfNeeded() {
         guard isAuthenticated && !networkService.baseURL.isEmpty else { 
             debugLog("AuthenticationService: Skipping token validation - not authenticated or no baseURL")
@@ -273,6 +276,7 @@ class AuthenticationService: ObservableObject {
                 debugLog("AuthenticationService: Token validation failed with ImmichError: \(error)")
                 
                 if error.shouldLogout {
+                    // Authentication errors (401/403) - logout and clear data
                     debugLog("AuthenticationService: Logging out user due to authentication error: \(error)")
                     self.signOut()
                     if let bundleID = Bundle.main.bundleIdentifier {
@@ -282,14 +286,13 @@ class AuthenticationService: ObservableObject {
                         UserDefaults.standard.synchronize()
                     }
                 } else {
+                    // Server/network errors - preserve authentication state
+                    // User will see error messages but won't be logged out
                     debugLog("AuthenticationService: Preserving authentication state despite error: \(error)")
-                    // For server/network errors, preserve authentication state
-                    // The user will see error messages in the UI but won't be logged out
                 }
             } catch {
+                // Unexpected errors - handle conservatively by preserving auth state
                 debugLog("AuthenticationService: Token validation failed with unexpected error: \(error)")
-                // Handle unexpected errors conservatively - don't logout
-                // This preserves user authentication state for unknown error types
             }
         }
     }

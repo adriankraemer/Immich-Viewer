@@ -14,8 +14,10 @@ class AssetService: ObservableObject {
         self.networkService = networkService
     }
 
+    /// Fetches assets with optional filtering by album, person, tag, city, favorites, or folder
+    /// Uses different sort orders for All Photos tab vs other views
     func fetchAssets(page: Int = 1, limit: Int? = nil, albumId: String? = nil, personId: String? = nil, tagId: String? = nil, city: String? = nil, isAllPhotos: Bool = false, isFavorite: Bool = false, folderPath: String? = nil) async throws -> SearchResult {
-        // Use separate sort order for All Photos tab vs everything else
+        // Use separate sort order preference for All Photos tab vs other views
         let sortOrder = isAllPhotos 
             ? UserDefaults.standard.allPhotosSortOrder
             : (UserDefaults.standard.string(forKey: "assetSortOrder") ?? "desc")
@@ -69,8 +71,10 @@ class AssetService: ObservableObject {
         return UIImage(data: data)
     }
 
+    /// Loads the full-resolution image for an asset
+    /// For RAW formats, uses server-converted preview instead of original (UIImage can't decode RAW)
     func loadFullImage(asset: ImmichAsset) async throws -> UIImage? {
-        // Check if it's a RAW format before loading
+        // Check if it's a RAW format - UIImage can't decode RAW files directly
         if let mimeType = asset.originalMimeType, isRawFormat(mimeType) {
             debugLog("AssetService: Detected RAW format (\(mimeType)), using server-converted version")
             if let convertedImage = try await loadConvertedImage(asset: asset) {
@@ -78,7 +82,7 @@ class AssetService: ObservableObject {
             }
         }
         
-        // Standard processing for non-RAW formats
+        // Standard processing for non-RAW formats (JPEG, PNG, etc.)
         let originalEndpoint = "/api/assets/\(asset.id)/original"
         let originalData = try await networkService.makeDataRequest(endpoint: originalEndpoint)
         
@@ -91,6 +95,8 @@ class AssetService: ObservableObject {
         return nil
     }
     
+    /// Checks if the MIME type represents a RAW camera format
+    /// RAW formats need server-side conversion since UIImage can't decode them
     private func isRawFormat(_ mimeType: String) -> Bool {
         let rawMimeTypes = [
             // Standard MIME types
@@ -103,7 +109,7 @@ class AssetService: ObservableObject {
             "image/x-olympus-orf",
             "image/x-fuji-raf",
             
-            // Simplified types (what your logs show)
+            // Simplified types (common variations)
             "image/nef",
             "image/dng",
             "image/cr2",
@@ -119,6 +125,8 @@ class AssetService: ObservableObject {
         return rawMimeTypes.contains(mimeType.lowercased())
     }
     
+    /// Loads a server-converted version of a RAW image
+    /// Uses preview size for best quality while maintaining reasonable file size
     private func loadConvertedImage(asset: ImmichAsset) async throws -> UIImage? {
         // Use preview size for best quality RAW conversion
         let endpoint = "/api/assets/\(asset.id)/thumbnail?format=webp&size=preview"
@@ -136,16 +144,20 @@ class AssetService: ObservableObject {
         return nil
     }
 
+    /// Returns the playback URL for a video asset
+    /// The URL includes authentication and can be used directly with AVPlayer
     func loadVideoURL(asset: ImmichAsset) async throws -> URL {
         guard asset.type == .video else { throw ImmichError.clientError(400) }
         let endpoint = "/api/assets/\(asset.id)/video/playback"
         guard let url = URL(string: "\(networkService.baseURL)\(endpoint)") else {
             throw ImmichError.invalidURL
         }
-        // Optionally: check HEAD request for video availability
+        // Note: URL includes authentication via networkService baseURL
         return url
     }
     
+    /// Fetches a random selection of assets, useful for slideshows and discovery
+    /// Supports filtering by albums, people, tags, or folder path
     func fetchRandomAssets(albumIds: [String]? = nil, personIds: [String]? = nil, tagIds: [String]? = nil, folderPath: String? = nil, limit: Int = 50) async throws -> SearchResult {
         var searchRequest: [String: Any] = [
             "size": limit,

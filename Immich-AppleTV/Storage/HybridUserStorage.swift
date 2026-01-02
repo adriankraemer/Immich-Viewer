@@ -45,6 +45,8 @@ class HybridUserStorage: UserStorageWithTokens {
     
     // MARK: - Token Management (Keychain)
     
+    /// Saves authentication token to Keychain for secure storage
+    /// TopShelf extension has keychain access to read tokens
     func saveToken(_ token: String, forUserId id: String) throws {
         // Save to Keychain only - TopShelf extension now has keychain access
         try tokenStorage.saveToken(token, forUserId: id)
@@ -52,6 +54,7 @@ class HybridUserStorage: UserStorageWithTokens {
         debugLog("HybridUserStorage: Saved token for user ID \(id) to Keychain")
     }
     
+    /// Retrieves authentication token from Keychain
     func getToken(forUserId id: String) -> String? {
         // Read from Keychain only
         if let token = tokenStorage.getToken(forUserId: id) {

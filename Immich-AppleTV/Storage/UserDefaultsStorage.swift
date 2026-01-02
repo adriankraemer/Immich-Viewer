@@ -32,10 +32,12 @@ class UserDefaultsStorage: UserStorage {
         debugLog("UserDefaultsStorage: Saved user \(user.email) with ID \(user.id)")
     }
     
+    /// Loads all saved users from UserDefaults
+    /// Filters keys by user prefix and decodes JSON data
     func loadUsers() -> [SavedUser] {
         var users: [SavedUser] = []
         
-        // Get all keys that start with the user prefix
+        // Get all keys that start with the user prefix (format: "immich_user_{userId}")
         let allKeys = userDefaults.dictionaryRepresentation().keys
         let userKeys = allKeys.filter { $0.hasPrefix(UserDefaultsKeys.userPrefix) }
         
@@ -86,6 +88,8 @@ class UserDefaultsStorage: UserStorage {
     
     // MARK: - Migration
     
+    /// One-time migration from standard UserDefaults to shared UserDefaults
+    /// Enables TopShelf extension to access user data
     private func migrateFromStandardUserDefaultsIfNeeded() {
         let migrationKey = "userDefaults_migrated_to_shared_v1"
         
@@ -105,7 +109,7 @@ class UserDefaultsStorage: UserStorage {
         
         var migratedUsers = 0
         
-        // Migrate user data
+        // Migrate user data from standard to shared UserDefaults
         for userKey in userKeys {
             if let userData = standardDefaults.data(forKey: userKey) {
                 userDefaults.set(userData, forKey: userKey)
@@ -116,7 +120,7 @@ class UserDefaultsStorage: UserStorage {
         }
         
         
-        // Clean up any other legacy keys that might exist
+        // Clean up legacy single-user keys (pre-multi-user support)
         let legacyKeys = ["immich_server_url", "immich_access_token", "immich_user_email"]
         for legacyKey in legacyKeys {
             if standardDefaults.object(forKey: legacyKey) != nil {
@@ -125,7 +129,7 @@ class UserDefaultsStorage: UserStorage {
             }
         }
         
-        // Mark migration as completed
+        // Mark migration as completed to prevent re-running
         userDefaults.set(true, forKey: migrationKey)
         
         debugLog("UserDefaultsStorage: Migration completed - migrated \(migratedUsers) users")

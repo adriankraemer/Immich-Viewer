@@ -9,6 +9,9 @@ import Foundation
 import SwiftUI
 
 // MARK: - Asset Models
+
+/// Represents a media asset (photo/video) from Immich
+/// Conforms to Identifiable for SwiftUI lists and Equatable for comparison
 struct ImmichAsset: Codable, Identifiable, Equatable {
     let id: String
     let deviceAssetId: String
@@ -18,9 +21,9 @@ struct ImmichAsset: Codable, Identifiable, Equatable {
     let type: AssetType
     let originalPath: String
     let originalFileName: String
-    let originalMimeType: String?
+    let originalMimeType: String? // Used to detect RAW formats
     let resized: Bool?
-    let thumbhash: String?
+    let thumbhash: String? // For blur-up placeholder effect
     let fileModifiedAt: String
     let fileCreatedAt: String
     let localDateTime: String
@@ -30,13 +33,13 @@ struct ImmichAsset: Codable, Identifiable, Equatable {
     let isOffline: Bool
     let isTrashed: Bool
     let checksum: String
-    let duration: String?
+    let duration: String? // For video assets
     let hasMetadata: Bool
-    let livePhotoVideoId: String?
-    let people: [Person]
+    let livePhotoVideoId: String? // For Live Photos
+    let people: [Person] // Detected faces/people
     let visibility: String
     let duplicateId: String?
-    let exifInfo: ExifInfo?
+    let exifInfo: ExifInfo? // Camera metadata (EXIF)
     
     enum CodingKeys: String, CodingKey {
         case id, deviceAssetId, deviceId, ownerId, libraryId, type, originalPath, originalFileName
@@ -51,6 +54,7 @@ struct ImmichAsset: Codable, Identifiable, Equatable {
     }
 }
 
+/// Type of media asset
 enum AssetType: String, Codable {
     case image = "IMAGE"
     case video = "VIDEO"
@@ -58,20 +62,22 @@ enum AssetType: String, Codable {
     case other = "OTHER"
 }
 
+/// EXIF metadata extracted from image files
+/// Contains camera settings, location data, and file information
 struct ExifInfo: Codable {
-    let make: String?
-    let model: String?
+    let make: String? // Camera manufacturer
+    let model: String? // Camera model
     let imageName: String?
     let exifImageWidth: Int?
     let exifImageHeight: Int?
-    let dateTimeOriginal: String?
+    let dateTimeOriginal: String? // Primary date for sorting
     let modifyDate: String?
     let lensModel: String?
-    let fNumber: Double?
+    let fNumber: Double? // Aperture
     let focalLength: Double?
     let iso: Int?
     let exposureTime: String?
-    let latitude: Double?
+    let latitude: Double? // GPS coordinates
     let longitude: Double?
     let city: String?
     let state: String?
@@ -80,7 +86,7 @@ struct ExifInfo: Codable {
     let description: String?
     let fileSizeInByte: Int64?
     let orientation: String?
-    let projectionType: String?
+    let projectionType: String? // For 360° images
     let rating: Int?
     
     enum CodingKeys: String, CodingKey {

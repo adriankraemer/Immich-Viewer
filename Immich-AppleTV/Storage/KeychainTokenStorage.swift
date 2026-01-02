@@ -18,11 +18,13 @@ class KeychainTokenStorage {
     
     // MARK: - Token Management
     
+    /// Saves a token to Keychain with account identifier based on user ID
     func saveToken(_ token: String, forUserId id: String) throws {
         guard let tokenData = token.data(using: .utf8) else {
             throw UserStorageError.encodingFailed
         }
         
+        // Use account identifier format: "token_{userId}"
         let account = "token_\(id)"
         try saveData(tokenData, account: account)
         debugLog("KeychainTokenStorage: Saved token for user ID \(id)")
@@ -65,6 +67,8 @@ class KeychainTokenStorage {
     
     // MARK: - Private Keychain Helpers
     
+    /// Saves data to Keychain, deleting existing item first if present
+    /// Uses kSecAttrAccessibleWhenUnlocked for security (requires device unlock)
     private func saveData(_ data: Data, account: String) throws {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -74,7 +78,7 @@ class KeychainTokenStorage {
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
         ]
         
-        // Delete existing item first
+        // Delete existing item first to avoid conflicts
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,

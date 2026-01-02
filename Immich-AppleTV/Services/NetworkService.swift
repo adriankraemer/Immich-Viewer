@@ -68,6 +68,7 @@ class NetworkService: ObservableObject {
     // MARK: - Network Requests
     
     /// Builds an authenticated URLRequest with proper headers based on current auth type
+    /// Supports both JWT (Bearer token) and API key authentication
     private func buildAuthenticatedRequest(endpoint: String, method: HTTPMethod = .GET, body: [String: Any]? = nil) throws -> URLRequest {
         guard let accessToken = accessToken, !baseURL.isEmpty else {
             debugLog("NetworkService: No access token or server URL available")
@@ -83,14 +84,14 @@ class NetworkService: ObservableObject {
         var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         
-        // Set authentication header based on auth type
+        // Set authentication header based on auth type (API key vs JWT)
         if currentAuthType == .apiKey {
             request.setValue(accessToken, forHTTPHeaderField: "x-api-key")
         } else {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
         
-        // Set body if provided
+        // Set JSON body if provided
         if let body = body {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
@@ -116,7 +117,7 @@ class NetworkService: ObservableObject {
             }
             #endif
             
-            // Classify HTTP status codes into appropriate ImmichError types
+            // Map HTTP status codes to appropriate ImmichError types
             switch httpResponse.statusCode {
             case 401:
                 throw ImmichError.notAuthenticated
@@ -125,9 +126,10 @@ class NetworkService: ObservableObject {
             case 500...599:
                 throw ImmichError.serverError(httpResponse.statusCode)
             case 400...499:
+                // 4xx errors (except 401/403 already handled)
                 throw ImmichError.clientError(httpResponse.statusCode)
             default:
-                // For any other status codes, treat as server error
+                // Any other status codes treated as server error
                 throw ImmichError.serverError(httpResponse.statusCode)
             }
         }
@@ -169,10 +171,12 @@ class NetworkService: ObservableObject {
         }
     }
     
+    /// Makes a request that returns raw Data (for images, videos, etc.)
+    /// Removes Content-Type header to avoid JSON encoding for binary data
     func makeDataRequest(endpoint: String) async throws -> Data {
         var request = try buildAuthenticatedRequest(endpoint: endpoint, method: .GET, body: nil)
         
-        // Remove Content-Type header for data requests (we don't want application/json for binary data)
+        // Remove Content-Type header for binary data requests
         request.setValue(nil, forHTTPHeaderField: "Content-Type")
         
         let (data, response): (Data, URLResponse)
@@ -197,14 +201,16 @@ enum HTTPMethod: String {
     case HEAD = "HEAD"
 }
 
+/// Custom error types for Immich API interactions
 enum ImmichError: Error, LocalizedError {
     case notAuthenticated           // 401 - Invalid/expired token
     case forbidden                  // 403 - Access denied
     case invalidURL                 // Malformed URL
     case serverError(Int)          // 5xx - Server issues
-    case networkError              // Network connectivity issues
+    case networkError              // Network connectivity issues (timeouts, DNS, etc.)
     case clientError(Int)          // 4xx (except 401/403)
     
+    /// Determines if this error should trigger automatic logout
     var shouldLogout: Bool {
         switch self {
         case .notAuthenticated, .forbidden:

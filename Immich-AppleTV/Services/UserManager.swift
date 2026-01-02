@@ -55,14 +55,14 @@ class UserManager: ObservableObject {
     }
     
     /// Loads the current active user from storage
+    /// Falls back to first saved user if no current user ID is stored
     private func loadCurrentUser() {
         if let currentUserId = getCurrentUserId(),
            let user = savedUsers.first(where: { $0.id == currentUserId }) {
             currentUser = user
             debugLog("UserManager: Loaded current user: \(user.email)")
         } else {
-            // If no previously saved user ID is found, or the user is not in the list,
-            // set the first saved user as the current one.
+            // No previously saved user ID found, or user not in list - default to first user
             if let firstUser = savedUsers.first {
                 currentUser = firstUser
                 setCurrentUserId(firstUser.id)
@@ -76,12 +76,13 @@ class UserManager: ObservableObject {
     
     /// Switches to a different user account
     /// Returns the user's token for authentication
+    /// Clears HTTP cookies to ensure clean authentication state
     func switchToUser(_ user: SavedUser) async throws -> String {
         guard let token = storage.getToken(forUserId: user.id) else {
             throw UserStorageError.tokenNotFound
         }
         
-        // Clear cookies for the server when switching users to ensure clean authentication state
+        // Clear cookies when switching users to prevent authentication conflicts
         clearHTTPCookies(for: user.serverURL)
         
         await MainActor.run {
@@ -129,14 +130,15 @@ class UserManager: ObservableObject {
     // MARK: - Authentication Methods
     
     /// Authenticates with username/password and saves the user
+    /// Fetches user profile image and creates a SavedUser object
     func authenticateWithCredentials(serverURL: String, email: String, password: String) async throws -> String {
-        // Clear any existing cookies for this server to ensure clean password authentication
+        // Clear existing cookies to ensure clean password authentication
         clearHTTPCookies(for: serverURL)
         
-        // Perform login request
+        // Perform login request to get access token
         let authResponse = try await performLogin(serverURL: serverURL, email: email, password: password)
         
-        // Fetch profile image using the correct user ID
+        // Fetch profile image using the user ID from auth response
         let profileImageData = await fetchUserProfileImageData(serverURL: serverURL, token: authResponse.accessToken, authType: .jwt, userId: authResponse.userId)
         
         // Create user object
@@ -163,14 +165,15 @@ class UserManager: ObservableObject {
     }
     
     /// Authenticates with API key and saves the user
+    /// Validates API key by fetching user info, then fetches profile image
     func authenticateWithApiKey(serverURL: String, email: String, apiKey: String) async throws -> String {
-        // Clear any existing cookies for this server to ensure clean API key authentication
+        // Clear existing cookies to ensure clean API key authentication
         clearHTTPCookies(for: serverURL)
         
-        // Validate API key by fetching user info
+        // Validate API key by attempting to fetch user info
         let userInfo = try await validateApiKey(serverURL: serverURL, apiKey: apiKey)
         
-        // Fetch profile image using the correct user ID
+        // Fetch profile image using the user ID from validation
         let profileImageData = await fetchUserProfileImageData(serverURL: serverURL, token: apiKey, authType: .apiKey, userId: userInfo.id)
         
         // Create user object
@@ -355,19 +358,23 @@ class UserManager: ObservableObject {
     
     // MARK: - Current User Persistence
     
+    /// Shared UserDefaults for storing current user ID (accessible by TopShelf extension)
     private var sharedDefaults: UserDefaults {
         return UserDefaults(suiteName: AppConstants.appGroupIdentifier) ?? UserDefaults.standard
     }
     
+    /// Persists the current user ID to shared storage
     private func setCurrentUserId(_ userId: String) {
         sharedDefaults.set(userId, forKey: "currentActiveUserId")
         debugLog("UserManager: Set current user ID: \(userId)")
     }
     
+    /// Retrieves the current user ID from shared storage
     private func getCurrentUserId() -> String? {
         return sharedDefaults.string(forKey: "currentActiveUserId")
     }
     
+    /// Clears the current user ID from shared storage
     private func clearCurrentUserId() {
         sharedDefaults.removeObject(forKey: "currentActiveUserId")
         debugLog("UserManager: Cleared current user ID")
@@ -399,6 +406,7 @@ class UserManager: ObservableObject {
     // MARK: - HTTP Cookie Management
     
     /// Clears HTTP cookies for a specific server URL
+    /// Used when switching users or authenticating to prevent cookie conflicts
     private func clearHTTPCookies(for serverURL: String) {
         guard let url = URL(string: serverURL) else { return }
         

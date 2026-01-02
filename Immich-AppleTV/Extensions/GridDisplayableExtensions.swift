@@ -8,6 +8,8 @@
 import SwiftUI
 
 // MARK: - ImmichAlbum + GridDisplayable
+
+/// Makes albums displayable in shared grid views
 extension ImmichAlbum: GridDisplayable {
     var primaryTitle: String { albumName }
     var secondaryTitle: String? { nil }
@@ -17,6 +19,7 @@ extension ImmichAlbum: GridDisplayable {
     var isFavorite: Bool? { nil }
     var isShared: Bool? { shared }
     var sharingText: String? { 
+        // Show owner name for shared albums
         if shared {
             return owner.name
         }
@@ -27,6 +30,9 @@ extension ImmichAlbum: GridDisplayable {
 }
 
 // MARK: - Person + GridDisplayable
+
+/// Makes people displayable in shared grid views
+/// Uses person's color for visual distinction
 extension Person: GridDisplayable {
     var primaryTitle: String { name.isEmpty ? "Unknown Person" : name }
     var secondaryTitle: String? { nil }
@@ -37,6 +43,7 @@ extension Person: GridDisplayable {
     var isShared: Bool? { nil }
     var sharingText: String? { nil }
     var iconName: String { "person.crop.circle" }
+    /// Converts person's color string to SwiftUI Color
     var gridColor: Color? { 
         if let colorString = color, !colorString.isEmpty {
             switch colorString.lowercased() {
@@ -63,9 +70,13 @@ extension Person: GridDisplayable {
 }
 
 // MARK: - Tag + GridDisplayable
+
+/// Makes tags displayable in shared grid views
+/// Uses tag's color for visual distinction
 extension Tag: GridDisplayable {
     var primaryTitle: String { name }
     var secondaryTitle: String? { 
+        // Show value if different from name
         if !value.isEmpty && value != name {
             return value
         }
@@ -79,6 +90,7 @@ extension Tag: GridDisplayable {
     var isShared: Bool? { nil }
     var sharingText: String? { nil }
     var iconName: String { "tag.fill" }
+    /// Converts tag's color string to SwiftUI Color (defaults to blue)
     var gridColor: Color? { 
         if let colorString = color, !colorString.isEmpty {
             switch colorString.lowercased() {

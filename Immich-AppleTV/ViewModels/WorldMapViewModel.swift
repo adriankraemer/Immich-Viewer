@@ -1,10 +1,3 @@
-//
-//  WorldMapViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for WorldMap feature following MVVM pattern
-//
-
 import Foundation
 import SwiftUI
 import MapKit

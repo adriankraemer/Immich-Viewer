@@ -1,11 +1,3 @@
-//
-//  SimpleVideoPlayerViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for SimpleVideoPlayer feature following MVVM pattern
-//  Handles video loading and playback state management with optimized buffering
-//
-
 import Foundation
 import SwiftUI
 import AVKit

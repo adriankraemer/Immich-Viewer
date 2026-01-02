@@ -1,10 +1,3 @@
-//
-//  HybridUserStorageTests.swift
-//  Immich-AppleTVTests
-//
-//  Created for testing purposes
-//
-
 import Testing
 import Foundation
 @testable import Immich_AppleTV

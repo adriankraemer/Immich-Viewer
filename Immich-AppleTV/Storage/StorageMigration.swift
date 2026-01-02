@@ -1,10 +1,3 @@
-//
-//  StorageMigration.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-08-31
-//
-
 import Foundation
 
 /// Handles migration to hybrid storage: Keychain for security + UserDefaults for extension compatibility

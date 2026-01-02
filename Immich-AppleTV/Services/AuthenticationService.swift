@@ -1,10 +1,3 @@
-//
-//  AuthenticationService.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-06-29.
-//
-
 import Foundation
 
 /// Service responsible for authentication and user management

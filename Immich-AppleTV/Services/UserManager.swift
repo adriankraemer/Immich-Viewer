@@ -1,10 +1,3 @@
-//
-//  UserManager.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-08-30
-//
-
 import Foundation
 import UIKit
 

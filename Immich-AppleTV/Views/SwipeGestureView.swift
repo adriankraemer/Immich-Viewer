@@ -1,10 +1,3 @@
-//
-//  SwipeGestureView.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-06-29.
-//
-
 import SwiftUI
 import UIKit
 

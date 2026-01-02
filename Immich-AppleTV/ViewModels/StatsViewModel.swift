@@ -1,11 +1,3 @@
-//
-//  StatsViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for Stats feature following MVVM pattern
-//  Handles statistics loading, caching, and state management
-//
-
 import Foundation
 import SwiftUI
 import Combine

@@ -1,10 +1,3 @@
-//
-//  ExploreView.swift
-//  Immich-AppleTV
-//
-//  Refactored to follow MVVM pattern with hierarchical location structure
-//
-
 import SwiftUI
 
 struct ExploreView: View {

@@ -1,10 +1,3 @@
-//
-//  SlideShowSettings.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-07-28.
-//
-
 import Foundation
 import SwiftUI
 

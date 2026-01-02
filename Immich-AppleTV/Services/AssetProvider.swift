@@ -1,10 +1,3 @@
-//
-//  AssetProvider.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-08-19.
-//
-
 import Foundation
 
 /// Factory for creating appropriate AssetProvider instances

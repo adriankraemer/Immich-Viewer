@@ -1,11 +1,3 @@
-//
-//  AssetGridViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for AssetGrid feature following MVVM pattern
-//  Handles pagination, deep linking, and asset state management
-//
-
 import Foundation
 import SwiftUI
 import Combine

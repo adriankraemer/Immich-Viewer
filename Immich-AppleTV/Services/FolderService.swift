@@ -1,10 +1,3 @@
-//
-//  FolderService.swift
-//  Immich-AppleTV
-//
-//  Created by Codex on 2025-09-12.
-//
-
 import Foundation
 
 class FolderService: ObservableObject {

@@ -1,10 +1,3 @@
-//
-//  CountryViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for Country detail view following MVVM pattern
-//
-
 import Foundation
 import SwiftUI
 

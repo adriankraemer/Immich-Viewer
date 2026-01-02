@@ -1,10 +1,3 @@
-//
-//  ContentView.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-06-29.
-//
-
 import SwiftUI
 
 /// Enumeration of all available tabs in the app

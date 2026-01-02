@@ -1,8 +1,3 @@
-//
-//  TagService.swift
-//  Immich-AppleTV
-//
-
 import Foundation
 
 class TagService: ObservableObject {

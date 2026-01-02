@@ -1,10 +1,3 @@
-//
-//  MapModels.swift
-//  Immich-AppleTV
-//
-//  Models for map view data
-//
-
 import Foundation
 import MapKit
 

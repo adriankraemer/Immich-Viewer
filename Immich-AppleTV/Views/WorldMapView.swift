@@ -1,10 +1,3 @@
-//
-//  WorldMapView.swift
-//  Immich-AppleTV
-//
-//  Map view displaying photo locations on a world map
-//
-
 import SwiftUI
 import MapKit
 

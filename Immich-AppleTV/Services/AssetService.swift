@@ -1,8 +1,3 @@
-//
-//  AssetService.swift
-//  Immich-AppleTV
-//
-
 import Foundation
 import UIKit
 

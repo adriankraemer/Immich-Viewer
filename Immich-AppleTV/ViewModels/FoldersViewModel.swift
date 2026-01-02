@@ -1,11 +1,3 @@
-//
-//  FoldersViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for Folders feature following MVVM pattern
-//  Handles folders loading and state management
-//
-
 import Foundation
 import SwiftUI
 

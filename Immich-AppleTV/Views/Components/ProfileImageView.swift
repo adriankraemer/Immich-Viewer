@@ -1,10 +1,3 @@
-//
-//  ProfileImageView.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-08-31.
-//
-
 import SwiftUI
 
 struct ProfileImageView: View {

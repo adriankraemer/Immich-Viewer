@@ -1,11 +1,3 @@
-//
-//  AlbumListViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for AlbumList feature following MVVM pattern
-//  Handles album loading, favorites, and state management
-//
-
 import Foundation
 import SwiftUI
 

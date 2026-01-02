@@ -1,10 +1,3 @@
-//
-//  MockUserStorage.swift
-//  Immich-AppleTVTests
-//
-//  Created for testing purposes
-//
-
 import Foundation
 @testable import Immich_AppleTV
 

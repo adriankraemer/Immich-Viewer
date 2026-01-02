@@ -1,8 +1,3 @@
-//
-//  AlbumService.swift
-//  Immich-AppleTV
-//
-
 import Foundation
 import UIKit
 

@@ -1,9 +1,3 @@
-//
-//  SharedGridView.swift
-//  Immich-AppleTV
-//
-//  Created by Adrian Kraemer on 2025-09-04.
-//
 import SwiftUI
 
 // MARK: - Thumbnail Provider Protocol

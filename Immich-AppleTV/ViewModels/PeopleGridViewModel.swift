@@ -1,11 +1,3 @@
-//
-//  PeopleGridViewModel.swift
-//  Immich-AppleTV
-//
-//  ViewModel for PeopleGrid feature following MVVM pattern
-//  Handles people loading and state management
-//
-
 import Foundation
 import SwiftUI
 

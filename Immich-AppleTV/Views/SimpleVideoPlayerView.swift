@@ -1,10 +1,3 @@
-//
-//  SimpleVideoPlayerView.swift
-//  Immich-AppleTV
-//
-//  Created by Codex on 2024-09-19.
-//
-
 import SwiftUI
 import AVKit
 

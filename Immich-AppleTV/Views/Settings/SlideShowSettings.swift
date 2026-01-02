@@ -37,7 +37,14 @@ struct SlideshowSettings: View {
                         Button(action: {
                             debugLog("clicked -")
                             debugLog("\(slideshowInterval)")
-                            if slideshowInterval > 8 {
+                            if slideshowInterval > 30 {
+                                // Above 30s: decrement by 30s
+                                slideshowInterval -= 30
+                            } else if slideshowInterval == 30 {
+                                // Jump from 30s back to 15s
+                                slideshowInterval = 15
+                            } else if slideshowInterval > 3 {
+                                // 3-15s: decrement by 1s
                                 slideshowInterval -= 1
                             }
                         }) {
@@ -58,7 +65,14 @@ struct SlideshowSettings: View {
                         Button(action: {
                             debugLog("clicked +")
                             debugLog("\(slideshowInterval)")
-                            if slideshowInterval < 15 {
+                            if slideshowInterval == 15 {
+                                // Jump from 15s to 30s
+                                slideshowInterval = 30
+                            } else if slideshowInterval >= 30 && slideshowInterval < 120 {
+                                // 30s and above: increment by 30s (max 120s)
+                                slideshowInterval += 30
+                            } else if slideshowInterval < 15 {
+                                // Below 15s: increment by 1s
                                 slideshowInterval += 1
                             }
                         }) {

@@ -8,76 +8,67 @@
 import SwiftUI
 
 struct PeopleGridView: View {
+    // MARK: - ViewModel
+    @StateObject private var viewModel: PeopleGridViewModel
+    
+    // MARK: - Services (for child views)
     @ObservedObject var peopleService: PeopleService
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var assetService: AssetService
-    @State private var people: [Person] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-    @State private var selectedPerson: Person?
     
+    // MARK: - Thumbnail Provider
     private var thumbnailProvider: PeopleThumbnailProvider {
         PeopleThumbnailProvider(assetService: assetService)
     }
     
-    var body: some View {
-        SharedGridView(
-            items: people,
-            config: .peopleStyle,
-            thumbnailProvider: thumbnailProvider,
-            isLoading: isLoading,
-            errorMessage: errorMessage,
-            onItemSelected: { person in
-                debugLog("Person selected: \(person.id)")
-                selectedPerson = person
-            },
-            onRetry: loadPeople
-        )
-        .fullScreenCover(item: $selectedPerson) { person in
-            PersonPhotosView(person: person, peopleService: peopleService, authService: authService, assetService: assetService)
-        }
-        .onAppear {
-            debugLog("PeopleGridView: View appeared, people count: \(people.count), isLoading: \(isLoading), errorMessage: \(errorMessage ?? "nil")")
-            if people.isEmpty {
-                loadPeople()
-            }
-        }
+    // MARK: - Initialization
+    
+    init(
+        peopleService: PeopleService,
+        authService: AuthenticationService,
+        assetService: AssetService
+    ) {
+        self.peopleService = peopleService
+        self.authService = authService
+        self.assetService = assetService
+        
+        _viewModel = StateObject(wrappedValue: PeopleGridViewModel(
+            peopleService: peopleService,
+            authService: authService
+        ))
     }
     
-    private func loadPeople() {
-        debugLog("PeopleGridView: loadPeople called - isAuthenticated: \(authService.isAuthenticated)")
-        guard authService.isAuthenticated else {
-            errorMessage = "Not authenticated. Please check your credentials."
-            return
-        }
-        
-        debugLog("Loading people - isAuthenticated: \(authService.isAuthenticated), baseURL: \(authService.baseURL)")
-        
-        isLoading = true
-        errorMessage = nil
-        debugLog("PeopleGridView: Set loading state to true")
-        
-        Task {
-            do {
-                let fetchedPeople = try await peopleService.getAllPeople()
-                debugLog("Successfully fetched \(fetchedPeople.count) people")
-                await MainActor.run {
-                    self.people = fetchedPeople
-                    self.isLoading = false
-                    debugLog("PeopleGridView: Updated UI with \(self.people.count) people, isLoading: \(self.isLoading)")
-                }
-            } catch {
-                debugLog("Error fetching people: \(error)")
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.isLoading = false
-                    debugLog("PeopleGridView: Set error state, isLoading: \(self.isLoading)")
-                }
+    // MARK: - Body
+    
+    var body: some View {
+        SharedGridView(
+            items: viewModel.people,
+            config: .peopleStyle,
+            thumbnailProvider: thumbnailProvider,
+            isLoading: viewModel.isLoading,
+            errorMessage: viewModel.errorMessage,
+            onItemSelected: { person in
+                viewModel.selectPerson(person)
+            },
+            onRetry: {
+                viewModel.retry()
             }
+        )
+        .fullScreenCover(item: $viewModel.selectedPerson) { person in
+            PersonPhotosView(
+                person: person,
+                peopleService: peopleService,
+                authService: authService,
+                assetService: assetService
+            )
+        }
+        .onAppear {
+            viewModel.loadPeopleIfNeeded()
         }
     }
 }
 
+// MARK: - Person Photos View
 
 struct PersonPhotosView: View {
     let person: Person
@@ -97,12 +88,12 @@ struct PersonPhotosView: View {
                 AssetGridView(
                     assetService: assetService,
                     authService: authService,
-                                        assetProvider: AssetProviderFactory.createProvider(
+                    assetProvider: AssetProviderFactory.createProvider(
                         personId: person.id,
                         assetService: assetService
                     ),
-                     albumId: nil,
-                     personId: person.id,
+                    albumId: nil,
+                    personId: person.id,
                     tagId: nil,
                     city: nil,
                     isAllPhotos: false,
@@ -142,6 +133,8 @@ struct PersonPhotosView: View {
         slideshowTrigger = true
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     let (_, _, authService, assetService, _, peopleService, _, _) =

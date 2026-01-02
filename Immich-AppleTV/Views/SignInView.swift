@@ -8,73 +8,72 @@
 import SwiftUI
 
 struct SignInView: View {
-    @ObservedObject var authService: AuthenticationService
-    @ObservedObject var userManager: UserManager
-    let mode: Mode
-    let onUserAdded: (() -> Void)?
+    // MARK: - ViewModel
+    @StateObject private var viewModel: SignInViewModel
+    
+    // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
-    @State private var serverURL = "https://immich.app:2283"
-    @State private var email = ""
-    @State private var password = ""
-    @State private var apiKey = ""
-    @State private var showApiKeyLogin = false
-    @State private var isLoading = false
-    @State private var showError = false
-    @State private var errorMessage = ""
     @FocusState private var focusedField: Field?
     
     enum Field {
         case serverURL, email, password, apiKey, signInButton, apiKeyToggle
     }
     
-    enum Mode {
-        case signIn
-        case addUser
-    }
-    
-    // Brand colors from the logo
+    // MARK: - Brand Colors
     private let brandPink = Color(red: 250/255, green: 79/255, blue: 163/255)
     private let brandOrange = Color(red: 255/255, green: 180/255, blue: 0/255)
     private let brandGreen = Color(red: 61/255, green: 220/255, blue: 151/255)
     private let brandBlue = Color(red: 76/255, green: 111/255, blue: 255/255)
     private let brandRed = Color(red: 250/255, green: 41/255, blue: 33/255)
     
+    // MARK: - Initialization
+    
+    /// Legacy initializer using Mode enum for backward compatibility
     init(authService: AuthenticationService, userManager: UserManager, mode: Mode = .signIn, onUserAdded: (() -> Void)? = nil) {
-        self.authService = authService
-        self.userManager = userManager
-        self.mode = mode
-        self.onUserAdded = onUserAdded
+        let signInMode: SignInMode = mode == .addUser ? .addUser : .signIn
+        _viewModel = StateObject(wrappedValue: SignInViewModel(
+            authService: authService,
+            userManager: userManager,
+            mode: signInMode,
+            onUserAdded: onUserAdded,
+            onDismiss: nil
+        ))
     }
+    
+    /// Legacy Mode enum for backward compatibility
+    enum Mode {
+        case signIn
+        case addUser
+    }
+    
+    // MARK: - Body
     
     var body: some View {
         NavigationView {
             ZStack {
-                // Rich gradient background
                 backgroundGradient
-                
-                // Subtle pattern overlay
                 patternOverlay
                 
-                // Main content
                 HStack(spacing: 0) {
-                    // Left side - Branding
                     brandingSection
                         .frame(width: 700)
                     
-                    // Right side - Login form
                     formSection
                         .frame(maxWidth: .infinity)
                 }
             }
         }
         .navigationViewStyle(StackNavigationViewStyle())
+        .onAppear {
+            // Set up dismiss callback
+            viewModel.onDismiss = { dismiss() }
+        }
     }
     
     // MARK: - Background
     
     private var backgroundGradient: some View {
         ZStack {
-            // Base dark gradient
             LinearGradient(
                 colors: [
                     Color(red: 15/255, green: 17/255, blue: 23/255),
@@ -85,22 +84,15 @@ struct SignInView: View {
                 endPoint: .bottomTrailing
             )
             
-            // Accent glow from logo colors
             RadialGradient(
-                colors: [
-                    brandBlue.opacity(0.15),
-                    Color.clear
-                ],
+                colors: [brandBlue.opacity(0.15), Color.clear],
                 center: .bottomLeading,
                 startRadius: 100,
                 endRadius: 800
             )
             
             RadialGradient(
-                colors: [
-                    brandPink.opacity(0.1),
-                    Color.clear
-                ],
+                colors: [brandPink.opacity(0.1), Color.clear],
                 center: .topTrailing,
                 startRadius: 50,
                 endRadius: 600
@@ -112,7 +104,6 @@ struct SignInView: View {
     private var patternOverlay: some View {
         GeometryReader { geo in
             Canvas { context, size in
-                // Subtle dot grid pattern
                 let spacing: CGFloat = 60
                 let dotRadius: CGFloat = 1.5
                 
@@ -136,14 +127,12 @@ struct SignInView: View {
         VStack(spacing: 40) {
             Spacer()
             
-            // Logo
             Image("icon")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 200, height: 200)
                 .shadow(color: brandBlue.opacity(0.5), radius: 30, x: 0, y: 10)
             
-            // App name with gradient
             VStack(spacing: 12) {
                 Text("Immich")
                     .font(.system(size: 72, weight: .bold, design: .rounded))
@@ -160,7 +149,6 @@ struct SignInView: View {
                     .foregroundColor(.white.opacity(0.7))
             }
             
-            // Tagline
             Text("Your memories, beautifully displayed")
                 .font(.system(size: 22, weight: .regular, design: .rounded))
                 .foregroundColor(.white.opacity(0.5))
@@ -180,46 +168,43 @@ struct SignInView: View {
             VStack(alignment: .leading, spacing: 32) {
                 // Header
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(mode == .addUser ? "Add Account" : "Welcome Back")
+                    Text(viewModel.headerTitle)
                         .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                     
-                    Text(mode == .addUser ? "Connect another Immich server" : "Sign in to continue")
+                    Text(viewModel.headerSubtitle)
                         .font(.system(size: 20, weight: .regular))
                         .foregroundColor(.white.opacity(0.6))
                 }
                 
                 // Form fields
                 VStack(spacing: 24) {
-                    // Server URL
                     formField(
                         icon: "server.rack",
                         title: "Server URL",
                         placeholder: "",
-                        text: $serverURL,
+                        text: $viewModel.serverURL,
                         isSecure: false,
                         keyboardType: .URL,
                         field: .serverURL
                     )
                     
-                    // Email
                     formField(
                         icon: "envelope",
                         title: "Email",
                         placeholder: "your-email@example.com",
-                        text: $email,
+                        text: $viewModel.email,
                         isSecure: false,
                         keyboardType: .emailAddress,
                         field: .email
                     )
                     
-                    // Password or API Key
-                    if showApiKeyLogin {
+                    if viewModel.showApiKeyLogin {
                         formField(
                             icon: "key",
                             title: "API Key",
                             placeholder: "Enter your API key",
-                            text: $apiKey,
+                            text: $viewModel.apiKey,
                             isSecure: true,
                             keyboardType: .default,
                             field: .apiKey
@@ -229,7 +214,7 @@ struct SignInView: View {
                             icon: "lock",
                             title: "Password",
                             placeholder: "Enter your password",
-                            text: $password,
+                            text: $viewModel.password,
                             isSecure: true,
                             keyboardType: .default,
                             field: .password
@@ -237,11 +222,9 @@ struct SignInView: View {
                     }
                 }
                 
-                // Sign In Button
                 signInButton
                     .padding(.top, 8)
                 
-                // API Key toggle
                 apiKeyToggle
                     .padding(.top, 4)
             }
@@ -265,17 +248,16 @@ struct SignInView: View {
             
             Spacer()
             
-            // Help text
             Text("Make sure your Immich server is accessible from this device")
                 .font(.system(size: 14))
                 .foregroundColor(.white.opacity(0.3))
                 .padding(.bottom, 40)
         }
         .padding(.horizontal, 80)
-        .alert(mode == .addUser ? "Add User Error" : "Sign In Error", isPresented: $showError) {
+        .alert(viewModel.alertTitle, isPresented: $viewModel.showError) {
             Button("OK") { }
         } message: {
-            Text(errorMessage)
+            Text(viewModel.errorMessage)
         }
     }
     
@@ -291,7 +273,6 @@ struct SignInView: View {
         field: Field
     ) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Label
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .medium))
@@ -302,7 +283,6 @@ struct SignInView: View {
                     .foregroundColor(.white.opacity(0.8))
             }
             
-            // Input field
             Group {
                 if isSecure {
                     SecureField(placeholder, text: text)
@@ -331,40 +311,36 @@ struct SignInView: View {
     // MARK: - Sign In Button
     
     private var signInButton: some View {
-        Button(action: signIn) {
+        Button(action: { viewModel.signIn() }) {
             HStack(spacing: 12) {
-                if isLoading {
+                if viewModel.isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         .scaleEffect(0.9)
                 } else {
-                    Image(systemName: mode == .addUser ? "person.badge.plus" : "arrow.right")
+                    Image(systemName: viewModel.buttonIcon)
                         .font(.system(size: 20, weight: .semibold))
                 }
                 
-                Text(isLoading ? (mode == .addUser ? "Adding..." : "Signing In...") : (mode == .addUser ? "Add Account" : "Sign In"))
+                Text(viewModel.buttonTitle)
                     .font(.system(size: 22, weight: .semibold, design: .rounded))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 22)
             .background(
                 LinearGradient(
-                    colors: canSignIn ? [brandBlue, brandBlue.opacity(0.8)] : [Color.gray.opacity(0.3), Color.gray.opacity(0.2)],
+                    colors: viewModel.canSignIn ? [brandBlue, brandBlue.opacity(0.8)] : [Color.gray.opacity(0.3), Color.gray.opacity(0.2)],
                     startPoint: .leading,
                     endPoint: .trailing
                 )
             )
             .foregroundColor(.white)
             .cornerRadius(16)
-            .shadow(color: canSignIn ? brandBlue.opacity(0.4) : .clear, radius: 20, x: 0, y: 10)
+            .shadow(color: viewModel.canSignIn ? brandBlue.opacity(0.4) : .clear, radius: 20, x: 0, y: 10)
         }
         .buttonStyle(CardButtonStyle())
-        .disabled(!canSignIn)
+        .disabled(!viewModel.canSignIn)
         .focused($focusedField, equals: .signInButton)
-    }
-    
-    private var canSignIn: Bool {
-        !isLoading && !serverURL.isEmpty && !email.isEmpty && (showApiKeyLogin ? !apiKey.isEmpty : !password.isEmpty)
     }
     
     // MARK: - API Key Toggle
@@ -372,20 +348,14 @@ struct SignInView: View {
     private var apiKeyToggle: some View {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
-                showApiKeyLogin.toggle()
-                // Clear the other field when switching
-                if showApiKeyLogin {
-                    password = ""
-                } else {
-                    apiKey = ""
-                }
+                viewModel.toggleLoginMode()
             }
         }) {
             HStack(spacing: 8) {
-                Image(systemName: showApiKeyLogin ? "person.fill" : "key.fill")
+                Image(systemName: viewModel.showApiKeyLogin ? "person.fill" : "key.fill")
                     .font(.system(size: 14))
                 
-                Text(showApiKeyLogin ? "Use password instead" : "Use API key instead")
+                Text(viewModel.showApiKeyLogin ? "Use password instead" : "Use API key instead")
                     .font(.system(size: 16, weight: .medium))
             }
             .foregroundColor(.white.opacity(0.5))
@@ -399,105 +369,6 @@ struct SignInView: View {
         .buttonStyle(CardButtonStyle())
         .focused($focusedField, equals: .apiKeyToggle)
     }
-    
-    // MARK: - Sign In Logic
-    
-    private func signIn() {
-        guard canSignIn else { return }
-        
-        isLoading = true
-        
-        // Clean up the server URL
-        var cleanURL = serverURL.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !cleanURL.hasPrefix("http://") && !cleanURL.hasPrefix("https://") {
-            cleanURL = "https://" + cleanURL
-        }
-        
-        // Remove trailing slash if present
-        if cleanURL.hasSuffix("/") {
-            cleanURL = String(cleanURL.dropLast())
-        }
-        
-        // Validate URL format
-        guard URL(string: cleanURL) != nil else {
-            isLoading = false
-            showError = true
-            errorMessage = "Please enter a valid server URL"
-            return
-        }
-        
-        Task {
-            do {
-                if mode == .addUser {
-                    // Add user mode: authenticate, save user, and switch to them
-                    if showApiKeyLogin {
-                        _ = try await userManager.authenticateWithApiKey(
-                            serverURL: cleanURL,
-                            email: email,
-                            apiKey: apiKey
-                        )
-                    } else {
-                        _ = try await userManager.authenticateWithCredentials(
-                            serverURL: cleanURL,
-                            email: email,
-                            password: password
-                        )
-                    }
-                    
-                    // Find the newly added user
-                    let newUser = userManager.findUser(email: email, serverURL: cleanURL)
-                    
-                    // Switch to the new user
-                    if let newUser = newUser {
-                        try await authService.switchUser(newUser)
-                        
-                        // Refresh the app after switching users
-                        await MainActor.run {
-                            NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
-                        }
-                    }
-                    
-                    await MainActor.run {
-                        onUserAdded?()
-                        dismiss()
-                        isLoading = false
-                    }
-                } else {
-                    // Regular sign in mode: use the existing auth service
-                    if showApiKeyLogin {
-                        authService.signInWithApiKey(serverURL: cleanURL, email: email, apiKey: apiKey) { success, error in
-                            DispatchQueue.main.async {
-                                isLoading = false
-                                
-                                if !success {
-                                    showError = true
-                                    errorMessage = error ?? "Failed to sign in. Please check your API key and try again."
-                                }
-                            }
-                        }
-                    } else {
-                        authService.signIn(serverURL: cleanURL, email: email, password: password) { success, error in
-                            DispatchQueue.main.async {
-                                isLoading = false
-                                
-                                if !success {
-                                    showError = true
-                                    errorMessage = error ?? "Failed to sign in. Please check your credentials and try again."
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch {
-                await MainActor.run {
-                    isLoading = false
-                    showError = true
-                    errorMessage = error.localizedDescription
-                }
-            }
-        }
-    }
-    
 }
 
 #Preview {

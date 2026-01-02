@@ -11,17 +11,14 @@ struct ExploreView: View {
     @ObservedObject var exploreService: ExploreService
     @ObservedObject var assetService: AssetService
     @ObservedObject var authService: AuthenticationService
-    @ObservedObject var userManager: UserManager
     
     @StateObject private var viewModel: ExploreViewModel
     @State private var selectedContinent: Continent?
-    @State private var showingStats = false
     
-    init(exploreService: ExploreService, assetService: AssetService, authService: AuthenticationService, userManager: UserManager) {
+    init(exploreService: ExploreService, assetService: AssetService, authService: AuthenticationService) {
         self.exploreService = exploreService
         self.assetService = assetService
         self.authService = authService
-        self.userManager = userManager
         _viewModel = StateObject(wrappedValue: ExploreViewModel(exploreService: exploreService, assetService: assetService))
     }
     
@@ -81,9 +78,6 @@ struct ExploreView: View {
                 )
             }
         }
-        .fullScreenCover(isPresented: $showingStats) {
-            StatsView(statsService: createStatsService())
-        }
         .fullScreenCover(item: $selectedContinent) { continent in
             ContinentDetailView(continent: continent, assetService: assetService, authService: authService, exploreService: exploreService)
         }
@@ -100,12 +94,5 @@ struct ExploreView: View {
                 await viewModel.refresh()
             }
         }
-    }
-    
-    private func createStatsService() -> StatsService {
-        let networkService = NetworkService(userManager: userManager)
-        let exploreService = ExploreService(networkService: networkService)
-        let peopleService = PeopleService(networkService: networkService)
-        return StatsService(exploreService: exploreService, peopleService: peopleService, networkService: networkService)
     }
 }

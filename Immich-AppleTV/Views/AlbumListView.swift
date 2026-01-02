@@ -8,130 +8,72 @@
 import SwiftUI
 
 struct AlbumListView: View {
+    // MARK: - ViewModel
+    @StateObject private var viewModel: AlbumListViewModel
+    
+    // MARK: - Services (for child views)
     @ObservedObject var albumService: AlbumService
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var assetService: AssetService
     @ObservedObject var userManager: UserManager
-    @State private var albums: [ImmichAlbum] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-    @State private var favoritesCount: Int = 0
-    @State private var firstFavoriteAssetId: String?
-    @State private var selectedAlbum: ImmichAlbum?
     
+    // MARK: - Thumbnail Provider
     private var thumbnailProvider: AlbumThumbnailProvider {
         AlbumThumbnailProvider(albumService: albumService, assetService: assetService)
     }
     
-    private var allAlbums: [ImmichAlbum] {
-        var result = albums
-        if let favAlbums = createFavoritesAlbum() {
-            result.insert(favAlbums, at: 0)
-        }
-        return result
+    // MARK: - Initialization
+    
+    init(
+        albumService: AlbumService,
+        authService: AuthenticationService,
+        assetService: AssetService,
+        userManager: UserManager
+    ) {
+        self.albumService = albumService
+        self.authService = authService
+        self.assetService = assetService
+        self.userManager = userManager
+        
+        _viewModel = StateObject(wrappedValue: AlbumListViewModel(
+            albumService: albumService,
+            assetService: assetService,
+            authService: authService,
+            userManager: userManager
+        ))
     }
+    
+    // MARK: - Body
     
     var body: some View {
         SharedGridView(
-            items: allAlbums,
+            items: viewModel.allAlbums,
             config: .albumStyle,
             thumbnailProvider: thumbnailProvider,
-            isLoading: isLoading,
-            errorMessage: errorMessage,
+            isLoading: viewModel.isLoading,
+            errorMessage: viewModel.errorMessage,
             onItemSelected: { album in
-                selectedAlbum = album
+                viewModel.selectAlbum(album)
             },
-            onRetry: loadAlbums
+            onRetry: {
+                viewModel.retry()
+            }
         )
-        .fullScreenCover(item: $selectedAlbum) { album in
-            AlbumDetailView(album: album, albumService: albumService, authService: authService, assetService: assetService)
+        .fullScreenCover(item: $viewModel.selectedAlbum) { album in
+            AlbumDetailView(
+                album: album,
+                albumService: albumService,
+                authService: authService,
+                assetService: assetService
+            )
         }
         .onAppear {
-            if albums.isEmpty {
-                loadAlbums()
-                loadFavoritesCount()
-            }
-        }
-    }
-    
-    private func createFavoritesAlbum() -> ImmichAlbum?  {
-        
-        if let user = userManager.currentUser {
-            let owner = Owner(
-                id: user.id,
-                email: user.email,
-                name: user.name,
-                profileImagePath: "",
-                profileChangedAt: "",
-                avatarColor: "primary"
-            )
-            
-            return ImmichAlbum(
-                id: "smart_favorites",
-                albumName: "Favorites",
-                description: "Collection",
-                albumThumbnailAssetId: firstFavoriteAssetId,
-                createdAt: ISO8601DateFormatter().string(from: Date()),
-                updatedAt: ISO8601DateFormatter().string(from: Date()),
-                albumUsers: [],
-                assets: [],
-                assetCount: favoritesCount,
-                ownerId: user.id,
-                owner: owner,
-                shared: false,
-                hasSharedLink: false,
-                isActivityEnabled: false,
-                lastModifiedAssetTimestamp: nil,
-                order: nil,
-                startDate: nil,
-                endDate: nil
-            )
-        }
-        return nil
-    }
-    
-    private func loadFavoritesCount() {
-        guard authService.isAuthenticated else { return }
-        
-        Task {
-            do {
-                let result = try await assetService.fetchAssets(page: 1, limit: nil, isFavorite: true)
-                await MainActor.run {
-                    self.favoritesCount = result.total
-                    self.firstFavoriteAssetId = result.assets.first?.id
-                }
-            } catch {
-                debugLog("Failed to fetch favorites count: \(error)")
-            }
-        }
-    }
-    
-    private func loadAlbums() {
-        guard authService.isAuthenticated else {
-            errorMessage = "Not authenticated. Please check your credentials."
-            return
-        }
-        
-        isLoading = true
-        errorMessage = nil
-        
-        Task {
-            do {
-                let fetchedAlbums = try await albumService.fetchAlbums()
-                await MainActor.run {
-                    self.albums = fetchedAlbums
-                    self.isLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    self.errorMessage = error.localizedDescription
-                    self.isLoading = false
-                }
-            }
+            viewModel.loadAlbumsIfNeeded()
         }
     }
 }
 
+// MARK: - Album Detail View
 
 struct AlbumDetailView: View {
     let album: ImmichAlbum
@@ -184,16 +126,16 @@ struct AlbumDetailView: View {
         }
         .fullScreenCover(isPresented: $slideshowTrigger) {
             SlideshowView(
-                albumId: album.id.hasPrefix("smart_") ? nil : album.id, 
-                personId: nil, 
-                tagId: nil, 
+                albumId: album.id.hasPrefix("smart_") ? nil : album.id,
+                personId: nil,
+                tagId: nil,
                 city: nil,
                 startingIndex: 0,
                 isFavorite: album.id == "smart_favorites"
             )
         }
-        .onAppear(){
-            debugLog("Album defaul view")
+        .onAppear {
+            debugLog("AlbumDetailView: View appeared for album \(album.albumName)")
         }
     }
     
@@ -218,6 +160,8 @@ struct AlbumDetailView: View {
         slideshowTrigger = true
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     let (_, userManager, authService, assetService, albumService, _, _, _) =

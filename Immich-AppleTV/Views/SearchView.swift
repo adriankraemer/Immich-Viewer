@@ -9,19 +9,18 @@ import SwiftUI
 import UIKit
 
 struct SearchView: View {
-    @ObservedObject var searchService: SearchService
+    // MARK: - ViewModel
+    @StateObject private var viewModel: SearchViewModel
+    
+    // MARK: - Services (for child views)
     @ObservedObject var assetService: AssetService
     @ObservedObject var authService: AuthenticationService
     
-    @State private var searchText = ""
-    @State private var assets: [ImmichAsset] = []
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-    @State private var selectedAsset: ImmichAsset?
+    // MARK: - Local State
     @State private var showingFullScreen = false
-    @State private var currentAssetIndex: Int = 0
     @FocusState private var focusedAssetId: String?
     
+    // MARK: - Layout
     private let columns = [
         GridItem(.fixed(300), spacing: 50),
         GridItem(.fixed(300), spacing: 50),
@@ -30,147 +29,159 @@ struct SearchView: View {
         GridItem(.fixed(300), spacing: 50),
     ]
     
+    // MARK: - Initialization
+    
+    init(
+        searchService: SearchService,
+        assetService: AssetService,
+        authService: AuthenticationService
+    ) {
+        self.assetService = assetService
+        self.authService = authService
+        
+        _viewModel = StateObject(wrappedValue: SearchViewModel(
+            searchService: searchService,
+            assetService: assetService,
+            authService: authService
+        ))
+    }
+    
+    // MARK: - Body
+    
     var body: some View {
         ZStack {
             // Background
             SharedGradientBackground()
             
             VStack(spacing: 20) {
-                    // Search results
-                    if isLoading {
-                        Spacer()
-                        ProgressView("Searching...")
-                            .foregroundColor(.white)
-                            .scaleEffect(1.5)
-                        Spacer()
-                    } else if let errorMessage = errorMessage {
-                        Spacer()
-                        VStack {
-                            Image(systemName: "exclamationmark.triangle")
-                                .font(.system(size: 60))
-                                .foregroundColor(.orange)
-                            Text("Error")
-                                .font(.title)
-                                .foregroundColor(.white)
-                            Text(errorMessage)
-                                .foregroundColor(.gray)
-                                .multilineTextAlignment(.center)
-                                .padding()
-                            Button("Retry") {
-                                performSearch()
-                            }
-                            .buttonStyle(.borderedProminent)
-                        }
-                        Spacer()
-                    } else if assets.isEmpty && !searchText.isEmpty {
-                        Spacer()
-                        VStack {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 60))
-                                .foregroundColor(.gray)
-                            Text("No Results Found")
-                                .font(.title)
-                                .foregroundColor(.white)
-                            Text("Try different search terms")
-                                .foregroundColor(.gray)
-                        }
-                        Spacer()
-                    } else if searchText.isEmpty {
-                        Spacer()
-                        VStack {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 60))
-                                .foregroundColor(.gray)
-                            Text("Search Your Photos")
-                                .font(.title)
-                                .foregroundColor(.white)
-                            Text("Use the search field to find your photos")
-                                .foregroundColor(.gray)
-                        }
-                        Spacer()
-                    } else {
-                        ScrollView {
-                            LazyVGrid(columns: columns, spacing: 50) {
-                                ForEach(assets) { asset in
-                                    Button(action: {
-                                        selectedAsset = asset
-                                        if let index = assets.firstIndex(of: asset) {
-                                            currentAssetIndex = index
-                                        }
-                                        showingFullScreen = true
-                                    }) {
-                                        AssetThumbnailView(
-                                            asset: asset,
-                                            assetService: assetService,
-                                            isFocused: focusedAssetId == asset.id
-                                        )
-                                    }
-                                    .frame(width: 300, height: 360)
-                                    .id(asset.id)
-                                    .focused($focusedAssetId, equals: asset.id)
-                                    .animation(.easeInOut(duration: 0.2), value: focusedAssetId)
-                                    .buttonStyle(CardButtonStyle())
-                                }
-                            }
-                            .padding(.horizontal)
-                            .padding(.bottom, 40)
-                        }
-                    }
+                // Search results
+                if viewModel.isLoading {
+                    loadingView
+                } else if let errorMessage = viewModel.errorMessage {
+                    errorView(message: errorMessage)
+                } else if viewModel.showEmptyState {
+                    emptyResultsView
+                } else if viewModel.showInitialState {
+                    initialStateView
+                } else {
+                    resultsGridView
+                }
             }
         }
-        .searchable(text: $searchText, prompt: "Search by context: Mountains, sunsets, etc...")
+        .searchable(text: $viewModel.searchText, prompt: "Search by context: Mountains, sunsets, etc...")
         .onSubmit(of: .search) {
-            performSearch()
-        }
-        .onChange(of: searchText) { oldValue, newValue in
-            // Debounce search to avoid too many API calls while typing
-            if !newValue.isEmpty {
-                performSearch()
-            }
+            viewModel.performSearch()
         }
         .fullScreenCover(isPresented: $showingFullScreen) {
-            if let selectedAsset = selectedAsset {
+            if let selectedAsset = viewModel.selectedAsset {
                 FullScreenImageView(
                     asset: selectedAsset,
-                    assets: assets,
-                    currentIndex: assets.firstIndex(of: selectedAsset) ?? 0,
+                    assets: viewModel.assets,
+                    currentIndex: viewModel.assets.firstIndex(of: selectedAsset) ?? 0,
                     assetService: assetService,
                     authenticationService: authService,
-                    currentAssetIndex: $currentAssetIndex
+                    currentAssetIndex: $viewModel.currentAssetIndex
                 )
             }
         }
     }
     
-    private func performSearch() {
-        let trimmedText = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmedText.isEmpty else {
-            return
+    // MARK: - Subviews
+    
+    private var loadingView: some View {
+        VStack {
+            Spacer()
+            ProgressView("Searching...")
+                .foregroundColor(.white)
+                .scaleEffect(1.5)
+            Spacer()
         }
-        
-        debugLog("SearchView: Performing search for: '\(trimmedText)'")
-        
-        Task {
-            await MainActor.run {
-                isLoading = true
-                errorMessage = nil
-                assets = []
-            }
-            
-            do {
-                let result = try await searchService.searchAssets(query: trimmedText)
-                await MainActor.run {
-                    debugLog("SearchView: Search completed, found \(result.assets.count) assets")
-                    assets = result.assets
-                    isLoading = false
+    }
+    
+    private func errorView(message: String) -> some View {
+        VStack {
+            Spacer()
+            VStack {
+                Image(systemName: "exclamationmark.triangle")
+                    .font(.system(size: 60))
+                    .foregroundColor(.orange)
+                Text("Error")
+                    .font(.title)
+                    .foregroundColor(.white)
+                Text(message)
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding()
+                Button("Retry") {
+                    viewModel.retry()
                 }
-            } catch {
-                await MainActor.run {
-                    debugLog("SearchView: Search failed with error: \(error)")
-                    errorMessage = error.localizedDescription
-                    isLoading = false
-                }
+                .buttonStyle(.borderedProminent)
             }
+            Spacer()
         }
+    }
+    
+    private var emptyResultsView: some View {
+        VStack {
+            Spacer()
+            VStack {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 60))
+                    .foregroundColor(.gray)
+                Text("No Results Found")
+                    .font(.title)
+                    .foregroundColor(.white)
+                Text("Try different search terms")
+                    .foregroundColor(.gray)
+            }
+            Spacer()
+        }
+    }
+    
+    private var initialStateView: some View {
+        VStack {
+            Spacer()
+            VStack {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 60))
+                    .foregroundColor(.gray)
+                Text("Search Your Photos")
+                    .font(.title)
+                    .foregroundColor(.white)
+                Text("Use the search field to find your photos")
+                    .foregroundColor(.gray)
+            }
+            Spacer()
+        }
+    }
+    
+    private var resultsGridView: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 50) {
+                ForEach(viewModel.assets) { asset in
+                    assetButton(for: asset)
+                }
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 40)
+        }
+    }
+    
+    private func assetButton(for asset: ImmichAsset) -> some View {
+        Button(action: {
+            viewModel.selectAsset(asset)
+            showingFullScreen = true
+        }) {
+            AssetThumbnailView(
+                asset: asset,
+                assetService: assetService,
+                isFocused: focusedAssetId == asset.id
+            )
+        }
+        .frame(width: 300, height: 360)
+        .id(asset.id)
+        .focused($focusedAssetId, equals: asset.id)
+        .animation(.easeInOut(duration: 0.2), value: focusedAssetId)
+        .buttonStyle(CardButtonStyle())
     }
 }

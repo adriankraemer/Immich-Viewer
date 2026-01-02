@@ -6,65 +6,61 @@
 import SwiftUI
 
 struct TagsGridView: View {
+    // MARK: - ViewModel
+    @StateObject private var viewModel: TagsGridViewModel
+    
+    // MARK: - Services (for child views)
     @ObservedObject var tagService: TagService
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var assetService: AssetService
-    @State private var tags: [Tag] = []
-    @State private var selectedTag: Tag?
-    @State private var isLoading = false
-    @State private var errorMessage: String?
     
+    // MARK: - Thumbnail Provider
     private var thumbnailProvider: TagThumbnailProvider {
         TagThumbnailProvider(assetService: assetService)
     }
     
+    // MARK: - Initialization
+    
+    init(
+        tagService: TagService,
+        authService: AuthenticationService,
+        assetService: AssetService
+    ) {
+        self.tagService = tagService
+        self.authService = authService
+        self.assetService = assetService
+        
+        _viewModel = StateObject(wrappedValue: TagsGridViewModel(
+            tagService: tagService
+        ))
+    }
+    
+    // MARK: - Body
+    
     var body: some View {
         SharedGridView(
-            items: tags,
+            items: viewModel.tags,
             config: .tagsStyle,
             thumbnailProvider: thumbnailProvider,
-            isLoading: isLoading,
-            errorMessage: errorMessage,
+            isLoading: viewModel.isLoading,
+            errorMessage: viewModel.errorMessage,
             onItemSelected: { tag in
-                selectedTag = tag
+                viewModel.selectTag(tag)
             },
             onRetry: {
-                Task {
-                    await loadTags()
-                }
+                viewModel.retry()
             }
         )
-        .fullScreenCover(item: $selectedTag) { tag in
+        .fullScreenCover(item: $viewModel.selectedTag) { tag in
             TagDetailView(tag: tag, assetService: assetService, authService: authService)
         }
         .onAppear {
-            if tags.isEmpty {
-                Task {
-                    await loadTags()
-                }
-            }
-        }
-    }
-    
-    private func loadTags() async {
-        isLoading = true
-        errorMessage = nil
-        
-        do {
-            let fetchedTags = try await tagService.fetchTags()
-            await MainActor.run {
-                self.tags = fetchedTags
-                self.isLoading = false
-            }
-        } catch {
-            await MainActor.run {
-                self.errorMessage = "Failed to load tags: \(error.localizedDescription)"
-                self.isLoading = false
-            }
+            viewModel.loadTagsIfNeeded()
         }
     }
 }
 
+// MARK: - Tag Detail View
 
 struct TagDetailView: View {
     let tag: Tag
@@ -78,19 +74,22 @@ struct TagDetailView: View {
                 Color.black
                     .ignoresSafeArea()
                 
-                AssetGridView(assetService: assetService,
-                              authService: authService,
-                              assetProvider: AssetProviderFactory.createProvider(
-                                tagId: tag.id,
-                                assetService: assetService
-                              ),
-                              albumId: nil, personId: nil,
-                              tagId: tag.id,
-                              city: nil,
-                              isAllPhotos: false,
-                              isFavorite: false,
-                              onAssetsLoaded: nil,
-                              deepLinkAssetId: nil)
+                AssetGridView(
+                    assetService: assetService,
+                    authService: authService,
+                    assetProvider: AssetProviderFactory.createProvider(
+                        tagId: tag.id,
+                        assetService: assetService
+                    ),
+                    albumId: nil,
+                    personId: nil,
+                    tagId: tag.id,
+                    city: nil,
+                    isAllPhotos: false,
+                    isFavorite: false,
+                    onAssetsLoaded: nil,
+                    deepLinkAssetId: nil
+                )
             }
             .navigationTitle(tag.name)
             .toolbar {
@@ -103,6 +102,8 @@ struct TagDetailView: View {
         }
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     let (_, _, authService, assetService, _, _, tagService, _) =

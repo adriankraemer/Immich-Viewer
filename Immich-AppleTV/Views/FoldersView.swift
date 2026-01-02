@@ -8,68 +8,61 @@
 import SwiftUI
 
 struct FoldersView: View {
+    // MARK: - ViewModel
+    @StateObject private var viewModel: FoldersViewModel
+    
+    // MARK: - Services (for child views)
     @ObservedObject var folderService: FolderService
     @ObservedObject var assetService: AssetService
     @ObservedObject var authService: AuthenticationService
     
-    @State private var folders: [ImmichFolder] = []
-    @State private var selectedFolder: ImmichFolder?
-    @State private var isLoading = false
-    @State private var errorMessage: String?
-    
+    // MARK: - Thumbnail Provider
     private var thumbnailProvider: FolderThumbnailProvider {
         FolderThumbnailProvider(assetService: assetService)
     }
     
+    // MARK: - Initialization
+    
+    init(
+        folderService: FolderService,
+        assetService: AssetService,
+        authService: AuthenticationService
+    ) {
+        self.folderService = folderService
+        self.assetService = assetService
+        self.authService = authService
+        
+        _viewModel = StateObject(wrappedValue: FoldersViewModel(
+            folderService: folderService
+        ))
+    }
+    
+    // MARK: - Body
+    
     var body: some View {
         SharedGridView(
-            items: folders,
+            items: viewModel.folders,
             config: .foldersStyle,
             thumbnailProvider: thumbnailProvider,
-            isLoading: isLoading,
-            errorMessage: errorMessage,
+            isLoading: viewModel.isLoading,
+            errorMessage: viewModel.errorMessage,
             onItemSelected: { folder in
-                selectedFolder = folder
+                viewModel.selectFolder(folder)
             },
             onRetry: {
-                Task {
-                    await loadFolders()
-                }
+                viewModel.retry()
             }
         )
-        .fullScreenCover(item: $selectedFolder) { folder in
+        .fullScreenCover(item: $viewModel.selectedFolder) { folder in
             FolderDetailView(folder: folder, assetService: assetService, authService: authService)
         }
         .onAppear {
-            if folders.isEmpty {
-                Task {
-                    await loadFolders()
-                }
-            }
-        }
-    }
-    
-    private func loadFolders() async {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
-        
-        do {
-            let fetchedFolders = try await folderService.fetchUniquePaths()
-            await MainActor.run {
-                let uniqueFolders = Array(Set(fetchedFolders))
-                self.folders = uniqueFolders.sorted { $0.path.localizedCaseInsensitiveCompare($1.path) == .orderedAscending }
-                self.isLoading = false
-            }
-        } catch {
-            await MainActor.run {
-                self.errorMessage = "Failed to load folders: \(error.localizedDescription)"
-                self.isLoading = false
-            }
+            viewModel.loadFoldersIfNeeded()
         }
     }
 }
+
+// MARK: - Folder Detail View
 
 struct FolderDetailView: View {
     let folder: ImmichFolder
@@ -87,20 +80,22 @@ struct FolderDetailView: View {
                 Color.black
                     .ignoresSafeArea()
                 
-                AssetGridView(assetService: assetService,
-                              authService: authService,
-                              assetProvider: AssetProviderFactory.createProvider(
-                                folderPath: folder.path,
-                                assetService: assetService
-                              ),
-                              albumId: nil,
-                              personId: nil,
-                              tagId: nil,
-                              city: nil,
-                              isAllPhotos: false,
-                              isFavorite: false,
-                              onAssetsLoaded: nil,
-                              deepLinkAssetId: nil)
+                AssetGridView(
+                    assetService: assetService,
+                    authService: authService,
+                    assetProvider: AssetProviderFactory.createProvider(
+                        folderPath: folder.path,
+                        assetService: assetService
+                    ),
+                    albumId: nil,
+                    personId: nil,
+                    tagId: nil,
+                    city: nil,
+                    isAllPhotos: false,
+                    isFavorite: false,
+                    onAssetsLoaded: nil,
+                    deepLinkAssetId: nil
+                )
             }
             .navigationTitle(folderTitle)
             .toolbar {
@@ -113,6 +108,8 @@ struct FolderDetailView: View {
         }
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     let (_, _, authService, assetService, _, _, _, folderService) =

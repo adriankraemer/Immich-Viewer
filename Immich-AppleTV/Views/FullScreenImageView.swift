@@ -8,239 +8,222 @@
 import SwiftUI
 
 struct FullScreenImageView: View {
-    let asset: ImmichAsset
-    let assets: [ImmichAsset]
-    let currentIndex: Int
+    // MARK: - ViewModel
+    @StateObject private var viewModel: FullScreenImageViewModel
+    
+    // MARK: - Services (for child views)
     @ObservedObject var assetService: AssetService
     @ObservedObject var authenticationService: AuthenticationService
-    @Binding var currentAssetIndex: Int // Add binding to track current index
-    @Environment(\.dismiss) private var dismiss
-    @State private var image: UIImage?
-    @State private var isLoading = true
-
-    @State private var currentAsset: ImmichAsset
-    @State private var showingSwipeHint = false
-    @FocusState private var isFocused: Bool
-    @State private var refreshToggle = false
-    @State private var showingVideoPlayer = false
-    @State private var showingExifInfo = false
     
-    init(asset: ImmichAsset, assets: [ImmichAsset], currentIndex: Int, assetService: AssetService, authenticationService: AuthenticationService, currentAssetIndex: Binding<Int>) {
+    // MARK: - Bindings
+    @Binding var currentAssetIndex: Int
+    
+    // MARK: - Environment
+    @Environment(\.dismiss) private var dismiss
+    
+    // MARK: - Local State
+    @FocusState private var isFocused: Bool
+    
+    // MARK: - Initialization
+    
+    init(
+        asset: ImmichAsset,
+        assets: [ImmichAsset],
+        currentIndex: Int,
+        assetService: AssetService,
+        authenticationService: AuthenticationService,
+        currentAssetIndex: Binding<Int>
+    ) {
         debugLog("FullScreenImageView: Initializing with currentIndex: \(currentIndex)")
-        self.asset = asset
-        self.assets = assets
-        self.currentIndex = currentIndex
         self.assetService = assetService
         self.authenticationService = authenticationService
         self._currentAssetIndex = currentAssetIndex
-        self._currentAsset = State(initialValue: asset)
+        
+        _viewModel = StateObject(wrappedValue: FullScreenImageViewModel(
+            asset: asset,
+            assets: assets,
+            currentIndex: currentIndex,
+            assetService: assetService
+        ))
     }
+    
+    // MARK: - Body
     
     var body: some View {
         ZStack {
             SharedOpaqueBackground()
             
-            if currentAsset.type == .video {
-                if showingVideoPlayer {
-                    // Use simplified video player when user clicks play
-                    SimpleVideoPlayerView(asset: currentAsset, assetService: assetService, authenticationService: authenticationService)
-                        .id(currentAsset.id)
-                } else {
-                    // Show video thumbnail with play button overlay
-                    VideoThumbnailView(
-                        asset: currentAsset,
-                        assetService: assetService,
-                        onPlayButtonTapped: {
-                            showingVideoPlayer = true
-                        }
-                    )
-                }
+            if viewModel.isVideo {
+                videoContent
             } else {
-                // Use image view for photos
-                if isLoading {
-                    ProgressView("Loading...")
-                        .foregroundColor(.white)
-                        .scaleEffect(1.5)
-                } else if let image = image {
-                    GeometryReader { geometry in
-                        ZStack {
-                            SharedOpaqueBackground()
-                            
-                            Image(uiImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .overlay(
-                                    // Lock screen style overlay in bottom right
-                                    Group {
-                                        if !UserDefaults.standard.hideImageOverlay {
-                                            VStack {
-                                                Spacer()
-                                                HStack {
-                                                    Spacer()
-                                                    LockScreenStyleOverlay(asset: currentAsset)
-                                                }
-                                            }
-                                        }
-                                    }
-                                )
-                        }
-                    }
-                    .ignoresSafeArea()
-                } else {
-                    VStack {
-                        Image(systemName: "photo")
-                            .font(.system(size: 60))
-                            .foregroundColor(.gray)
-                        Text("Failed to load image")
-                            .foregroundColor(.gray)
-                    }
-                }
+                imageContent
             }
             
             // EXIF info overlay
-            if showingExifInfo {
-                VStack {
-                    Spacer()
-                    ExifInfoOverlay(asset: currentAsset) {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            showingExifInfo = false
-                        }
-                    }
-                }
-                .transition(.opacity)
+            if viewModel.showingExifInfo {
+                exifInfoOverlay
             }
             
             // Swipe hint overlay
-            if showingSwipeHint && assets.count > 1 {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        VStack(spacing: 8) {
-                            HStack(spacing: 50) {
-                                HStack(spacing: 5){
-                                    Image(systemName: "arrow.left")
-                                        .font(.title2)
-                                        .foregroundColor(.white.opacity(0.7))
-                                    Image(systemName: "arrow.right")
-                                        .font(.title2)
-                                        .foregroundColor(.white.opacity(0.7))
-                                    Text("Swipe to navigate")
-                                        .font(.caption)
-                                        .foregroundColor(.white.opacity(0.7))
-                                }
-                                HStack(spacing: 5){
-                                    Image(systemName: "arrow.up")
-                                        .font(.title2)
-                                        .foregroundColor(.white.opacity(0.7))
-                                    Image(systemName: "arrow.down")
-                                        .font(.title2)
-                                        .foregroundColor(.white.opacity(0.7))
-                                    Text("Swipe up or down to show/hide details")
-                                        .font(.caption)
-                                        .foregroundColor(.white.opacity(0.7))
-                                   
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.black.opacity(0.6))
-                            .cornerRadius(20)
-                        }
-                        Spacer()
-                    }
-                    .padding(.bottom, 100)
-                }
-                .transition(.opacity)
+            if viewModel.showingSwipeHint && viewModel.hasMultipleAssets {
+                swipeHintOverlay
             }
         }
-        .id(refreshToggle)
+        .id(viewModel.refreshToggle)
         .onExitCommand {
-            debugLog("FullScreenImageView: Exit command triggered")
-            if showingVideoPlayer {
-                showingVideoPlayer = false
-            } else {
-                debugLog("FullScreenImageView: Dismissing fullscreen view")
+            if viewModel.handleExitCommand() {
                 dismiss()
             }
         }
         .modifier(ContentAwareModifier(
-            isVideo: currentAsset.type == .video,
-            currentAssetIndex: currentAssetIndex,
-            assets: assets,
+            viewModel: viewModel,
             isFocused: $isFocused,
-            showingSwipeHint: $showingSwipeHint,
-            showingExifInfo: $showingExifInfo,
-            onNavigate: navigateToImage,
-            onDismiss: { dismiss() },
-            onLoadImage: loadFullImage,
-            showingVideoPlayer: showingVideoPlayer,
-            onPlayButtonTapped: {
-                showingVideoPlayer = true
-            }
+            onDismiss: { dismiss() }
         ))
+        .onAppear {
+            // Set up the callback to sync currentAssetIndex binding
+            viewModel.onCurrentIndexChanged = { [self] newIndex in
+                self.currentAssetIndex = newIndex
+            }
+        }
     }
     
-    private func navigateToImage(at index: Int) {
-        debugLog("FullScreenImageView: Attempting to navigate to image at index \(index) (total assets: \(assets.count))")
-        guard index >= 0 && index < assets.count else {
-            debugLog("FullScreenImageView: Navigation failed - index \(index) out of bounds")
-            return
-        }
-        debugLog("FullScreenImageView: Navigating to asset ID: \(assets[index].id)")
-        currentAssetIndex = index // This now updates the binding
-        debugLog("FullScreenImageView: Updated currentAssetIndex binding to \(index)")
-        currentAsset = assets[index]
-        refreshToggle.toggle() // Force UI update
-        
-        // Reset overlay states when navigating
-        showingExifInfo = false
-        if currentAsset.type == .video {
-            showingVideoPlayer = false
+    // MARK: - Video Content
+    
+    @ViewBuilder
+    private var videoContent: some View {
+        if viewModel.showingVideoPlayer {
+            // Use simplified video player when user clicks play
+            SimpleVideoPlayerView(
+                asset: viewModel.currentAsset,
+                assetService: assetService,
+                authenticationService: authenticationService
+            )
+            .id(viewModel.currentAsset.id)
         } else {
-            image = nil
-            isLoading = true
-            loadFullImage()
+            // Show video thumbnail with play button overlay
+            VideoThumbnailView(
+                asset: viewModel.currentAsset,
+                assetService: assetService,
+                onPlayButtonTapped: {
+                    viewModel.showVideoPlayer()
+                }
+            )
         }
     }
     
-    private func loadFullImage() {
-        Task {
-            do {
-                debugLog("Loading full image for asset \(currentAsset.id)")
-                let fullImage = try await assetService.loadFullImage(asset: currentAsset)
-                await MainActor.run {
-                    debugLog("Loaded image for asset \(currentAsset.id)")
-                    self.image = fullImage
-                    self.isLoading = false
+    // MARK: - Image Content
+    
+    @ViewBuilder
+    private var imageContent: some View {
+        if viewModel.isLoading {
+            ProgressView("Loading...")
+                .foregroundColor(.white)
+                .scaleEffect(1.5)
+        } else if let image = viewModel.image {
+            GeometryReader { geometry in
+                ZStack {
+                    SharedOpaqueBackground()
+                    
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .overlay(
+                            // Lock screen style overlay in bottom right
+                            Group {
+                                if !UserDefaults.standard.hideImageOverlay {
+                                    VStack {
+                                        Spacer()
+                                        HStack {
+                                            Spacer()
+                                            LockScreenStyleOverlay(asset: viewModel.currentAsset)
+                                        }
+                                    }
+                                }
+                            }
+                        )
                 }
-            } catch {
-                debugLog("Failed to load full image for asset \(currentAsset.id): \(error)")
-                await MainActor.run {
-                    self.isLoading = false
+            }
+            .ignoresSafeArea()
+        } else {
+            VStack {
+                Image(systemName: "photo")
+                    .font(.system(size: 60))
+                    .foregroundColor(.gray)
+                Text("Failed to load image")
+                    .foregroundColor(.gray)
+            }
+        }
+    }
+    
+    // MARK: - EXIF Info Overlay
+    
+    private var exifInfoOverlay: some View {
+        VStack {
+            Spacer()
+            ExifInfoOverlay(asset: viewModel.currentAsset) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    viewModel.hideExifInfo()
                 }
             }
         }
+        .transition(.opacity)
+    }
+    
+    // MARK: - Swipe Hint Overlay
+    
+    private var swipeHintOverlay: some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                VStack(spacing: 8) {
+                    HStack(spacing: 50) {
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.left")
+                                .font(.title2)
+                                .foregroundColor(.white.opacity(0.7))
+                            Image(systemName: "arrow.right")
+                                .font(.title2)
+                                .foregroundColor(.white.opacity(0.7))
+                            Text("Swipe to navigate")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        HStack(spacing: 5) {
+                            Image(systemName: "arrow.up")
+                                .font(.title2)
+                                .foregroundColor(.white.opacity(0.7))
+                            Image(systemName: "arrow.down")
+                                .font(.title2)
+                                .foregroundColor(.white.opacity(0.7))
+                            Text("Swipe up or down to show/hide details")
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.black.opacity(0.6))
+                    .cornerRadius(20)
+                }
+                Spacer()
+            }
+            .padding(.bottom, 100)
+        }
+        .transition(.opacity)
     }
 }
 
 // MARK: - Content Aware Modifier
+
 struct ContentAwareModifier: ViewModifier {
-    let isVideo: Bool
-    let currentAssetIndex: Int
-    let assets: [ImmichAsset]
+    @ObservedObject var viewModel: FullScreenImageViewModel
     @FocusState.Binding var isFocused: Bool
-    @Binding var showingSwipeHint: Bool
-    @Binding var showingExifInfo: Bool
-    let onNavigate: (Int) -> Void
     let onDismiss: () -> Void
-    let onLoadImage: () -> Void
-    let showingVideoPlayer: Bool
-    let onPlayButtonTapped: () -> Void
-    
     
     func body(content: Content) -> some View {
-        if isVideo && showingVideoPlayer {
+        if viewModel.isVideo && viewModel.showingVideoPlayer {
             // For video players: no focus, no gestures, no interference
             content
         } else {
@@ -249,23 +232,12 @@ struct ContentAwareModifier: ViewModifier {
                 .focusable(true)
                 .focused($isFocused)
                 .onAppear {
-                    onLoadImage()
-                    if assets.count > 1 {
-                        showingSwipeHint = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                            withAnimation(.easeOut(duration: 0.5)) {
-                                showingSwipeHint = false
-                            }
-                        }
-                    }
+                    viewModel.loadFullImage()
+                    viewModel.showSwipeHintIfNeeded()
                     isFocused = true
                 }
                 .onTapGesture {
-                    // Only dismiss on tap for photos, not video thumbnails
-                    debugLog("FullScreenImageView: Tap gesture detected - isVideo: \(isVideo)")
-                    if isVideo {
-                        onPlayButtonTapped()
-                    }
+                    viewModel.handleTap()
                 }
                 .onChange(of: isFocused) { oldValue, newValue in
                     debugLog("FullScreenImageView focus: \(newValue)")
@@ -273,48 +245,35 @@ struct ContentAwareModifier: ViewModifier {
                 .onMoveCommand { direction in
                     switch direction {
                     case .left:
-                        debugLog("FullScreenImageView: Left navigation triggered (current: \(currentAssetIndex), total: \(assets.count))")
-                        if currentAssetIndex > 0 {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                onNavigate(currentAssetIndex - 1)
-                            }
-                        } else {
-                            debugLog("FullScreenImageView: Already at first photo, cannot navigate further")
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.navigateLeft()
                         }
                     case .right:
-                        debugLog("FullScreenImageView: Right navigation triggered (current: \(currentAssetIndex), total: \(assets.count))")
-                        if currentAssetIndex < assets.count - 1 {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                onNavigate(currentAssetIndex + 1)
-                            }
-                        } else {
-                            debugLog("FullScreenImageView: Already at last photo, cannot navigate further")
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.navigateRight()
                         }
                     case .up:
-                        debugLog("FullScreenImageView: Up navigation triggered - toggling EXIF info")
                         withAnimation(.easeInOut(duration: 0.3)) {
-                            showingExifInfo.toggle()
+                            viewModel.toggleExifInfo()
                         }
                     case .down:
-                        debugLog("FullScreenImageView: Down navigation triggered")
-                        if showingExifInfo {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                showingExifInfo = false
-                            }
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            viewModel.hideExifInfo()
                         }
                     @unknown default:
                         debugLog("FullScreenImageView: Unknown direction")
                     }
                 }
-                .onPlayPauseCommand(perform: {
+                .onPlayPauseCommand {
                     debugLog("Play pause tapped")
-                })
+                }
                 .contentShape(Rectangle())
         }
     }
 }
 
 // MARK: - Video Thumbnail View
+
 struct VideoThumbnailView: View {
     let asset: ImmichAsset
     let assetService: AssetService
@@ -439,6 +398,7 @@ struct VideoThumbnailView: View {
 }
 
 // MARK: - Preview
+
 #Preview {
     let sampleAsset = ImmichAsset(
         id: "sample-1",

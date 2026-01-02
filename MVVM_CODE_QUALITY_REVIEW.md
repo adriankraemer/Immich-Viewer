@@ -13,7 +13,6 @@ This document categorizes MVVM violations and improvements by priority level.
 - `TagsGridView` - Directly uses `TagService`, `AssetService`, `AuthenticationService`
 - `FoldersView` - Directly uses `FolderService`, `AssetService`, `AuthenticationService`
 - `StatsView` - Directly uses `StatsService`
-- `FullScreenImageView` - Directly uses `AssetService`, `AuthenticationService`
 - `VideoPlayerView` - Directly uses `AssetService`, `AuthenticationService`
 
 **✅ REFACTORED** (Now using ViewModels):
@@ -21,6 +20,7 @@ This document categorizes MVVM violations and improvements by priority level.
 - `SlideshowView` - Uses `SlideshowViewModel`
 - `SignInView` - Uses `SignInViewModel`
 - `SearchView` - Uses `SearchViewModel` ✨ NEW
+- `FullScreenImageView` - Uses `FullScreenImageViewModel` ✨ NEW
 
 **Impact**: 
 - Views contain business logic
@@ -49,15 +49,12 @@ This document categorizes MVVM violations and improvements by priority level.
 - `loadStatsIfNeeded()` - Caching and loading logic in view
 - `refreshStats()` - Service call in view
 
-**FullScreenImageView.swift**:
-- `loadFullImage()` - Image loading logic in view
-- `navigateToImage()` - Navigation state management in view
-
 **✅ REFACTORED** (Business logic moved to ViewModels):
 - `AssetGridView` → `AssetGridViewModel` handles loading, pagination, deep linking
 - `SlideshowView` → `SlideshowViewModel` handles slideshow management, Ken Burns, image queue
 - `SignInView` → `SignInViewModel` handles authentication, URL validation
 - `SearchView` → `SearchViewModel` handles search with debouncing ✨ NEW
+- `FullScreenImageView` → `FullScreenImageViewModel` handles image loading, navigation ✨ NEW
 
 **Impact**: 
 - Views are difficult to test
@@ -78,7 +75,6 @@ This document categorizes MVVM violations and improvements by priority level.
 - `TagsGridView` - Tags loading logic
 - `FoldersView` - Folders loading logic
 - `StatsView` - Statistics loading
-- `FullScreenImageView` - Image loading and navigation
 - `VideoPlayerView` - Video playback logic
 
 **✅ Views WITH ViewModels** (Properly following MVVM):
@@ -90,6 +86,7 @@ This document categorizes MVVM violations and improvements by priority level.
 - `SlideshowView` - Has `SlideshowViewModel` ✨ NEW
 - `SignInView` - Has `SignInViewModel` ✨ NEW
 - `SearchView` - Has `SearchViewModel` ✨ NEW
+- `FullScreenImageView` - Has `FullScreenImageViewModel` ✨ NEW
 
 **Impact**: 
 - Inconsistent architecture
@@ -262,19 +259,19 @@ init(albumId: String? = nil, ...) {
 
 ## 📊 Summary Statistics
 
-- **Views with ViewModels**: 8 (ExploreView, WorldMapView, ContinentDetailView, CountryDetailView, AssetGridView ✨, SlideshowView ✨, SignInView ✨, SearchView ✨)
-- **Views without ViewModels**: 7 (AlbumListView, PeopleGridView, TagsGridView, FoldersView, StatsView, FullScreenImageView, VideoPlayerView)
-- **Views directly accessing services**: 7
-- **Views with business logic**: 7
+- **Views with ViewModels**: 9 (ExploreView, WorldMapView, ContinentDetailView, CountryDetailView, AssetGridView ✨, SlideshowView ✨, SignInView ✨, SearchView ✨, FullScreenImageView ✨)
+- **Views without ViewModels**: 6 (AlbumListView, PeopleGridView, TagsGridView, FoldersView, StatsView, VideoPlayerView)
+- **Views directly accessing services**: 6
+- **Views with business logic**: 6
 
 ## 🎯 Recommended Refactoring Order
 
 1. ✅ ~~**Start with high-traffic views**: `AssetGridView`~~ - DONE
 2. ✅ ~~**Next**: `SearchView` - Simple search functionality~~ - DONE
 3. ✅ ~~**Complex views**: `SlideshowView`~~ - DONE
-4. **Next**: `FullScreenImageView` - Image loading and navigation
-5. **Then simpler views**: `PeopleGridView`, `TagsGridView`, `FoldersView`, `AlbumListView`
-6. **Finally**: `StatsView`
+4. ✅ ~~**Then**: `FullScreenImageView` - Image loading and navigation~~ - DONE
+5. **Next simpler views**: `PeopleGridView`, `TagsGridView`, `FoldersView`, `AlbumListView`
+6. **Finally**: `StatsView`, `VideoPlayerView`
 7. ✅ ~~`SignInView`~~ - DONE
 
 ## 📝 Notes

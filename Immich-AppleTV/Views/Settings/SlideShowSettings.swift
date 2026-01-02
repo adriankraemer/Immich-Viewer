@@ -22,7 +22,6 @@ struct SlideshowSettings: View {
     @FocusState.Binding var isMinusFocused: Bool
     @FocusState.Binding var isPlusFocused: Bool
     @FocusState.Binding var focusedColor: String?
-    @State private var showPerformanceAlert = false
     
     
     var body: some View {
@@ -90,20 +89,20 @@ struct SlideshowSettings: View {
             SettingsRow(
                 icon: "paintbrush",
                 title: "Slideshow Background",
-                subtitle: "Background color for slideshow mode",
+                subtitle: "Background style for slideshow mode",
                 content: AnyView(
                     HStack {
                         // Color preview circle
                         Group {
-                            if slideshowBackgroundColor == "auto" {
+                            if slideshowBackgroundColor == "ambilight" {
                                 ZStack {
                                     Circle()
                                         .fill(LinearGradient(
-                                            colors: [.red, .orange, .yellow, .green, .blue, .purple],
+                                            colors: [.purple, .blue, .cyan, .yellow, .orange],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         ))
-                                    Image(systemName: "paintpalette.fill")
+                                    Image(systemName: "rays")
                                         .foregroundColor(.white)
                                         .font(.caption)
                                 }
@@ -114,17 +113,15 @@ struct SlideshowSettings: View {
                         }
                         .frame(width: 32, height: 32)
                         
-                        Picker("Background Color", selection: $slideshowBackgroundColor) {
-                            ForEach(["auto", "black", "white", "gray", "blue", "purple"], id: \.self) { color in
-                                Text(color.capitalized).tag(color)
-                            }
+                        Picker("Background", selection: $slideshowBackgroundColor) {
+                            Text("Ambilight").tag("ambilight")
+                            Text("Black").tag("black")
+                            Text("White").tag("white")
+                            Text("Gray").tag("gray")
+                            Text("Blue").tag("blue")
+                            Text("Purple").tag("purple")
                         }
                         .pickerStyle(.menu)
-                        .onChange(of: slideshowBackgroundColor) { _, newValue in
-                            if newValue == "auto" {
-                                showPerformanceAlert = true
-                            }
-                        }
                     }
                 )
             )
@@ -223,19 +220,11 @@ struct SlideshowSettings: View {
             
              
         }
-        .alert("Performance Warning", isPresented: $showPerformanceAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Enable Auto Color") {
-                slideshowBackgroundColor = "auto"
-            }
-        } message: {
-            Text("Auto background color analyzes each image to extract dominant colors. This may cause performance issues with large images during slideshow transitions.")
-        }
     }
     
     private func getBackgroundColor(_ colorName: String) -> Color {
         switch colorName {
-        case "auto": return .black // Fallback for preview, actual auto color is handled in slideshow
+        case "ambilight": return .black // Fallback for preview, actual ambilight is handled in slideshow
         case "black": return .black
         case "white": return .white
         case "gray": return .gray
@@ -249,7 +238,7 @@ struct SlideshowSettings: View {
 
 #Preview {
     @Previewable @State var slideshowInterval: Double = 8.0
-    @Previewable @State var slideshowBackgroundColor = "white"
+    @Previewable @State var slideshowBackgroundColor = "ambilight"
     @Previewable @State var use24HourClock = true
     @Previewable @State var hideOverlay = true
     @Previewable @State var enableReflections = true

@@ -57,7 +57,6 @@ enum SlideDirection: CaseIterable {
 struct SlideshowImageData: Equatable {
     let asset: ImmichAsset
     let image: UIImage
-    let dominantColor: Color?
     
     static func == (lhs: SlideshowImageData, rhs: SlideshowImageData) -> Bool {
         lhs.asset.id == rhs.asset.id
@@ -105,7 +104,6 @@ class SlideshowViewModel: ObservableObject {
     @Published var isLoading = true
     @Published var isTransitioning = false
     @Published var slideDirection: SlideDirection = .right
-    @Published var dominantColor: Color = .black
     @Published var settings: SlideshowConfiguration
     @Published var isPaused = false
     
@@ -148,7 +146,7 @@ class SlideshowViewModel: ObservableObject {
     }
     
     var effectiveBackgroundColor: Color {
-        settings.backgroundColor == "auto" ? dominantColor : getBackgroundColor(settings.backgroundColor)
+        getBackgroundColor(settings.backgroundColor)
     }
     
     var queueSize: Int {
@@ -189,9 +187,6 @@ class SlideshowViewModel: ObservableObject {
             assetService: assetService,
             albumService: albumService
         )
-        
-        // Initialize dominant color based on settings
-        self.dominantColor = getBackgroundColor(settings.backgroundColor)
     }
     
     // MARK: - Public Methods
@@ -249,12 +244,6 @@ class SlideshowViewModel: ObservableObject {
             
             self.currentImageData = self.imageQueue.removeFirst()
             
-            // Set dominant color if available
-            if let dominantColor = self.currentImageData?.dominantColor,
-               self.settings.backgroundColor == "auto" {
-                self.dominantColor = dominantColor
-            }
-            
             // Set new slide direction for the incoming image
             self.slideDirection = SlideDirection.random()
             
@@ -298,24 +287,7 @@ class SlideshowViewModel: ObservableObject {
     
     /// Reloads settings from UserDefaults
     func reloadSettings() {
-        let previousBackgroundColor = settings.backgroundColor
         settings.reload()
-        
-        // Update dominant color if background color setting changed
-        if settings.backgroundColor != previousBackgroundColor {
-            if settings.backgroundColor == "auto", let imageData = currentImageData {
-                if let cachedColor = imageData.dominantColor {
-                    dominantColor = cachedColor
-                } else {
-                    Task {
-                        let color = await ImageColorExtractor.extractDominantColorAsync(from: imageData.image)
-                        self.dominantColor = color
-                    }
-                }
-            } else if settings.backgroundColor != "auto" {
-                dominantColor = getBackgroundColor(settings.backgroundColor)
-            }
-        }
     }
     
     // MARK: - Ken Burns Effect
@@ -464,10 +436,7 @@ class SlideshowViewModel: ObservableObject {
                 return
             }
             
-            let dominantColor = settings.backgroundColor == "auto" ?
-                await ImageColorExtractor.extractDominantColorAsync(from: image) : nil
-            
-            let imageData = SlideshowImageData(asset: asset, image: image, dominantColor: dominantColor)
+            let imageData = SlideshowImageData(asset: asset, image: image)
             imageQueue.append(imageData)
             debugLog("SlideshowViewModel: Loaded image for asset \(asset.id) into queue")
         } catch {
@@ -483,11 +452,6 @@ class SlideshowViewModel: ObservableObject {
         
         currentImageData = imageQueue.removeFirst()
         isLoading = false
-        
-        if let dominantColor = currentImageData?.dominantColor,
-           settings.backgroundColor == "auto" {
-            self.dominantColor = dominantColor
-        }
         
         startKenBurnsEffect()
         startAutoAdvance()

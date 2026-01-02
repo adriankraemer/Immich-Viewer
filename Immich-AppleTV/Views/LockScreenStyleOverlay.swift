@@ -16,10 +16,7 @@ struct LockScreenStyleOverlay: View {
     
     @State private var currentTime = Date()
     @State private var timeUpdateTimer: Timer?
-    
-    private var use24HourClock: Bool {
-        UserDefaults.standard.bool(forKey: "use24HourClock")
-    }
+    @AppStorage("use24HourClock") private var use24HourClock = false
     
     init(asset: ImmichAsset, isSlideshowMode: Bool = false) {
         self.asset = asset

@@ -13,6 +13,26 @@ class AssetService: ObservableObject {
     init(networkService: NetworkService) {
         self.networkService = networkService
     }
+    
+    // MARK: - Image Orientation Correction
+    
+    /// Normalizes image orientation by redrawing the image with correct orientation applied.
+    /// This fixes images that appear rotated or flipped due to EXIF orientation metadata
+    /// not being properly applied during display.
+    private func normalizeImageOrientation(_ image: UIImage) -> UIImage {
+        // If orientation is already up, no processing needed
+        guard image.imageOrientation != .up else {
+            return image
+        }
+        
+        // Redraw the image with the correct orientation applied
+        UIGraphicsBeginImageContextWithOptions(image.size, false, image.scale)
+        image.draw(in: CGRect(origin: .zero, size: image.size))
+        let normalizedImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return normalizedImage ?? image
+    }
 
     /// Fetches assets with optional filtering by album, person, tag, city, favorites, or folder
     /// Uses different sort orders for All Photos tab vs other views
@@ -68,17 +88,23 @@ class AssetService: ObservableObject {
     func loadImage(assetId: String, size: String = "thumbnail") async throws -> UIImage? {
         let endpoint = "/api/assets/\(assetId)/thumbnail?format=webp&size=\(size)"
         let data = try await networkService.makeDataRequest(endpoint: endpoint)
-        return UIImage(data: data)
+        if let image = UIImage(data: data) {
+            // Normalize orientation for thumbnails as well
+            return normalizeImageOrientation(image)
+        }
+        return nil
     }
 
     /// Loads the full-resolution image for an asset
     /// For RAW formats, uses server-converted preview instead of original (UIImage can't decode RAW)
+    /// Automatically corrects image orientation based on EXIF metadata
     func loadFullImage(asset: ImmichAsset) async throws -> UIImage? {
         // Check if it's a RAW format - UIImage can't decode RAW files directly
         if let mimeType = asset.originalMimeType, isRawFormat(mimeType) {
             debugLog("AssetService: Detected RAW format (\(mimeType)), using server-converted version")
             if let convertedImage = try await loadConvertedImage(asset: asset) {
-                return convertedImage
+                // Server-converted images should already have correct orientation
+                return normalizeImageOrientation(convertedImage)
             }
         }
         
@@ -87,8 +113,10 @@ class AssetService: ObservableObject {
         let originalData = try await networkService.makeDataRequest(endpoint: originalEndpoint)
         
         if let image = UIImage(data: originalData) {
-            debugLog("AssetService: Successfully loaded image for asset \(asset.id)")
-            return image
+            debugLog("AssetService: Successfully loaded image for asset \(asset.id), orientation: \(image.imageOrientation.rawValue)")
+            // Normalize orientation to fix rotated/flipped images
+            let normalizedImage = normalizeImageOrientation(image)
+            return normalizedImage
         }
         
         debugLog("AssetService: Failed to load image for asset \(asset.id)")
@@ -134,7 +162,7 @@ class AssetService: ObservableObject {
         do {
             let data = try await networkService.makeDataRequest(endpoint: endpoint)
             if let image = UIImage(data: data) {
-                debugLog("AssetService: Loaded converted RAW image: \(image.size)")
+                debugLog("AssetService: Loaded converted RAW image: \(image.size), orientation: \(image.imageOrientation.rawValue)")
                 return image
             }
         } catch {

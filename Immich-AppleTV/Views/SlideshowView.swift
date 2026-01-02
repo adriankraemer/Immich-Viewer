@@ -16,6 +16,9 @@ struct SlideshowView: View {
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isFocused: Bool
     
+    // MARK: - Local State
+    @State private var showPauseNotification = false
+    
     // MARK: - Initialization
     
     init(
@@ -88,6 +91,12 @@ struct SlideshowView: View {
             } else {
                 errorView
             }
+            
+            // Pause/Play notification overlay
+            if showPauseNotification {
+                pauseNotificationView
+                    .transition(.opacity.combined(with: .scale(scale: 0.8)))
+            }
         }
         .focusable(true)
         .focused($isFocused)
@@ -112,6 +121,10 @@ struct SlideshowView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             viewModel.reloadSettings()
+        }
+        .onPlayPauseCommand {
+            viewModel.togglePause()
+            showPauseNotificationBriefly()
         }
         .onTapGesture {
             UIApplication.shared.isIdleTimerDisabled = false
@@ -146,6 +159,39 @@ struct SlideshowView: View {
                 .foregroundColor(.gray)
             Text("Failed to load image")
                 .foregroundColor(.gray)
+        }
+    }
+    
+    private var pauseNotificationView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: viewModel.isPaused ? "pause.fill" : "play.fill")
+                .font(.system(size: 80, weight: .medium))
+                .foregroundColor(.white)
+            
+            Text(viewModel.isPaused ? "Paused" : "Playing")
+                .font(.title2)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+        }
+        .padding(40)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
+        )
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func showPauseNotificationBriefly() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            showPauseNotification = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation(.easeIn(duration: 0.3)) {
+                showPauseNotification = false
+            }
         }
     }
     

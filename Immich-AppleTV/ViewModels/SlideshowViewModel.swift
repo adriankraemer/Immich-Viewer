@@ -107,6 +107,7 @@ class SlideshowViewModel: ObservableObject {
     @Published var slideDirection: SlideDirection = .right
     @Published var dominantColor: Color = .black
     @Published var settings: SlideshowConfiguration
+    @Published var isPaused = false
     
     // Ken Burns effect state
     @Published var kenBurnsScale: CGFloat = 1.0
@@ -270,6 +271,29 @@ class SlideshowViewModel: ObservableObject {
             
             debugLog("SlideshowViewModel: Advanced to next image, queue size: \(self.imageQueue.count)")
         }
+    }
+    
+    /// Toggles pause/resume state of the slideshow
+    func togglePause() {
+        if isPaused {
+            resume()
+        } else {
+            pause()
+        }
+    }
+    
+    /// Pauses the slideshow
+    func pause() {
+        isPaused = true
+        stopAutoAdvance()
+        debugLog("SlideshowViewModel: Slideshow paused")
+    }
+    
+    /// Resumes the slideshow
+    func resume() {
+        isPaused = false
+        startAutoAdvance()
+        debugLog("SlideshowViewModel: Slideshow resumed")
     }
     
     /// Reloads settings from UserDefaults

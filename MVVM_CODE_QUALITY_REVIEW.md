@@ -8,8 +8,6 @@ This document categorizes MVVM violations and improvements by priority level.
 **Issue**: Many views directly observe and call services instead of using ViewModels.
 
 **Affected Views** (Still need refactoring):
-- `AlbumListView` - Directly uses `AlbumService`, `AssetService`, `AuthenticationService`
-- `StatsView` - Directly uses `StatsService`
 - `VideoPlayerView` - Directly uses `AssetService`, `AuthenticationService`
 
 **✅ REFACTORED** (Now using ViewModels):
@@ -21,6 +19,8 @@ This document categorizes MVVM violations and improvements by priority level.
 - `PeopleGridView` - Uses `PeopleGridViewModel` ✨ NEW
 - `TagsGridView` - Uses `TagsGridViewModel` ✨ NEW
 - `FoldersView` - Uses `FoldersViewModel` ✨ NEW
+- `AlbumListView` - Uses `AlbumListViewModel` ✨ NEW
+- `StatsView` - Uses `StatsViewModel` ✨ NEW
 
 **Impact**: 
 - Views contain business logic
@@ -37,14 +37,8 @@ This document categorizes MVVM violations and improvements by priority level.
 
 **Examples** (Still need refactoring):
 
-**AlbumListView.swift**:
-- `loadAlbums()` - Service call in view
-- `loadFavoritesCount()` - Business logic in view
-- `createFavoritesAlbum()` - Data transformation in view
-
-**StatsView.swift**:
-- `loadStatsIfNeeded()` - Caching and loading logic in view
-- `refreshStats()` - Service call in view
+**VideoPlayerView.swift**:
+- Video playback logic in view
 
 **✅ REFACTORED** (Business logic moved to ViewModels):
 - `AssetGridView` → `AssetGridViewModel` handles loading, pagination, deep linking
@@ -55,6 +49,8 @@ This document categorizes MVVM violations and improvements by priority level.
 - `PeopleGridView` → `PeopleGridViewModel` handles people loading ✨ NEW
 - `TagsGridView` → `TagsGridViewModel` handles tags loading ✨ NEW
 - `FoldersView` → `FoldersViewModel` handles folders loading ✨ NEW
+- `AlbumListView` → `AlbumListViewModel` handles albums, favorites ✨ NEW
+- `StatsView` → `StatsViewModel` handles stats loading, caching ✨ NEW
 
 **Impact**: 
 - Views are difficult to test
@@ -70,8 +66,6 @@ This document categorizes MVVM violations and improvements by priority level.
 **Issue**: Several major views don't have ViewModels, while some do (inconsistent pattern).
 
 **Views WITHOUT ViewModels** (Still need refactoring):
-- `AlbumListView` - Album loading and favorites logic
-- `StatsView` - Statistics loading
 - `VideoPlayerView` - Video playback logic
 
 **✅ Views WITH ViewModels** (Properly following MVVM):
@@ -87,6 +81,8 @@ This document categorizes MVVM violations and improvements by priority level.
 - `PeopleGridView` - Has `PeopleGridViewModel` ✨ NEW
 - `TagsGridView` - Has `TagsGridViewModel` ✨ NEW
 - `FoldersView` - Has `FoldersViewModel` ✨ NEW
+- `AlbumListView` - Has `AlbumListViewModel` ✨ NEW
+- `StatsView` - Has `StatsViewModel` ✨ NEW
 
 **Impact**: 
 - Inconsistent architecture
@@ -259,10 +255,10 @@ init(albumId: String? = nil, ...) {
 
 ## 📊 Summary Statistics
 
-- **Views with ViewModels**: 12 (ExploreView, WorldMapView, ContinentDetailView, CountryDetailView, AssetGridView ✨, SlideshowView ✨, SignInView ✨, SearchView ✨, FullScreenImageView ✨, PeopleGridView ✨, TagsGridView ✨, FoldersView ✨)
-- **Views without ViewModels**: 3 (AlbumListView, StatsView, VideoPlayerView)
-- **Views directly accessing services**: 3
-- **Views with business logic**: 3
+- **Views with ViewModels**: 14 (ExploreView, WorldMapView, ContinentDetailView, CountryDetailView, AssetGridView ✨, SlideshowView ✨, SignInView ✨, SearchView ✨, FullScreenImageView ✨, PeopleGridView ✨, TagsGridView ✨, FoldersView ✨, AlbumListView ✨, StatsView ✨)
+- **Views without ViewModels**: 1 (VideoPlayerView)
+- **Views directly accessing services**: 1
+- **Views with business logic**: 1
 
 ## 🎯 Recommended Refactoring Order
 
@@ -271,9 +267,10 @@ init(albumId: String? = nil, ...) {
 3. ✅ ~~**Complex views**: `SlideshowView`~~ - DONE
 4. ✅ ~~**Then**: `FullScreenImageView` - Image loading and navigation~~ - DONE
 5. ✅ ~~**Simpler views**: `PeopleGridView`, `TagsGridView`, `FoldersView`~~ - DONE
-6. **Next**: `AlbumListView` - Album loading and favorites
-7. **Finally**: `StatsView`, `VideoPlayerView`
-8. ✅ ~~`SignInView`~~ - DONE
+6. ✅ ~~**Next**: `AlbumListView` - Album loading and favorites~~ - DONE
+7. ✅ ~~**Then**: `StatsView` - Statistics loading~~ - DONE
+8. **Finally**: `VideoPlayerView` - Video playback (optional - simple view)
+9. ✅ ~~`SignInView`~~ - DONE
 
 ## 📝 Notes
 

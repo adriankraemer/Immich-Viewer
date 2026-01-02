@@ -8,11 +8,18 @@
 import SwiftUI
 
 struct StatsView: View {
-    @ObservedObject var statsService: StatsService
-    @State private var statsData: StatsData?
-    @State private var isLoading = false
-    @State private var error: Error?
-    @State private var lastUpdated: Date?
+    // MARK: - ViewModel
+    @StateObject private var viewModel: StatsViewModel
+    
+    // MARK: - Initialization
+    
+    init(statsService: StatsService) {
+        _viewModel = StateObject(wrappedValue: StatsViewModel(
+            statsService: statsService
+        ))
+    }
+    
+    // MARK: - Body
     
     var body: some View {
         NavigationView {
@@ -26,16 +33,16 @@ struct StatsView: View {
                         headerSection
                         
                         // Stats Sections
-                        if let stats = statsData {
+                        if let stats = viewModel.statsData {
                             assetStatsSection(stats.assetData)
                             exploreStatsSection(stats.exploreData)
                             peopleStatsSection(stats.peopleData)
                         }
                         
                         // Loading or Error State
-                        if isLoading {
+                        if viewModel.isLoading {
                             loadingSection
-                        } else if error != nil {
+                        } else if viewModel.hasError {
                             errorSection
                         }
                     }
@@ -43,19 +50,12 @@ struct StatsView: View {
                 }
             }
             .onAppear {
-                loadStatsIfNeeded()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))) { _ in
-                // Clear cached data and refresh when user switches
-                StatsCache.shared.clearCache()
-                statsData = nil
-                lastUpdated = nil
-                error = nil
-                refreshStats()
+                viewModel.loadStatsIfNeeded()
             }
         }
-        
     }
+    
+    // MARK: - Subviews
     
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -69,8 +69,8 @@ struct StatsView: View {
                         .font(.headline)
                         .foregroundColor(.primary)
                     
-                    if let lastUpdated = lastUpdated {
-                        Text("Last updated: \(formatLastUpdated(lastUpdated))")
+                    if let lastUpdated = viewModel.formattedLastUpdated {
+                        Text("Last updated: \(lastUpdated)")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -79,7 +79,7 @@ struct StatsView: View {
                 Spacer()
                 
                 Button(action: {
-                    refreshStats()
+                    viewModel.refreshStats()
                 }) {
                     VStack(spacing: 8) {
                         Image(systemName: "arrow.clockwise")
@@ -190,10 +190,8 @@ struct StatsView: View {
                             count: peopleData.favoritePeople,
                             color: .red
                         )
-                        
                     }
                 }
-                
             })
         }
     }
@@ -225,7 +223,7 @@ struct StatsView: View {
                 .multilineTextAlignment(.center)
             
             Button(action: {
-                refreshStats()
+                viewModel.retry()
             }) {
                 VStack(spacing: 8) {
                     Image(systemName: "arrow.clockwise")
@@ -246,49 +244,9 @@ struct StatsView: View {
         .background(Color.red.opacity(0.05))
         .cornerRadius(12)
     }
-    
-    private func loadStatsIfNeeded() {
-        guard statsData == nil && !isLoading else { return }
-        
-        // Check if we have cached data first
-        if let cachedStats = StatsCache.shared.getCachedStats() {
-            statsData = cachedStats
-            lastUpdated = cachedStats.cachedAt
-            return
-        }
-        
-        // Load fresh data
-        refreshStats()
-    }
-    
-    private func refreshStats() {
-        isLoading = true
-        error = nil
-        
-        Task {
-            do {
-                let stats = try await statsService.getStats(forceRefresh: true)
-                
-                await MainActor.run {
-                    self.statsData = stats
-                    self.lastUpdated = stats.cachedAt
-                    self.isLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    self.error = error
-                    self.isLoading = false
-                }
-            }
-        }
-    }
-    
-    private func formatLastUpdated(_ date: Date) -> String {
-        let formatter = RelativeDateTimeFormatter()
-        formatter.unitsStyle = .abbreviated
-        return formatter.localizedString(for: date, relativeTo: Date())
-    }
 }
+
+// MARK: - Stat Card
 
 struct StatCard: View {
     let icon: String
@@ -325,6 +283,8 @@ struct StatCard: View {
         .buttonStyle(CardButtonStyle())
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     let userManager = UserManager()

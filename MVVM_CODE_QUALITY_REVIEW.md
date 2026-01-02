@@ -9,9 +9,6 @@ This document categorizes MVVM violations and improvements by priority level.
 
 **Affected Views** (Still need refactoring):
 - `AlbumListView` - Directly uses `AlbumService`, `AssetService`, `AuthenticationService`
-- `PeopleGridView` - Directly uses `PeopleService`, `AssetService`, `AuthenticationService`
-- `TagsGridView` - Directly uses `TagService`, `AssetService`, `AuthenticationService`
-- `FoldersView` - Directly uses `FolderService`, `AssetService`, `AuthenticationService`
 - `StatsView` - Directly uses `StatsService`
 - `VideoPlayerView` - Directly uses `AssetService`, `AuthenticationService`
 
@@ -21,6 +18,9 @@ This document categorizes MVVM violations and improvements by priority level.
 - `SignInView` - Uses `SignInViewModel`
 - `SearchView` - Uses `SearchViewModel` ✨ NEW
 - `FullScreenImageView` - Uses `FullScreenImageViewModel` ✨ NEW
+- `PeopleGridView` - Uses `PeopleGridViewModel` ✨ NEW
+- `TagsGridView` - Uses `TagsGridViewModel` ✨ NEW
+- `FoldersView` - Uses `FoldersViewModel` ✨ NEW
 
 **Impact**: 
 - Views contain business logic
@@ -42,9 +42,6 @@ This document categorizes MVVM violations and improvements by priority level.
 - `loadFavoritesCount()` - Business logic in view
 - `createFavoritesAlbum()` - Data transformation in view
 
-**PeopleGridView.swift**:
-- `loadPeople()` - Service call with error handling in view
-
 **StatsView.swift**:
 - `loadStatsIfNeeded()` - Caching and loading logic in view
 - `refreshStats()` - Service call in view
@@ -55,6 +52,9 @@ This document categorizes MVVM violations and improvements by priority level.
 - `SignInView` → `SignInViewModel` handles authentication, URL validation
 - `SearchView` → `SearchViewModel` handles search with debouncing ✨ NEW
 - `FullScreenImageView` → `FullScreenImageViewModel` handles image loading, navigation ✨ NEW
+- `PeopleGridView` → `PeopleGridViewModel` handles people loading ✨ NEW
+- `TagsGridView` → `TagsGridViewModel` handles tags loading ✨ NEW
+- `FoldersView` → `FoldersViewModel` handles folders loading ✨ NEW
 
 **Impact**: 
 - Views are difficult to test
@@ -71,9 +71,6 @@ This document categorizes MVVM violations and improvements by priority level.
 
 **Views WITHOUT ViewModels** (Still need refactoring):
 - `AlbumListView` - Album loading and favorites logic
-- `PeopleGridView` - People loading logic
-- `TagsGridView` - Tags loading logic
-- `FoldersView` - Folders loading logic
 - `StatsView` - Statistics loading
 - `VideoPlayerView` - Video playback logic
 
@@ -87,6 +84,9 @@ This document categorizes MVVM violations and improvements by priority level.
 - `SignInView` - Has `SignInViewModel` ✨ NEW
 - `SearchView` - Has `SearchViewModel` ✨ NEW
 - `FullScreenImageView` - Has `FullScreenImageViewModel` ✨ NEW
+- `PeopleGridView` - Has `PeopleGridViewModel` ✨ NEW
+- `TagsGridView` - Has `TagsGridViewModel` ✨ NEW
+- `FoldersView` - Has `FoldersViewModel` ✨ NEW
 
 **Impact**: 
 - Inconsistent architecture
@@ -259,10 +259,10 @@ init(albumId: String? = nil, ...) {
 
 ## 📊 Summary Statistics
 
-- **Views with ViewModels**: 9 (ExploreView, WorldMapView, ContinentDetailView, CountryDetailView, AssetGridView ✨, SlideshowView ✨, SignInView ✨, SearchView ✨, FullScreenImageView ✨)
-- **Views without ViewModels**: 6 (AlbumListView, PeopleGridView, TagsGridView, FoldersView, StatsView, VideoPlayerView)
-- **Views directly accessing services**: 6
-- **Views with business logic**: 6
+- **Views with ViewModels**: 12 (ExploreView, WorldMapView, ContinentDetailView, CountryDetailView, AssetGridView ✨, SlideshowView ✨, SignInView ✨, SearchView ✨, FullScreenImageView ✨, PeopleGridView ✨, TagsGridView ✨, FoldersView ✨)
+- **Views without ViewModels**: 3 (AlbumListView, StatsView, VideoPlayerView)
+- **Views directly accessing services**: 3
+- **Views with business logic**: 3
 
 ## 🎯 Recommended Refactoring Order
 
@@ -270,9 +270,10 @@ init(albumId: String? = nil, ...) {
 2. ✅ ~~**Next**: `SearchView` - Simple search functionality~~ - DONE
 3. ✅ ~~**Complex views**: `SlideshowView`~~ - DONE
 4. ✅ ~~**Then**: `FullScreenImageView` - Image loading and navigation~~ - DONE
-5. **Next simpler views**: `PeopleGridView`, `TagsGridView`, `FoldersView`, `AlbumListView`
-6. **Finally**: `StatsView`, `VideoPlayerView`
-7. ✅ ~~`SignInView`~~ - DONE
+5. ✅ ~~**Simpler views**: `PeopleGridView`, `TagsGridView`, `FoldersView`~~ - DONE
+6. **Next**: `AlbumListView` - Album loading and favorites
+7. **Finally**: `StatsView`, `VideoPlayerView`
+8. ✅ ~~`SignInView`~~ - DONE
 
 ## 📝 Notes
 

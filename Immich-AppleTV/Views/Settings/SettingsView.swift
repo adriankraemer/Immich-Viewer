@@ -66,7 +66,7 @@ struct SettingsView: View {
     @State private var showingStats = false
     @AppStorage("hideImageOverlay") private var hideImageOverlay = true
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
-    @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "white"
+    @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "ambilight"
     @AppStorage("showTagsTab") private var showTagsTab = false
     @AppStorage("showFoldersTab") private var showFoldersTab = false
     @AppStorage("showAlbumsTab") private var showAlbumsTab = true

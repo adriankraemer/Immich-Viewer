@@ -16,6 +16,9 @@ struct SlideshowView: View {
     @Environment(\.dismiss) private var dismiss
     @FocusState private var isFocused: Bool
     
+    // MARK: - Local State
+    @State private var showPauseNotification = false
+    
     // MARK: - Initialization
     
     init(
@@ -74,10 +77,16 @@ struct SlideshowView: View {
     
     var body: some View {
         ZStack {
-            // Background color (auto or user-selected)
-            viewModel.effectiveBackgroundColor
-                .ignoresSafeArea()
-                .animation(.easeInOut(duration: 0.6), value: viewModel.dominantColor)
+            // Background: either solid color or Ambilight effect
+            if viewModel.settings.backgroundColor == "ambilight",
+               let imageData = viewModel.currentImageData {
+                // Ambilight effect - blurred scaled image as background
+                ambilightBackground(imageData: imageData)
+            } else {
+                // Solid background color
+                viewModel.effectiveBackgroundColor
+                    .ignoresSafeArea()
+            }
             
             if viewModel.currentImageData == nil && !viewModel.isLoading {
                 emptyStateView
@@ -87,6 +96,12 @@ struct SlideshowView: View {
                 imageContentView(imageData: imageData)
             } else {
                 errorView
+            }
+            
+            // Pause/Play notification overlay
+            if showPauseNotification {
+                pauseNotificationView
+                    .transition(.opacity.combined(with: .scale(scale: 0.8)))
             }
         }
         .focusable(true)
@@ -112,6 +127,10 @@ struct SlideshowView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             viewModel.reloadSettings()
+        }
+        .onPlayPauseCommand {
+            viewModel.togglePause()
+            showPauseNotificationBriefly()
         }
         .onTapGesture {
             UIApplication.shared.isIdleTimerDisabled = false
@@ -146,6 +165,74 @@ struct SlideshowView: View {
                 .foregroundColor(.gray)
             Text("Failed to load image")
                 .foregroundColor(.gray)
+        }
+    }
+    
+    // MARK: - Ambilight Background Effect
+    
+    @ViewBuilder
+    private func ambilightBackground(imageData: SlideshowImageData) -> some View {
+        GeometryReader { geometry in
+            ZStack {
+                // Dark base layer
+                Color.black
+                
+                // The actual ambilight effect - scaled up blurred image
+                Image(uiImage: imageData.image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: geometry.size.width * 1.4, height: geometry.size.height * 1.4)
+                    .blur(radius: 80)
+                    .saturation(1.4) // Boost colors for more vibrant effect
+                    .brightness(-0.1) // Slightly darken to not overpower
+                    .clipped()
+                
+                // Additional glow layer for more intensity at edges
+                Image(uiImage: imageData.image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: geometry.size.width * 1.6, height: geometry.size.height * 1.6)
+                    .blur(radius: 120)
+                    .saturation(1.6)
+                    .opacity(0.6)
+                    .clipped()
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+        }
+        .ignoresSafeArea()
+        .animation(.easeInOut(duration: 1.0), value: imageData.asset.id)
+    }
+    
+    private var pauseNotificationView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: viewModel.isPaused ? "pause.fill" : "play.fill")
+                .font(.system(size: 80, weight: .medium))
+                .foregroundColor(.white)
+            
+            Text(viewModel.isPaused ? "Paused" : "Playing")
+                .font(.title2)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
+        }
+        .padding(40)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
+        )
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func showPauseNotificationBriefly() {
+        withAnimation(.easeOut(duration: 0.2)) {
+            showPauseNotification = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            withAnimation(.easeIn(duration: 0.3)) {
+                showPauseNotification = false
+            }
         }
     }
     
@@ -275,7 +362,7 @@ struct SlideshowView: View {
 }
 
 #Preview {
-    UserDefaults.standard.set("auto", forKey: "slideshowBackgroundColor")
+    UserDefaults.standard.set("ambilight", forKey: "slideshowBackgroundColor")
     UserDefaults.standard.set("10", forKey: "slideshowInterval")
     UserDefaults.standard.set(true, forKey: "hideImageOverlay")
     UserDefaults.standard.set(true, forKey: "enableReflectionsInSlideshow")

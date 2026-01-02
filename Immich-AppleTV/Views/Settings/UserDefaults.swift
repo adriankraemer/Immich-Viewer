@@ -29,7 +29,7 @@ extension UserDefaults {
     }
     
     var slideshowBackgroundColor: String {
-        get { string(forKey: UserDefaultsKeys.slideshowBackgroundColor) ?? "black" }
+        get { string(forKey: UserDefaultsKeys.slideshowBackgroundColor) ?? "ambilight" }
         set { set(newValue, forKey: UserDefaultsKeys.slideshowBackgroundColor) }
     }
     

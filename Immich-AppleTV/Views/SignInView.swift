@@ -13,7 +13,7 @@ struct SignInView: View {
     let mode: Mode
     let onUserAdded: (() -> Void)?
     @Environment(\.dismiss) private var dismiss
-    @State private var serverURL = "https://localhost:2283"
+    @State private var serverURL = "https://immich.app:2283"
     @State private var email = ""
     @State private var password = ""
     @State private var apiKey = ""
@@ -167,18 +167,6 @@ struct SignInView: View {
                 .padding(.top, 8)
             
             Spacer()
-            
-            // Footer hint
-            VStack(spacing: 8) {
-                HStack(spacing: 6) {
-                    Image(systemName: "shield.checkered")
-                        .font(.system(size: 14))
-                    Text("Self-hosted photo backup")
-                        .font(.system(size: 14, weight: .medium))
-                }
-                .foregroundColor(.white.opacity(0.4))
-            }
-            .padding(.bottom, 60)
         }
         .padding(.horizontal, 60)
     }
@@ -207,7 +195,7 @@ struct SignInView: View {
                     formField(
                         icon: "server.rack",
                         title: "Server URL",
-                        placeholder: "https://your-immich-server.com",
+                        placeholder: "",
                         text: $serverURL,
                         isSecure: false,
                         keyboardType: .URL,

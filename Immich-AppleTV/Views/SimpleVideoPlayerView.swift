@@ -8,107 +8,126 @@
 import SwiftUI
 import AVKit
 
-/// Lightweight video player that relies on AVPlayer without custom observers.
+/// Optimized video player with buffering support for smooth playback
 struct SimpleVideoPlayerView: View {
-    let asset: ImmichAsset
-    @ObservedObject var assetService: AssetService
-    @ObservedObject var authenticationService: AuthenticationService
-
-    @State private var player: AVPlayer?
-    @State private var isLoading = true
-    @State private var errorMessage: String?
-    @State private var hasAttemptedLoad = false
-
+    // MARK: - ViewModel
+    @StateObject private var viewModel: SimpleVideoPlayerViewModel
+    
+    // MARK: - Initialization
+    
+    init(
+        asset: ImmichAsset,
+        assetService: AssetService,
+        authenticationService: AuthenticationService
+    ) {
+        _viewModel = StateObject(wrappedValue: SimpleVideoPlayerViewModel(
+            asset: asset,
+            assetService: assetService,
+            authenticationService: authenticationService
+        ))
+    }
+    
+    // MARK: - Body
+    
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-
-            if let player = player {
+            
+            if let player = viewModel.player {
                 VideoPlayer(player: player)
                     .ignoresSafeArea()
                     .onAppear {
-                        player.play()
+                        // Player will auto-play when buffer is ready
                     }
             }
-
-            if isLoading {
-                VStack(spacing: 16) {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                        .scaleEffect(1.3)
-                    Text("Loading video…")
-                        .foregroundColor(.white.opacity(0.8))
-                        .font(.title3)
-                }
+            
+            // Loading overlay
+            if viewModel.isLoading {
+                loadingView
             }
-
-            if let message = errorMessage {
-                VStack(spacing: 20) {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 60))
-                        .foregroundColor(.orange)
-                    Text("Unable to play video")
-                        .font(.title2)
-                        .foregroundColor(.white)
-                    Text(message)
-                        .foregroundColor(.white.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    Button("Try Again") {
-                        Task {
-                            await loadVideoIfNeeded(force: true)
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                }
+            
+            // Buffering overlay (shown during playback when rebuffering)
+            if viewModel.isBuffering && !viewModel.isLoading {
+                bufferingOverlay
+            }
+            
+            // Error view
+            if let message = viewModel.errorMessage {
+                errorView(message: message)
             }
         }
         .task {
-            await loadVideoIfNeeded()
+            await viewModel.loadVideoIfNeeded()
         }
         .onDisappear {
-            player?.pause()
-            player = nil
-            hasAttemptedLoad = false
+            viewModel.cleanup()
         }
     }
-
-    private func loadVideoIfNeeded(force: Bool = false) async {
-        guard (!hasAttemptedLoad || force) else { return }
-
-        await MainActor.run {
-            hasAttemptedLoad = true
-            isLoading = true
-            errorMessage = nil
+    
+    // MARK: - Subviews
+    
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                .scaleEffect(1.5)
+            
+            Text("Loading video…")
+                .foregroundColor(.white.opacity(0.8))
+                .font(.title3)
+            
+            // Show buffer progress
+            if viewModel.loadingProgress > 0 {
+                VStack(spacing: 8) {
+                    ProgressView(value: viewModel.loadingProgress)
+                        .progressViewStyle(LinearProgressViewStyle(tint: .blue))
+                        .frame(width: 200)
+                    
+                    Text("Buffering: \(Int(viewModel.loadingProgress * 100))%")
+                        .foregroundColor(.white.opacity(0.6))
+                        .font(.caption)
+                }
+            }
         }
-
-        do {
-            let videoURL = try await assetService.loadVideoURL(asset: asset)
-            let headers = authenticationService.getAuthHeaders()
-
-            let urlAsset: AVURLAsset
-            if headers.isEmpty {
-                urlAsset = AVURLAsset(url: videoURL)
-            } else {
-                urlAsset = AVURLAsset(
-                    url: videoURL,
-                    options: ["AVURLAssetHTTPHeaderFieldsKey": headers]
-                )
+    }
+    
+    private var bufferingOverlay: some View {
+        VStack {
+            Spacer()
+            HStack(spacing: 12) {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                    .scaleEffect(0.8)
+                Text("Buffering…")
+                    .foregroundColor(.white)
+                    .font(.callout)
             }
-
-            let playerItem = AVPlayerItem(asset: urlAsset)
-            let player = AVPlayer(playerItem: playerItem)
-
-            await MainActor.run {
-                self.player = player
-                self.player?.play()
-                self.isLoading = false
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(Color.black.opacity(0.7))
+            .cornerRadius(10)
+            .padding(.bottom, 60)
+        }
+    }
+    
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 20) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 60))
+                .foregroundColor(.orange)
+            Text("Unable to play video")
+                .font(.title2)
+                .foregroundColor(.white)
+            Text(message)
+                .foregroundColor(.white.opacity(0.7))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            Button("Try Again") {
+                Task {
+                    await viewModel.retry()
+                }
             }
-        } catch {
-            await MainActor.run {
-                self.errorMessage = error.localizedDescription
-                self.isLoading = false
-            }
+            .buttonStyle(.borderedProminent)
         }
     }
 }

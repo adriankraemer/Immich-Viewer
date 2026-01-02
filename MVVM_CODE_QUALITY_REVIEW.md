@@ -7,18 +7,20 @@ This document categorizes MVVM violations and improvements by priority level.
 ### 1. Views Directly Accessing Services (Major Violation)
 **Issue**: Many views directly observe and call services instead of using ViewModels.
 
-**Affected Views**:
-- `AssetGridView` - Directly uses `AssetService`, `AuthenticationService`
+**Affected Views** (Still need refactoring):
 - `AlbumListView` - Directly uses `AlbumService`, `AssetService`, `AuthenticationService`
 - `PeopleGridView` - Directly uses `PeopleService`, `AssetService`, `AuthenticationService`
 - `TagsGridView` - Directly uses `TagService`, `AssetService`, `AuthenticationService`
 - `FoldersView` - Directly uses `FolderService`, `AssetService`, `AuthenticationService`
-- `SearchView` - Directly uses `SearchService`, `AssetService`, `AuthenticationService`
 - `StatsView` - Directly uses `StatsService`
-- `SignInView` - Directly uses `AuthenticationService`, `UserManager`
 - `FullScreenImageView` - Directly uses `AssetService`, `AuthenticationService`
 - `VideoPlayerView` - Directly uses `AssetService`, `AuthenticationService`
-- `SlideshowView` - Creates services internally (see #2)
+
+**✅ REFACTORED** (Now using ViewModels):
+- `AssetGridView` - Uses `AssetGridViewModel`
+- `SlideshowView` - Uses `SlideshowViewModel`
+- `SignInView` - Uses `SignInViewModel`
+- `SearchView` - Uses `SearchViewModel` ✨ NEW
 
 **Impact**: 
 - Views contain business logic
@@ -33,38 +35,29 @@ This document categorizes MVVM violations and improvements by priority level.
 ### 2. Business Logic in Views (Major Violation)
 **Issue**: Views contain async/await logic, error handling, state management, and data transformation.
 
-**Examples**:
+**Examples** (Still need refactoring):
 
-**AssetGridView.swift** (lines 260-425):
-- `loadAssets()` - Contains async business logic
-- `loadMoreAssets()` - Pagination logic in view
-- `extractPageFromNextPage()` - Data transformation in view
-- `handleDeepLinkAsset()` - Navigation logic in view
-
-**AlbumListView.swift** (lines 93-132):
+**AlbumListView.swift**:
 - `loadAlbums()` - Service call in view
 - `loadFavoritesCount()` - Business logic in view
 - `createFavoritesAlbum()` - Data transformation in view
 
-**PeopleGridView.swift** (lines 47-78):
+**PeopleGridView.swift**:
 - `loadPeople()` - Service call with error handling in view
 
-**SearchView.swift** (lines 145-175):
-- `performSearch()` - Search logic with debouncing in view
-
-**StatsView.swift** (lines 242-276):
+**StatsView.swift**:
 - `loadStatsIfNeeded()` - Caching and loading logic in view
 - `refreshStats()` - Service call in view
 
-**SignInView.swift** (lines 417-511):
-- `signIn()` - Complex authentication logic in view
-- URL validation and cleanup in view
+**FullScreenImageView.swift**:
+- `loadFullImage()` - Image loading logic in view
+- `navigateToImage()` - Navigation state management in view
 
-**SlideshowView.swift** (lines 333-693):
-- Extensive business logic for slideshow management
-- Image queue management
-- Asset loading logic
-- Animation state management
+**✅ REFACTORED** (Business logic moved to ViewModels):
+- `AssetGridView` → `AssetGridViewModel` handles loading, pagination, deep linking
+- `SlideshowView` → `SlideshowViewModel` handles slideshow management, Ken Burns, image queue
+- `SignInView` → `SignInViewModel` handles authentication, URL validation
+- `SearchView` → `SearchViewModel` handles search with debouncing ✨ NEW
 
 **Impact**: 
 - Views are difficult to test
@@ -79,24 +72,24 @@ This document categorizes MVVM violations and improvements by priority level.
 ### 3. Missing ViewModels for Major Views
 **Issue**: Several major views don't have ViewModels, while some do (inconsistent pattern).
 
-**Views WITHOUT ViewModels**:
-- `AssetGridView` - Complex view with pagination, deep linking, slideshow
+**Views WITHOUT ViewModels** (Still need refactoring):
 - `AlbumListView` - Album loading and favorites logic
 - `PeopleGridView` - People loading logic
 - `TagsGridView` - Tags loading logic
 - `FoldersView` - Folders loading logic
-- `SearchView` - Search functionality
 - `StatsView` - Statistics loading
-- `SignInView` - Authentication logic
 - `FullScreenImageView` - Image loading and navigation
 - `VideoPlayerView` - Video playback logic
-- `SlideshowView` - Complex slideshow logic
 
-**Views WITH ViewModels** (Good examples):
+**✅ Views WITH ViewModels** (Properly following MVVM):
 - `ExploreView` - Has `ExploreViewModel`
 - `WorldMapView` - Has `WorldMapViewModel`
 - `ContinentDetailView` - Has `ContinentViewModel`
 - `CountryDetailView` - Has `CountryViewModel`
+- `AssetGridView` - Has `AssetGridViewModel` ✨ NEW
+- `SlideshowView` - Has `SlideshowViewModel` ✨ NEW
+- `SignInView` - Has `SignInViewModel` ✨ NEW
+- `SearchView` - Has `SearchViewModel` ✨ NEW
 
 **Impact**: 
 - Inconsistent architecture
@@ -110,15 +103,19 @@ This document categorizes MVVM violations and improvements by priority level.
 ## 🟡 MEDIUM PRIORITY - Architectural Issues
 
 ### 4. Services Created Internally in Views
-**Issue**: `SlideshowView` creates its own service instances instead of receiving them via dependency injection.
+**Issue**: Some views create their own service instances instead of receiving them via dependency injection.
 
-**Location**: `SlideshowView.swift` (lines 35-39)
+**Partially Fixed - SlideshowView**:
+`SlideshowView` now has a proper initializer that accepts injected services, but retains a convenience initializer for backward compatibility that creates services internally (lines 44-67):
 ```swift
-// Create services internally
-let userManager = UserManager()
-let networkService = NetworkService(userManager: userManager)
-self.assetService = AssetService(networkService: networkService)
-self.albumService = AlbumService(networkService: networkService)
+/// Convenience initializer that creates services internally (for backward compatibility)
+init(albumId: String? = nil, ...) {
+    let userManager = UserManager()
+    let networkService = NetworkService(userManager: userManager)
+    let assetService = AssetService(networkService: networkService)
+    let albumService = AlbumService(networkService: networkService)
+    // ...
+}
 ```
 
 **Impact**:
@@ -127,7 +124,10 @@ self.albumService = AlbumService(networkService: networkService)
 - Hard to test (can't inject mocks)
 - Services may not share state with rest of app
 
-**Solution**: Inject services through initializer, or better yet, create a `SlideshowViewModel` that receives services.
+**Solution**: 
+- ✅ `SlideshowView` now has proper DI initializer (primary)
+- ⚠️ Convenience initializer should be deprecated/removed once all call sites updated
+- Update call sites in `AlbumDetailView`, `PersonPhotosView` to use DI initializer
 
 ---
 
@@ -262,22 +262,26 @@ self.albumService = AlbumService(networkService: networkService)
 
 ## 📊 Summary Statistics
 
-- **Views with ViewModels**: 4 (ExploreView, WorldMapView, ContinentDetailView, CountryDetailView)
-- **Views without ViewModels**: 11+ (AssetGridView, AlbumListView, PeopleGridView, TagsGridView, FoldersView, SearchView, StatsView, SignInView, FullScreenImageView, VideoPlayerView, SlideshowView)
-- **Views directly accessing services**: 11+
-- **Views with business logic**: 11+
+- **Views with ViewModels**: 8 (ExploreView, WorldMapView, ContinentDetailView, CountryDetailView, AssetGridView ✨, SlideshowView ✨, SignInView ✨, SearchView ✨)
+- **Views without ViewModels**: 7 (AlbumListView, PeopleGridView, TagsGridView, FoldersView, StatsView, FullScreenImageView, VideoPlayerView)
+- **Views directly accessing services**: 7
+- **Views with business logic**: 7
 
 ## 🎯 Recommended Refactoring Order
 
-1. **Start with high-traffic views**: `AssetGridView`, `SearchView`
-2. **Then complex views**: `SlideshowView`, `FullScreenImageView`
-3. **Then simpler views**: `PeopleGridView`, `TagsGridView`, `FoldersView`
-4. **Finally**: `StatsView`, `SignInView`
+1. ✅ ~~**Start with high-traffic views**: `AssetGridView`~~ - DONE
+2. ✅ ~~**Next**: `SearchView` - Simple search functionality~~ - DONE
+3. ✅ ~~**Complex views**: `SlideshowView`~~ - DONE
+4. **Next**: `FullScreenImageView` - Image loading and navigation
+5. **Then simpler views**: `PeopleGridView`, `TagsGridView`, `FoldersView`, `AlbumListView`
+6. **Finally**: `StatsView`
+7. ✅ ~~`SignInView`~~ - DONE
 
 ## 📝 Notes
 
-- The codebase already has good examples of MVVM (ExploreViewModel, WorldMapViewModel)
+- The codebase now has more good examples of MVVM (AssetGridViewModel, SlideshowViewModel, SignInViewModel)
 - Services are well-structured and can be easily injected into ViewModels
-- The main work is extracting business logic from views into ViewModels
+- The main work is extracting business logic from remaining views into ViewModels
 - Consider creating a base `ViewModel` protocol or class for common functionality
+- The refactored ViewModels follow a consistent pattern that can be replicated
 

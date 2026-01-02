@@ -170,6 +170,15 @@ if currentAuthType == .apiKey {
 - Get photos for specific tag
 - Animated thumbnail previews
 
+### FolderService
+
+**Purpose**: Folder operations
+
+**Features**:
+- Fetch all folders
+- Get photos for specific folder
+- Animated thumbnail previews
+
 ### ExploreService
 
 **Purpose**: Discovery and statistics
@@ -178,6 +187,32 @@ if currentAuthType == .apiKey {
 - Library statistics (total photos, videos)
 - City-based photo grouping
 - Highlights and recommendations
+
+### MapService
+
+**Purpose**: Geographic data and map operations
+
+**Features**:
+- Fetch lightweight map markers for fast initial load
+- On-demand asset loading for specific regions
+- Cache management for map data
+- Support for `/api/map/markers` endpoint with fallback to metadata search
+- Geographic region filtering
+
+**Key Methods**:
+- `fetchMapMarkers()` - Fast initial marker load with caching
+- `fetchAssetsInRegion()` - Load assets within geographic bounds
+- `fetchAssetsById()` - Batch fetch assets by ID
+- `fetchGeodata()` - Legacy full data fetch (heavyweight)
+
+### StatsService
+
+**Purpose**: Library statistics and analytics
+
+**Features**:
+- Total photo and video counts
+- Storage statistics
+- Cached statistics for performance
 
 ### SearchService
 
@@ -360,11 +395,12 @@ Immich_AppleTVApp
     ├── SignInView (if not authenticated)
     └── TabView (if authenticated)
         ├── AssetGridView (Photos)
-        ├── AlbumListView
+        ├── AlbumListView (optional)
         ├── PeopleGridView
         ├── TagsGridView (optional)
         ├── FoldersView (optional)
         ├── ExploreView
+        ├── WorldMapView
         ├── SearchView
         └── SettingsView
 ```
@@ -381,6 +417,17 @@ Two navigation styles supported:
 - **@State**: For local view state
 - **@AppStorage**: For UserDefaults-backed settings
 - **NotificationCenter**: For cross-view communication
+
+### View Models
+
+View models bridge services and views:
+- **AssetGridViewModel**: Manages asset grid state and pagination
+- **SlideshowViewModel**: Handles slideshow logic, Ken Burns effect, timing
+- **WorldMapViewModel**: Manages map markers, region loading, asset selection
+- **ExploreViewModel**: Handles statistics and city-based exploration
+- **SearchViewModel**: Manages search queries and results
+- **FullScreenImageViewModel**: Controls full-screen image viewing and navigation
+- **StatsViewModel**: Manages library statistics display
 
 ### Error Handling
 
@@ -409,6 +456,13 @@ Separate process that:
 
 - **Recent**: Latest photos (landscape only)
 - **Random**: Random selection (landscape only)
+
+### Configuration
+
+Top Shelf settings stored in UserDefaults:
+- `enableTopShelf`: Enable/disable Top Shelf
+- `topShelfStyle`: Carousel or sectioned style
+- `topShelfImageSelection`: Recent or random photos
 
 ### Deep Linking
 
@@ -453,11 +507,13 @@ Comprehensive logging throughout:
 - **Thumbnails**: WebP format, cached in memory
 - **Full Images**: Progressive loading
 - **RAW Images**: Server-converted previews
+- **Video Thumbnails**: Cached video preview images
 
 ### Caching Strategy
 
 - **ThumbnailCache**: In-memory cache for frequently accessed thumbnails
 - **StatsCache**: Cached library statistics
+- **MapService Cache**: 5-minute cache for map markers
 - **TopShelf**: Temporary file cache (cleared on each update)
 
 ### Memory Management
@@ -465,12 +521,22 @@ Comprehensive logging throughout:
 - Proper cleanup of timers and observers
 - Image data released when not in use
 - Pagination prevents loading entire library
+- Lazy loading for map markers and assets
+- Batch processing for large datasets
 
 ### Background Processing
 
 - Network requests on background threads
 - UI updates on main thread (MainActor)
 - Async/await for concurrent operations
+- Background image processing and color extraction
+
+### Map Performance
+
+- Lightweight marker loading for fast initial render
+- On-demand asset loading when zooming into regions
+- Batch fetching to minimize API calls
+- Coordinate validation to prevent invalid markers
 
 ## Thread Safety
 
@@ -494,3 +560,41 @@ Task {
         self.data = result
     }
 }
+```
+
+## Additional Features
+
+### Auto-Slideshow
+
+Automatic slideshow activation after user inactivity:
+- Configurable timeout (in minutes, 0 = disabled)
+- Switches to Photos tab automatically
+- Starts slideshow after tab transition
+- Timer resets on any user interaction
+- Controlled via `NotificationCenter` for pause/resume
+
+### Deep Linking
+
+URL scheme support for opening specific assets:
+- Format: `immichgallery://asset/{assetId}`
+- Handled in `Immich_AppleTVApp.onOpenURL()`
+- Posts notification to `ContentView` for asset navigation
+- Automatically switches to Photos tab and highlights asset
+
+### Slideshow Features
+
+- **Ken Burns Effect**: Pan and zoom animations with configurable enable/disable
+- **Shuffle Mode**: Randomize photo order
+- **Reflections**: Optional reflection effects
+- **Custom Intervals**: User-configurable timing
+- **Background Colors**: Customizable slideshow background
+- **Pause/Resume**: User control during slideshow
+
+### Location Hierarchy
+
+Hierarchical location browsing:
+- **World Map**: Global view with all photo locations
+- **Continent View**: Photos grouped by continent
+- **Country View**: Photos within a specific country
+- **City View**: Photos within a specific city
+- Location data extracted from EXIF metadata

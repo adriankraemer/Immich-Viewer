@@ -130,7 +130,7 @@ struct AlbumDetailView: View {
                 personId: nil,
                 tagId: nil,
                 city: nil,
-                startingIndex: 0,
+                startingAssetId: nil,
                 isFavorite: album.id == "smart_favorites"
             )
         }

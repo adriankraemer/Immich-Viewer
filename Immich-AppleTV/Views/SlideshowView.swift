@@ -25,8 +25,9 @@ struct SlideshowView: View {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
-        startingIndex: Int = 0,
-        isFavorite: Bool = false
+        startingAssetId: String? = nil,
+        isFavorite: Bool = false,
+        isAllPhotos: Bool = false
     ) {
         _viewModel = StateObject(wrappedValue: SlideshowViewModel(
             assetService: assetService,
@@ -35,8 +36,9 @@ struct SlideshowView: View {
             personId: personId,
             tagId: tagId,
             city: city,
-            startingIndex: startingIndex,
-            isFavorite: isFavorite
+            startingAssetId: startingAssetId,
+            isFavorite: isFavorite,
+            isAllPhotos: isAllPhotos
         ))
     }
     
@@ -46,8 +48,9 @@ struct SlideshowView: View {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
-        startingIndex: Int = 0,
-        isFavorite: Bool = false
+        startingAssetId: String? = nil,
+        isFavorite: Bool = false,
+        isAllPhotos: Bool = false
     ) {
         let userManager = UserManager()
         let networkService = NetworkService(userManager: userManager)
@@ -61,8 +64,9 @@ struct SlideshowView: View {
             personId: personId,
             tagId: tagId,
             city: city,
-            startingIndex: startingIndex,
-            isFavorite: isFavorite
+            startingAssetId: startingAssetId,
+            isFavorite: isFavorite,
+            isAllPhotos: isAllPhotos
         )
     }
     
@@ -277,5 +281,5 @@ struct SlideshowView: View {
     UserDefaults.standard.set(true, forKey: "enableReflectionsInSlideshow")
     UserDefaults.standard.set(true, forKey: "enableKenBurnsEffect")
     
-    return SlideshowView(albumId: nil, personId: nil, tagId: nil, city: nil, startingIndex: 0, isFavorite: false)
+    return SlideshowView(albumId: nil, personId: nil, tagId: nil, city: nil, startingAssetId: nil, isFavorite: false)
 }

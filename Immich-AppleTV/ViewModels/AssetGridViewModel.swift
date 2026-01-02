@@ -193,11 +193,15 @@ class AssetGridViewModel: ObservableObject {
         return index >= threshold && hasMoreAssets && !isLoadingMore
     }
     
-    /// Gets the starting index for slideshow based on current position
-    func getSlideshowStartingIndex() -> Int {
-        guard currentAssetIndex < assets.count else { return 0 }
+    /// Gets the starting asset ID for slideshow based on current position
+    func getSlideshowStartingAssetId() -> String? {
+        guard currentAssetIndex < assets.count else { 
+            debugLog("AssetGridViewModel: getSlideshowStartingAssetId - currentAssetIndex \(currentAssetIndex) out of bounds, returning nil")
+            return nil 
+        }
         let currentAsset = assets[currentAssetIndex]
-        return imageAssets.firstIndex(of: currentAsset) ?? 0
+        debugLog("AssetGridViewModel: getSlideshowStartingAssetId - currentAssetIndex=\(currentAssetIndex), currentAsset=\(currentAsset.id)")
+        return currentAsset.id
     }
     
     /// Cancels any pending load operations

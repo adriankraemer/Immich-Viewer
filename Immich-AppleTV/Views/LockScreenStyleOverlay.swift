@@ -188,5 +188,5 @@ struct LockScreenStyleOverlay: View {
 
 
 #Preview {
-    SlideshowView(albumId: nil, personId: nil, tagId: nil, city: nil, startingIndex: 0, isFavorite: false)
+    SlideshowView(albumId: nil, personId: nil, tagId: nil, city: nil, startingAssetId: nil, isFavorite: false)
 }

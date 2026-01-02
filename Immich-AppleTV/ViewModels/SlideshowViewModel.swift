@@ -130,8 +130,9 @@ class SlideshowViewModel: ObservableObject {
     private let personId: String?
     private let tagId: String?
     private let city: String?
-    private let startingIndex: Int
+    private let startingAssetId: String?
     private let isFavorite: Bool
+    private let isAllPhotos: Bool
     
     // MARK: - Tasks & Timers
     private var loadAssetsTask: Task<Void, Never>?
@@ -161,8 +162,9 @@ class SlideshowViewModel: ObservableObject {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
-        startingIndex: Int = 0,
-        isFavorite: Bool = false
+        startingAssetId: String? = nil,
+        isFavorite: Bool = false,
+        isAllPhotos: Bool = false
     ) {
         self.assetService = assetService
         self.albumService = albumService
@@ -170,8 +172,9 @@ class SlideshowViewModel: ObservableObject {
         self.personId = personId
         self.tagId = tagId
         self.city = city
-        self.startingIndex = startingIndex
+        self.startingAssetId = startingAssetId
         self.isFavorite = isFavorite
+        self.isAllPhotos = isAllPhotos
         self.settings = SlideshowConfiguration.load()
         
         // Create asset provider
@@ -180,7 +183,7 @@ class SlideshowViewModel: ObservableObject {
             personId: personId,
             tagId: tagId,
             city: city,
-            isAllPhotos: false,
+            isAllPhotos: isAllPhotos,
             isFavorite: isFavorite,
             assetService: assetService,
             albumService: albumService
@@ -342,18 +345,71 @@ class SlideshowViewModel: ObservableObject {
         guard !Task.isCancelled, let assetProvider = assetProvider else { return }
         
         do {
-            let searchResult: SearchResult
             if settings.enableShuffle && !isSharedAlbum {
-                searchResult = try await assetProvider.fetchRandomAssets(limit: 100)
+                // Shuffle mode: fetch random assets
+                let searchResult = try await assetProvider.fetchRandomAssets(limit: 100)
+                let imageAssets = searchResult.assets.filter { $0.type == .image }
+                assetQueue = imageAssets
+                hasMoreAssets = true // Always more random assets available
+                debugLog("SlideshowViewModel: Loaded \(imageAssets.count) random assets")
             } else {
-                searchResult = try await assetProvider.fetchAssets(page: currentPage, limit: 100)
+                // Sequential mode: find the starting asset by searching through pages
+                debugLog("SlideshowViewModel: Looking for starting asset: \(startingAssetId ?? "none")")
+                
+                var foundStartingAsset = false
+                var allImageAssets: [ImmichAsset] = []
+                var page = 1
+                let pageSize = 100
+                
+                // Keep fetching pages until we find the starting asset or run out of assets
+                while !foundStartingAsset {
+                    let result = try await assetProvider.fetchAssets(page: page, limit: pageSize)
+                    let imageAssets = result.assets.filter { $0.type == .image }
+                    
+                    debugLog("SlideshowViewModel: Fetched page \(page) with \(imageAssets.count) images")
+                    
+                    // Check if starting asset is in this batch
+                    if let targetId = startingAssetId,
+                       let targetIndex = imageAssets.firstIndex(where: { $0.id == targetId }) {
+                        // Found it! Start from this asset
+                        assetQueue = Array(imageAssets.dropFirst(targetIndex))
+                        currentPage = page
+                        hasMoreAssets = result.nextPage != nil
+                        foundStartingAsset = true
+                        debugLog("SlideshowViewModel: Found starting asset \(targetId) at index \(targetIndex) on page \(page)")
+                    } else if result.nextPage == nil {
+                        // No more pages, use what we have from page 1
+                        if allImageAssets.isEmpty {
+                            allImageAssets = imageAssets
+                        }
+                        assetQueue = allImageAssets
+                        currentPage = 1
+                        hasMoreAssets = false
+                        foundStartingAsset = true
+                        debugLog("SlideshowViewModel: Starting asset not found, starting from beginning")
+                    } else if page == 1 {
+                        // Save first page in case we need to fall back
+                        allImageAssets = imageAssets
+                        page += 1
+                    } else {
+                        page += 1
+                    }
+                    
+                    // Safety limit to prevent infinite loops
+                    if page > 100 {
+                        assetQueue = allImageAssets
+                        currentPage = 1
+                        hasMoreAssets = true
+                        debugLog("SlideshowViewModel: Hit page limit, starting from beginning")
+                        break
+                    }
+                }
+                
+                if let firstQueueAsset = assetQueue.first {
+                    debugLog("SlideshowViewModel: First asset in queue: \(firstQueueAsset.id)")
+                }
+                debugLog("SlideshowViewModel: Queue size: \(assetQueue.count)")
             }
-            
-            let imageAssets = searchResult.assets.filter { $0.type == .image }
-            let actualStartingIndex = min(startingIndex, max(0, imageAssets.count - 1))
-            assetQueue = Array(imageAssets.dropFirst(actualStartingIndex))
-            hasMoreAssets = searchResult.nextPage != nil || (settings.enableShuffle && !isSharedAlbum)
-            debugLog("SlideshowViewModel: Loaded \(imageAssets.count) assets, starting at index \(startingIndex)")
         } catch {
             debugLog("SlideshowViewModel: Failed to load initial assets: \(error)")
             isLoading = false

@@ -105,8 +105,9 @@ struct AssetGridView: View {
                     personId: viewModel.personId,
                     tagId: viewModel.tagId,
                     city: viewModel.city,
-                    startingIndex: viewModel.getSlideshowStartingIndex(),
-                    isFavorite: viewModel.isFavorite
+                    startingAssetId: viewModel.getSlideshowStartingAssetId(),
+                    isFavorite: viewModel.isFavorite,
+                    isAllPhotos: viewModel.isAllPhotos
                 )
             }
         }

@@ -8,6 +8,17 @@
 
 import SwiftUI
 
+// MARK: - Cinematic Theme Constants for Settings
+private enum SettingsTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let accentLight = Color(red: 255/255, green: 200/255, blue: 100/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    static let surfaceLight = Color(red: 45/255, green: 45/255, blue: 48/255)
+    static let textPrimary = Color.white
+    static let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+    static let success = Color(red: 52/255, green: 199/255, blue: 89/255)
+}
+
 // MARK: - Reusable Components
 
 struct SettingsRow: View {
@@ -18,38 +29,78 @@ struct SettingsRow: View {
     let isOn: Bool
     
     init(icon: String, title: String, subtitle: String, content: AnyView, isOn: Bool = false) {
-            self.icon = icon
-            self.title = title
-            self.subtitle = subtitle
-            self.content = content
-            self.isOn = isOn
-        }
-
+        self.icon = icon
+        self.title = title
+        self.subtitle = subtitle
+        self.content = content
+        self.isOn = isOn
+    }
     
     var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundColor(isOn ? .green : .blue)
-                .font(.title3)
-                .frame(width: 24)
-                .padding()
+        HStack(spacing: 16) {
+            // Icon with cinematic styling
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                (isOn ? SettingsTheme.success : SettingsTheme.accent).opacity(0.2),
+                                (isOn ? SettingsTheme.success : SettingsTheme.accent).opacity(0.1)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+                
+                Image(systemName: icon)
+                    .foregroundColor(isOn ? SettingsTheme.success : SettingsTheme.accent)
+                    .font(.system(size: 20, weight: .medium))
+            }
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.subheadline)
-                    .foregroundColor(.primary)
+                    .font(.headline)
+                    .foregroundColor(SettingsTheme.textPrimary)
                 Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.subheadline)
+                    .foregroundColor(SettingsTheme.textSecondary)
+                    .lineLimit(2)
             }
             
             Spacer()
             
             content
         }
-        .padding(16)
-        .background(isOn ? Color.green.opacity(0.05): Color.gray.opacity(0.05))
-        .cornerRadius(12)
+        .padding(20)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(SettingsTheme.surface.opacity(0.6))
+                
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.05), Color.clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [
+                                isOn ? SettingsTheme.success.opacity(0.3) : Color.white.opacity(0.08),
+                                Color.white.opacity(0.02)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            }
+        )
     }
 }
 
@@ -92,46 +143,91 @@ struct SettingsView: View {
         Button(action: {
             refreshServerConnection()
         }) {
-            HStack(spacing: 16) {
+            HStack(spacing: 20) {
+                // Server icon with cinematic styling
                 ZStack {
                     Circle()
-                        .fill(Color.gray.opacity(0.1))
-                        .frame(width: 100, height: 100)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    SettingsTheme.success.opacity(0.2),
+                                    SettingsTheme.success.opacity(0.1)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 80, height: 80)
                     
                     Image(systemName: authService.baseURL.lowercased().hasPrefix("https") ? "lock.fill" : "lock.open.fill")
-                        .foregroundColor(authService.baseURL.lowercased().hasPrefix("https") ? .green : .red)
-                        .font(.system(size: 100 * 0.4))
+                        .foregroundColor(authService.baseURL.lowercased().hasPrefix("https") ? SettingsTheme.success : .red)
+                        .font(.system(size: 32, weight: .medium))
                 }
-                .padding(.trailing, 10)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Connected Server")
+                        .font(.subheadline)
+                        .foregroundColor(SettingsTheme.textSecondary)
                     Text(authService.baseURL)
                         .font(.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(SettingsTheme.textPrimary)
                 }
                 
                 Spacer()
                 
+                // Refresh button
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.clockwise")
-                        .foregroundColor(.blue)
-                        .font(.title3)
+                        .font(.system(size: 16, weight: .semibold))
                     Text("Refresh")
-                        .font(.caption)
-                        .foregroundColor(.blue)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(8)
+                .foregroundColor(SettingsTheme.accent)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(SettingsTheme.accent.opacity(0.15))
+                )
                 
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(.green)
-                    .font(.title3)
+                // Status indicator
+                ZStack {
+                    Circle()
+                        .fill(SettingsTheme.success.opacity(0.2))
+                        .frame(width: 36, height: 36)
+                    
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(SettingsTheme.success)
+                }
             }
-            .padding()
-            .background(Color.green.opacity(0.05))
-            .cornerRadius(12)
+            .padding(24)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(SettingsTheme.surface.opacity(0.6))
+                    
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.05), Color.clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [SettingsTheme.success.opacity(0.3), Color.white.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            )
         }
         .buttonStyle(CardButtonStyle())
     }
@@ -147,77 +243,142 @@ struct SettingsView: View {
             Button(action: {
                 showingSignIn = true
             }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "person.badge.plus")
-                        .font(.title2)
-                        .foregroundColor(.blue)
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(SettingsTheme.accent.opacity(0.15))
+                            .frame(width: 44, height: 44)
+                        
+                        Image(systemName: "person.badge.plus")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(SettingsTheme.accent)
+                    }
+                    
                     Text("Add User")
-                        .font(.caption)
+                        .font(.headline)
+                        .foregroundColor(SettingsTheme.textPrimary)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(SettingsTheme.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(16)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(12)
+                .padding(20)
+                .background(
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(SettingsTheme.surface.opacity(0.6))
+                        
+                        RoundedRectangle(cornerRadius: 14)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [SettingsTheme.accent.opacity(0.3), Color.white.opacity(0.05)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    }
+                )
             }
             .buttonStyle(CardButtonStyle())
         }
     }
     
     private func userRow(user: SavedUser) -> some View {
-        HStack {
+        let accentColor = user.authType == .apiKey ? Color.orange : SettingsTheme.accent
+        let isActive = userManager.currentUser?.id == user.id
+        
+        return HStack(spacing: 12) {
             Button(action: {
                 switchToUser(user)
             }) {
-                HStack {
-                    HStack(spacing: 16) {
-                        ProfileImageView(
-                            userId: user.id,
-                            authType: user.authType,
-                            size: 100,
-                            profileImageData: user.profileImageData
-                        )
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack(spacing: 4) {
-                                Badge(
-                                    user.authType == .apiKey ? "API Key" : "Password",
-                                    color: user.authType == .apiKey ? Color.orange : Color.blue
-                                )
-                                
-                                Text(user.name)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.primary)
-                            }
+                HStack(spacing: 16) {
+                    ProfileImageView(
+                        userId: user.id,
+                        authType: user.authType,
+                        size: 80,
+                        profileImageData: user.profileImageData
+                    )
+                    
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 8) {
+                            Badge(
+                                user.authType == .apiKey ? "API Key" : "Password",
+                                color: accentColor
+                            )
                             
-                            Text(user.email)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            
-                            Text(user.serverURL)
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                                .lineLimit(1)
+                            Text(user.name)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(SettingsTheme.textPrimary)
                         }
+                        
+                        Text(user.email)
+                            .font(.subheadline)
+                            .foregroundColor(SettingsTheme.textSecondary)
+                        
+                        Text(user.serverURL)
+                            .font(.caption)
+                            .foregroundColor(SettingsTheme.textSecondary.opacity(0.7))
+                            .lineLimit(1)
                     }
                     
                     Spacer()
                     
-                    if userManager.currentUser?.id == user.id {
-                        Badge("Active", color: Color.green)
+                    if isActive {
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(SettingsTheme.success)
+                                .frame(width: 8, height: 8)
+                            Text("Active")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(SettingsTheme.success)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(SettingsTheme.success.opacity(0.15))
+                        )
                     } else {
-                        Image(systemName: "arrow.right.circle")
-                            .foregroundColor(user.authType == .apiKey ? .orange : .blue)
-                            .font(.title3)
+                        Image(systemName: "arrow.right.circle.fill")
+                            .foregroundColor(accentColor)
+                            .font(.title2)
                     }
-
                 }
-                .padding()
-                .background {
-                    let accentColor = user.authType == .apiKey ? Color.orange : Color.blue
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(accentColor.opacity(0.05))
-                }
+                .padding(20)
+                .background(
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(SettingsTheme.surface.opacity(0.6))
+                        
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.05), Color.clear],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                        
+                        RoundedRectangle(cornerRadius: 14)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [
+                                        isActive ? SettingsTheme.success.opacity(0.4) : accentColor.opacity(0.2),
+                                        Color.white.opacity(0.05)
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: isActive ? 1.5 : 1
+                            )
+                    }
+                )
             }
             .buttonStyle(CardButtonStyle())
             
@@ -225,12 +386,15 @@ struct SettingsView: View {
                 userToDelete = user
                 showingDeleteUserAlert = true
             }) {
-                Image(systemName: "trash")
-                    .foregroundColor(.red)
-                    .font(.title3)
-                    .padding(8)
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(8)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.red.opacity(0.1))
+                        .frame(width: 56, height: 56)
+                    
+                    Image(systemName: "trash.fill")
+                        .foregroundColor(.red)
+                        .font(.system(size: 20, weight: .medium))
+                }
             }
             .buttonStyle(CardButtonStyle())
         }

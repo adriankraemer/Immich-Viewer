@@ -61,6 +61,12 @@ struct PeopleGridView: View {
     }
 }
 
+// MARK: - Cinematic Theme for Person Detail
+private enum PersonDetailTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+}
+
 // MARK: - Person Photos View
 
 struct PersonPhotosView: View {
@@ -75,8 +81,8 @@ struct PersonPhotosView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.black
-                    .ignoresSafeArea()
+                // Cinematic background
+                SharedGradientBackground()
                 
                 AssetGridView(
                     assetService: assetService,
@@ -101,17 +107,35 @@ struct PersonPhotosView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: startSlideshow) {
-                        Image(systemName: "play.rectangle")
-                            .foregroundColor(.white)
+                        HStack(spacing: 8) {
+                            Image(systemName: "play.fill")
+                            Text("Slideshow")
+                        }
+                        .foregroundColor(PersonDetailTheme.accent)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(PersonDetailTheme.accent.opacity(0.15))
+                        )
                     }
                     .disabled(personAssets.isEmpty)
                 }
                 
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
-                        dismiss()
+                    Button(action: { dismiss() }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "xmark")
+                            Text("Close")
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(PersonDetailTheme.surface.opacity(0.8))
+                        )
                     }
-                    .foregroundColor(.white)
                 }
             }
         }

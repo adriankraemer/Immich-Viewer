@@ -55,6 +55,12 @@ struct FoldersView: View {
     }
 }
 
+// MARK: - Cinematic Theme for Folder Detail
+private enum FolderDetailTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+}
+
 // MARK: - Folder Detail View
 
 struct FolderDetailView: View {
@@ -70,8 +76,8 @@ struct FolderDetailView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.black
-                    .ignoresSafeArea()
+                // Cinematic background
+                SharedGradientBackground()
                 
                 AssetGridView(
                     assetService: assetService,
@@ -93,8 +99,18 @@ struct FolderDetailView: View {
             .navigationTitle(folderTitle)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+                    Button(action: { dismiss() }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "xmark")
+                            Text("Close")
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(FolderDetailTheme.surface.opacity(0.8))
+                        )
                     }
                 }
             }

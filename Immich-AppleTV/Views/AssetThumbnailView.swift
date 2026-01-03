@@ -1,5 +1,12 @@
 import SwiftUI
 
+// MARK: - Cinematic Theme Constants for Asset Thumbnail
+private enum ThumbnailTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    static let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+}
+
 struct AssetThumbnailView: View {
     let asset: ImmichAsset
     @ObservedObject var assetService: AssetService
@@ -7,78 +14,178 @@ struct AssetThumbnailView: View {
     @State private var image: UIImage?
     @State private var isLoading = true
     @State private var loadingTask: Task<Void, Never>?
+    @State private var shimmerOffset: CGFloat = -320
     let isFocused: Bool
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-        
-             RoundedRectangle(cornerRadius: 12)
-                 .fill(Color.gray.opacity(0.3))
-                 .frame(width: 320, height: 320)
+            // Background with glassmorphism
+            RoundedRectangle(cornerRadius: 16)
+                .fill(ThumbnailTheme.surface.opacity(0.6))
+                .frame(width: 320, height: 320)
             
-             if isLoading {
-                 ProgressView()
-                     .scaleEffect(1.2)
-             } else if let image = image {
-                 Image(uiImage: image)
-                     .resizable()
-                     .aspectRatio(contentMode: .fill)
-                     .frame(width: 320, height: 320)
-                     .clipped()
-                     .cornerRadius(12)
-             } else {
-                 Image(systemName: "photo")
-                     .font(.system(size: 40))
-                     .foregroundColor(.gray)
-             }
+            if isLoading {
+                // Skeleton loading animation
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(ThumbnailTheme.surface.opacity(0.8))
+                    
+                    // Shimmer effect
+                    LinearGradient(
+                        colors: [
+                            Color.clear,
+                            Color.white.opacity(0.08),
+                            Color.clear
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                    .offset(x: shimmerOffset)
+                    .onAppear {
+                        withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                            shimmerOffset = 320
+                        }
+                    }
+                }
+                .frame(width: 320, height: 320)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+            } else if let image = image {
+                ZStack {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 320, height: 320)
+                        .clipped()
+                        .cornerRadius(16)
+                    
+                    // Subtle gradient overlay for depth
+                    LinearGradient(
+                        colors: [
+                            Color.clear,
+                            Color.clear,
+                            Color.black.opacity(0.4)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .cornerRadius(16)
+                }
+            } else {
+                // Empty state
+                VStack(spacing: 12) {
+                    Image(systemName: "photo")
+                        .font(.system(size: 40, weight: .light))
+                        .foregroundColor(ThumbnailTheme.textSecondary)
+                }
+            }
             
-            // Video indicator
+            // Video indicator with cinematic styling
             if asset.type == .video {
-                // Play button at top right
                 VStack {
                     HStack {
                         Spacer()
-                        Image(systemName: "play.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.white)
-                            .background(Color.black.opacity(0.6))
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.5), radius: 5, x: 0, y: 2)
-                            .padding(8)
+                        ZStack {
+                            Circle()
+                                .fill(Color.black.opacity(0.7))
+                                .frame(width: 50, height: 50)
+                            
+                            Circle()
+                                .strokeBorder(
+                                    LinearGradient(
+                                        colors: [Color.white.opacity(0.3), Color.white.opacity(0.1)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1.5
+                                )
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                                .offset(x: 2)
+                        }
+                        .shadow(color: .black.opacity(0.5), radius: 8, x: 0, y: 4)
+                        .padding(12)
                     }
                     Spacer()
                 }
-            
             }
             
-            // Favorite heart indicator at bottom left
+            // Favorite heart indicator with glow
             if asset.isFavorite {
                 VStack {
                     Spacer()
                     HStack {
-                        Image(systemName: "heart.fill")
-                            .font(.caption2)
-                            .foregroundColor(.red)
-                            .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
-                            .padding(8)
+                        ZStack {
+                            // Glow effect
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 16))
+                                .foregroundColor(.red)
+                                .blur(radius: 6)
+                            
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 14))
+                                .foregroundColor(.red)
+                        }
+                        .padding(10)
                         Spacer()
                     }
                 }
             }
+            
+            // Date badge with glassmorphism
             VStack(alignment: .trailing, spacing: 2) {
                 Text(DateFormatter.formatSpecificISO8601(asset.exifInfo?.dateTimeOriginal ?? asset.fileCreatedAt, includeTime: false))
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.8))
+                    .fontWeight(.medium)
+                    .foregroundColor(.white.opacity(0.9))
             }
-            .padding(8)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.black.opacity(0.4))
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.black.opacity(0.6))
+                    
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.1), Color.clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
+                }
             )
-            
+            .padding(10)
         }
         .frame(width: 320, height: 320)
-        .shadow(color: .black.opacity(isFocused ? 0.5 : 0), radius: 15, y: 10)
+        // Cinematic card styling with golden glow on focus
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            isFocused ? ThumbnailTheme.accent.opacity(0.9) : Color.white.opacity(0.1),
+                            isFocused ? ThumbnailTheme.accent.opacity(0.4) : Color.white.opacity(0.03)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: isFocused ? 3 : 1
+                )
+        )
+        .shadow(
+            color: isFocused ? ThumbnailTheme.accent.opacity(0.4) : Color.black.opacity(0.3),
+            radius: isFocused ? 20 : 8,
+            x: 0,
+            y: isFocused ? 10 : 4
+        )
         .onAppear {
             loadThumbnail()
         }

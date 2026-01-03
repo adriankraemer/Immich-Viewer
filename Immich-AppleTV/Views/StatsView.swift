@@ -1,5 +1,13 @@
 import SwiftUI
 
+// MARK: - Cinematic Theme Constants for Stats
+private enum StatsTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    static let textPrimary = Color.white
+    static let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+}
+
 struct StatsView: View {
     // MARK: - ViewModel
     @StateObject private var viewModel: StatsViewModel
@@ -51,48 +59,92 @@ struct StatsView: View {
     // MARK: - Subviews
     
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
+        HStack(spacing: 20) {
+            // Icon with cinematic styling
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                StatsTheme.accent.opacity(0.2),
+                                StatsTheme.accent.opacity(0.1)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 70, height: 70)
+                
                 Image(systemName: "chart.bar.fill")
-                    .foregroundColor(.blue)
-                    .font(.title2)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Library Statistics")
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                    
-                    if let lastUpdated = viewModel.formattedLastUpdated {
-                        Text("Last updated: \(lastUpdated)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                Spacer()
-                
-                Button(action: {
-                    viewModel.refreshStats()
-                }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.title2)
-                            .foregroundColor(.blue)
-                        Text("Refresh")
-                            .font(.caption)
-                            .foregroundColor(.primary)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(16)
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(12)
-                }
-                .buttonStyle(CardButtonStyle())
+                    .foregroundColor(StatsTheme.accent)
+                    .font(.system(size: 28, weight: .medium))
             }
+            
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Library Statistics")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(StatsTheme.textPrimary)
+                
+                if let lastUpdated = viewModel.formattedLastUpdated {
+                    Text("Last updated: \(lastUpdated)")
+                        .font(.subheadline)
+                        .foregroundColor(StatsTheme.textSecondary)
+                }
+            }
+            
+            Spacer()
+            
+            Button(action: {
+                viewModel.refreshStats()
+            }) {
+                HStack(spacing: 10) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Refresh")
+                        .font(.headline)
+                }
+                .foregroundColor(StatsTheme.accent)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .background(
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(StatsTheme.accent.opacity(0.15))
+                        
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(StatsTheme.accent.opacity(0.3), lineWidth: 1)
+                    }
+                )
+            }
+            .buttonStyle(CardButtonStyle())
         }
-        .padding()
-        .background(Color.blue.opacity(0.05))
-        .cornerRadius(12)
+        .padding(24)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(StatsTheme.surface.opacity(0.6))
+                
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.05), Color.clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [StatsTheme.accent.opacity(0.2), Color.white.opacity(0.05)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            }
+        )
     }
     
     private func assetStatsSection(_ assetData: AssetStatistics) -> some View {
@@ -239,7 +291,7 @@ struct StatsView: View {
     }
 }
 
-// MARK: - Stat Card
+// MARK: - Cinematic Stat Card
 
 struct StatCard: View {
     let icon: String
@@ -247,31 +299,70 @@ struct StatCard: View {
     let count: Int
     let color: Color
     
+    private let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    private let textPrimary = Color.white
+    private let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+    
     var body: some View {
         Button(action: {
             // Do nothing
         }) {
-            VStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.title)
-                    .foregroundColor(color)
+            VStack(spacing: 16) {
+                // Icon with gradient background
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [color.opacity(0.25), color.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 60, height: 60)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 26, weight: .medium))
+                        .foregroundColor(color)
+                }
                 
-                VStack(spacing: 4) {
+                VStack(spacing: 6) {
                     Text("\(count)")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .font(.system(size: 32, weight: .bold))
+                        .foregroundColor(textPrimary)
                     
                     Text(title)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.subheadline)
+                        .foregroundColor(textSecondary)
                         .multilineTextAlignment(.center)
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(20)
-            .background(color.opacity(0.1))
-            .cornerRadius(12)
+            .padding(24)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(surface.opacity(0.6))
+                    
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.05), Color.clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [color.opacity(0.3), Color.white.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            )
         }
         .buttonStyle(CardButtonStyle())
     }

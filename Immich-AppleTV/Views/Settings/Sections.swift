@@ -1,5 +1,14 @@
 import Foundation
 import SwiftUI
+
+// MARK: - Cinematic Theme Constants for Sections
+private enum SectionTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    static let textPrimary = Color.white
+    static let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+}
+
 // MARK: - Cache Section Component
 
 struct CacheSection: View {
@@ -131,11 +140,17 @@ struct SettingsSection: View {
     let content: () -> AnyView
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
+        VStack(alignment: .leading, spacing: 24) {
+            // Section header with cinematic styling
+            HStack(spacing: 16) {
+                // Accent bar
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(SectionTheme.accent)
+                    .frame(width: 4, height: 32)
+                
                 Text(title)
-                    .font(.system(size: 36, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(SectionTheme.textPrimary)
                 
                 Spacer()
             }
@@ -145,7 +160,7 @@ struct SettingsSection: View {
                 content()
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 12)
     }
 }
 
@@ -158,18 +173,40 @@ struct ActionButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(color)
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.15))
+                        .frame(width: 50, height: 50)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 22, weight: .medium))
+                        .foregroundColor(color)
+                }
+                
                 Text(title)
-                    .font(.caption)
-                    .foregroundColor(.primary)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(SectionTheme.textPrimary)
             }
             .frame(maxWidth: .infinity)
-            .padding(16)
-            .background(color.opacity(0.1))
-            .cornerRadius(12)
+            .padding(20)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(SectionTheme.surface.opacity(0.6))
+                    
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [color.opacity(0.3), Color.white.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            )
         }
         .buttonStyle(CardButtonStyle())
     }

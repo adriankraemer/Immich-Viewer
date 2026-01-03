@@ -66,6 +66,12 @@ struct AlbumListView: View {
     }
 }
 
+// MARK: - Cinematic Theme for Album Detail
+private enum AlbumDetailTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+}
+
 // MARK: - Album Detail View
 
 struct AlbumDetailView: View {
@@ -80,8 +86,8 @@ struct AlbumDetailView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.black
-                    .ignoresSafeArea()
+                // Cinematic background
+                SharedGradientBackground()
                 
                 AssetGridView(
                     assetService: assetService,
@@ -103,16 +109,34 @@ struct AlbumDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: startSlideshow) {
-                        Image(systemName: "play.rectangle")
-                            .foregroundColor(.white)
+                        HStack(spacing: 8) {
+                            Image(systemName: "play.fill")
+                            Text("Slideshow")
+                        }
+                        .foregroundColor(AlbumDetailTheme.accent)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(AlbumDetailTheme.accent.opacity(0.15))
+                        )
                     }
                     .disabled(albumAssets.isEmpty)
                 }
                 
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { dismiss() }) {
-                        Image(systemName: "xmark.circle")
-                            .foregroundColor(.white)
+                        HStack(spacing: 8) {
+                            Image(systemName: "xmark")
+                            Text("Close")
+                        }
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(AlbumDetailTheme.surface.opacity(0.8))
+                        )
                     }
                 }
             }

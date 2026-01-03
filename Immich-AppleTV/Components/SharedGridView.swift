@@ -1,5 +1,17 @@
 import SwiftUI
 
+// MARK: - Cinematic Theme Constants
+
+private enum CinematicTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let accentLight = Color(red: 255/255, green: 200/255, blue: 100/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    static let surfaceLight = Color(red: 45/255, green: 45/255, blue: 48/255)
+    static let textPrimary = Color.white
+    static let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+    static let textTertiary = Color(red: 99/255, green: 99/255, blue: 102/255)
+}
+
 // MARK: - Thumbnail Provider Protocol
 
 /// Protocol for loading thumbnails for grid items
@@ -32,36 +44,78 @@ struct SharedGridView<Item: GridDisplayable>: View {
             SharedGradientBackground()
             
             if isLoading {
-                ProgressView(config.loadingText)
-                    .foregroundColor(.white)
-                    .scaleEffect(1.5)
+                // Cinematic loading state
+                CinematicLoadingView(message: config.loadingText)
             } else if let errorMessage = errorMessage {
-                VStack {
-                    Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 60))
-                        .foregroundColor(.orange)
-                    Text("Error")
-                        .font(.title)
-                        .foregroundColor(.white)
-                    Text(errorMessage)
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    Button("Retry") {
-                        onRetry()
+                // Cinematic error state
+                VStack(spacing: 24) {
+                    ZStack {
+                        Circle()
+                            .fill(CinematicTheme.surface)
+                            .frame(width: 120, height: 120)
+                        
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 50))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.orange, Color.red],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
                     }
-                    .buttonStyle(.borderedProminent)
+                    
+                    VStack(spacing: 12) {
+                        Text("Something went wrong")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(CinematicTheme.textPrimary)
+                        
+                        Text(errorMessage)
+                            .font(.body)
+                            .foregroundColor(CinematicTheme.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: 500)
+                    }
+                    
+                    Button(action: { onRetry() }) {
+                        HStack(spacing: 10) {
+                            Image(systemName: "arrow.clockwise")
+                            Text("Try Again")
+                        }
+                        .font(.headline)
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 16)
+                        .background(CinematicTheme.accent)
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(CardButtonStyle())
                 }
+                .padding(40)
             } else if items.isEmpty {
-                VStack {
-                    Image(systemName: config.emptyStateText.contains("Album") ? "folder" : config.emptyStateText.contains("People") ? "person.crop.circle" : "tag")
-                        .font(.system(size: 60))
-                        .foregroundColor(.gray)
-                    Text(config.emptyStateText)
-                        .font(.title)
-                        .foregroundColor(.white)
-                    Text(config.emptyStateDescription)
-                        .foregroundColor(.gray)
+                // Cinematic empty state
+                VStack(spacing: 24) {
+                    ZStack {
+                        Circle()
+                            .fill(CinematicTheme.surface)
+                            .frame(width: 120, height: 120)
+                        
+                        Image(systemName: config.emptyStateText.contains("Album") ? "folder" : config.emptyStateText.contains("People") ? "person.crop.circle" : "tag")
+                            .font(.system(size: 50))
+                            .foregroundColor(CinematicTheme.textTertiary)
+                    }
+                    
+                    VStack(spacing: 12) {
+                        Text(config.emptyStateText)
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                            .foregroundColor(CinematicTheme.textPrimary)
+                        
+                        Text(config.emptyStateDescription)
+                            .font(.body)
+                            .foregroundColor(CinematicTheme.textSecondary)
+                    }
                 }
             } else {
                 ScrollView {
@@ -111,6 +165,73 @@ struct SharedGridView<Item: GridDisplayable>: View {
     }
 }
 
+// MARK: - Skeleton Loading View
+struct SkeletonLoadingView: View {
+    @State private var isAnimating = false
+    
+    var body: some View {
+        ZStack {
+            CinematicTheme.surface.opacity(0.5)
+            
+            // Shimmer effect
+            LinearGradient(
+                colors: [
+                    Color.clear,
+                    Color.white.opacity(0.08),
+                    Color.clear
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .offset(x: isAnimating ? 400 : -400)
+        }
+        .onAppear {
+            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                isAnimating = true
+            }
+        }
+    }
+}
+
+// MARK: - Cinematic Loading View
+struct CinematicLoadingView: View {
+    var message: String = "Loading..."
+    @State private var rotation: Double = 0
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            ZStack {
+                // Outer ring
+                Circle()
+                    .stroke(CinematicTheme.surface, lineWidth: 4)
+                    .frame(width: 70, height: 70)
+                
+                // Animated gradient ring
+                Circle()
+                    .trim(from: 0, to: 0.7)
+                    .stroke(
+                        AngularGradient(
+                            colors: [CinematicTheme.accent, CinematicTheme.accentLight, CinematicTheme.accent],
+                            center: .center
+                        ),
+                        style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                    )
+                    .frame(width: 70, height: 70)
+                    .rotationEffect(.degrees(rotation))
+            }
+            
+            Text(message)
+                .font(.headline)
+                .foregroundColor(CinematicTheme.textSecondary)
+        }
+        .onAppear {
+            withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                rotation = 360
+            }
+        }
+    }
+}
+
 // MARK: - Grid Item View
 struct SharedGridItemView<Item: GridDisplayable>: View {
     let item: Item
@@ -127,18 +248,20 @@ struct SharedGridItemView<Item: GridDisplayable>: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Thumbnail section
+            // Thumbnail section with cinematic styling
             ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.3))
+                // Glass background
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(CinematicTheme.surface.opacity(0.6))
                     .frame(width: config.itemWidth - 20, height: 280)
                 
                 if isLoadingThumbnails {
-                    ProgressView()
-                        .scaleEffect(1.2)
-                        .foregroundColor(.white)
+                    // Skeleton loading
+                    SkeletonLoadingView()
+                        .frame(width: config.itemWidth - 20, height: 280)
+                        .cornerRadius(16)
                 } else if !thumbnails.isEmpty {
-                    // Animated thumbnails
+                    // Animated thumbnails with cinematic overlay
                     ZStack {
                         ForEach(Array(thumbnails.enumerated()), id: \.offset) { index, thumbnail in
                             Image(uiImage: thumbnail)
@@ -146,75 +269,90 @@ struct SharedGridItemView<Item: GridDisplayable>: View {
                                 .aspectRatio(contentMode: .fill)
                                 .frame(width: config.itemWidth - 20, height: 280)
                                 .clipped()
-                                .cornerRadius(12)
+                                .cornerRadius(16)
                                 .opacity(index == currentThumbnailIndex ? 1.0 : 0.0)
                                 .animation(.easeInOut(duration: 1.5), value: currentThumbnailIndex)
                         }
+                        
+                        // Subtle gradient overlay for depth
+                        LinearGradient(
+                            colors: [
+                                Color.clear,
+                                Color.black.opacity(0.3)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .cornerRadius(16)
                     }
                 } else {
-                    // Fallback content
-                    VStack(spacing: 12) {
-                        if let color = item.gridColor {
+                    // Fallback content with cinematic styling
+                    VStack(spacing: 16) {
+                        ZStack {
                             Circle()
-                                .fill(color)
-                                .frame(width: 80, height: 80)
-                                .overlay(
-                                    Image(systemName: item.iconName)
-                                        .font(.system(size: 40))
-                                        .foregroundColor(.white)
+                                .fill(
+                                    LinearGradient(
+                                        colors: [
+                                            (item.gridColor ?? CinematicTheme.accent).opacity(0.3),
+                                            (item.gridColor ?? CinematicTheme.accent).opacity(0.1)
+                                        ],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                        } else {
+                                .frame(width: 90, height: 90)
+                            
                             Image(systemName: item.iconName)
-                                .font(.system(size: 40))
-                                .foregroundColor(.gray)
+                                .font(.system(size: 40, weight: .medium))
+                                .foregroundColor(item.gridColor ?? CinematicTheme.textSecondary)
                         }
                         
                         Text(item.primaryTitle)
                             .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
+                            .fontWeight(.semibold)
+                            .foregroundColor(CinematicTheme.textPrimary)
                             .lineLimit(2)
                             .multilineTextAlignment(.center)
                     }
                 }
             }
             
-            // Info section
-            VStack(alignment: .leading) {
+            // Info section with glassmorphism
+            VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack(spacing: 6) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 8) {
                             // Special icons for different types
                             if item.id.hasPrefix("smart_") {
                                 Image(systemName: "heart.fill")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
+                                    .font(.subheadline)
                                     .foregroundColor(.red)
                             }
                             
                             Text(item.primaryTitle)
-                                .font(.title3)
+                                .font(.headline)
                                 .fontWeight(.semibold)
-                                .foregroundColor(isFocused ? .white : .gray)
+                                .foregroundColor(isFocused ? CinematicTheme.textPrimary : CinematicTheme.textSecondary)
                                 .lineLimit(1)
                             
                             Spacer()
                             
-                            // Favorite indicator
+                            // Favorite indicator with glow
                             if let isFavorite = item.isFavorite, isFavorite {
                                 Image(systemName: "heart.fill")
                                     .foregroundColor(.red)
+                                    .shadow(color: .red.opacity(0.5), radius: 4, x: 0, y: 0)
                             }
                             
                             // Shared indicator
                             if let isShared = item.isShared, isShared, let sharingText = item.sharingText {
-                                HStack(spacing: 1) {
+                                HStack(spacing: 4) {
                                     Image(systemName: "person.2.fill")
                                         .font(.caption)
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(CinematicTheme.accent)
                                     Text(sharingText)
                                         .font(.caption)
-                                        .foregroundColor(.blue)
+                                        .foregroundColor(CinematicTheme.accent)
                                 }
                             }
                         }
@@ -222,39 +360,77 @@ struct SharedGridItemView<Item: GridDisplayable>: View {
                         // Secondary title or description
                         if let secondaryTitle = item.secondaryTitle {
                             Text(secondaryTitle)
-                                .font(.caption)
-                                .foregroundColor(.gray)
+                                .font(.subheadline)
+                                .foregroundColor(CinematicTheme.textTertiary)
                                 .lineLimit(2)
                         } else if let description = item.description {
                             Text(description)
-                                .font(.caption)
-                                .foregroundColor(.gray)
+                                .font(.subheadline)
+                                .foregroundColor(CinematicTheme.textTertiary)
                                 .lineLimit(2)
                         }
                         
-                        // Bottom info row
+                        // Bottom info row with accent color
                         HStack(spacing: 12) {
                             if let itemCount = item.itemCount {
-                                Text("\(itemCount) photos")
-                                    .font(.caption)
-                                    .foregroundColor(.blue)
+                                HStack(spacing: 4) {
+                                    Image(systemName: "photo.stack")
+                                        .font(.caption2)
+                                    Text("\(itemCount)")
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                }
+                                .foregroundColor(CinematicTheme.accent)
                             }
                             
                             if let createdAt = item.gridCreatedAt, let formattedDate = formatDate(createdAt) {
-                                Text("Created \(formattedDate)")
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
+                                Text(formattedDate)
+                                    .font(.caption)
+                                    .foregroundColor(CinematicTheme.textTertiary)
                             }
                         }
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.vertical, config.itemHeight > 360 ? 50 : 16)
+                .padding(.vertical, config.itemHeight > 360 ? 50 : 18)
             }
             .frame(width: config.itemWidth - 20, height: config.itemHeight > 360 ? 160 : 120)
-            .background(Color.black.opacity(0.6))
+            .background(
+                // Glassmorphism info panel
+                ZStack {
+                    Color.black.opacity(0.7)
+                    
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.05),
+                            Color.clear
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                }
+            )
         }
-        .background(isFocused ? Color.white.opacity(0.1) : Color.gray.opacity(0.1))
+        // Cinematic card styling
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(
+                    LinearGradient(
+                        colors: [
+                            isFocused ? CinematicTheme.accent.opacity(0.8) : Color.white.opacity(0.1),
+                            isFocused ? CinematicTheme.accent.opacity(0.3) : Color.white.opacity(0.03)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: isFocused ? 2.5 : 1
+                )
+        )
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(isFocused ? CinematicTheme.surfaceLight.opacity(0.3) : CinematicTheme.surface.opacity(0.3))
+        )
         .onAppear {
             loadThumbnails()
         }

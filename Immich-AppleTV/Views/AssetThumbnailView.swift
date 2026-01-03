@@ -1,5 +1,12 @@
 import SwiftUI
 
+// MARK: - Cinematic Theme Constants for Asset Thumbnail
+private enum ThumbnailTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    static let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+}
+
 struct AssetThumbnailView: View {
     let asset: ImmichAsset
     @ObservedObject var assetService: AssetService
@@ -11,74 +18,97 @@ struct AssetThumbnailView: View {
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-        
-             RoundedRectangle(cornerRadius: 12)
-                 .fill(Color.gray.opacity(0.3))
-                 .frame(width: 320, height: 320)
+            // Background - simple solid color for performance
+            RoundedRectangle(cornerRadius: 16)
+                .fill(ThumbnailTheme.surface)
+                .frame(width: 320, height: 320)
             
-             if isLoading {
-                 ProgressView()
-                     .scaleEffect(1.2)
-             } else if let image = image {
-                 Image(uiImage: image)
-                     .resizable()
-                     .aspectRatio(contentMode: .fill)
-                     .frame(width: 320, height: 320)
-                     .clipped()
-                     .cornerRadius(12)
-             } else {
-                 Image(systemName: "photo")
-                     .font(.system(size: 40))
-                     .foregroundColor(.gray)
-             }
+            if isLoading {
+                // Simple loading state - no animation for performance
+                ProgressView()
+                    .scaleEffect(1.2)
+                    .frame(width: 320, height: 320)
+            } else if let image = image {
+                // Image with drawingGroup for GPU rendering
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 320, height: 320)
+                    .clipped()
+                    .cornerRadius(16)
+                    .drawingGroup() // Rasterize for better scroll performance
+            } else {
+                // Empty state
+                Image(systemName: "photo")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundColor(ThumbnailTheme.textSecondary)
+            }
             
-            // Video indicator
+            // Video indicator - simplified
             if asset.type == .video {
-                // Play button at top right
                 VStack {
                     HStack {
                         Spacer()
-                        Image(systemName: "play.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.white)
-                            .background(Color.black.opacity(0.6))
-                            .clipShape(Circle())
-                            .shadow(color: .black.opacity(0.5), radius: 5, x: 0, y: 2)
-                            .padding(8)
+                        ZStack {
+                            Circle()
+                                .fill(Color.black.opacity(0.7))
+                                .frame(width: 44, height: 44)
+                            
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                                .offset(x: 2)
+                        }
+                        .padding(10)
                     }
                     Spacer()
                 }
-            
             }
             
-            // Favorite heart indicator at bottom left
+            // Favorite heart indicator - simplified, no blur
             if asset.isFavorite {
                 VStack {
                     Spacer()
                     HStack {
                         Image(systemName: "heart.fill")
-                            .font(.caption2)
+                            .font(.system(size: 14))
                             .foregroundColor(.red)
-                            .shadow(color: .black.opacity(0.5), radius: 2, x: 0, y: 1)
-                            .padding(8)
+                            .padding(10)
                         Spacer()
                     }
                 }
             }
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(DateFormatter.formatSpecificISO8601(asset.exifInfo?.dateTimeOriginal ?? asset.fileCreatedAt, includeTime: false))
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.8))
-            }
-            .padding(8)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.black.opacity(0.4))
-            )
             
+            // Date badge - simplified background
+            Text(DateFormatter.formatSpecificISO8601(asset.exifInfo?.dateTimeOriginal ?? asset.fileCreatedAt, includeTime: false))
+                .font(.caption2)
+                .fontWeight(.medium)
+                .foregroundColor(.white.opacity(0.9))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.black.opacity(0.6))
+                )
+                .padding(10)
         }
         .frame(width: 320, height: 320)
-        .shadow(color: .black.opacity(isFocused ? 0.5 : 0), radius: 15, y: 10)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        // Simplified border - solid color instead of gradient when not focused
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .strokeBorder(
+                    isFocused ? ThumbnailTheme.accent : Color.white.opacity(0.08),
+                    lineWidth: isFocused ? 3 : 1
+                )
+        )
+        // Only apply shadow when focused for performance
+        .shadow(
+            color: isFocused ? ThumbnailTheme.accent.opacity(0.35) : Color.clear,
+            radius: isFocused ? 15 : 0,
+            x: 0,
+            y: isFocused ? 8 : 0
+        )
         .onAppear {
             loadThumbnail()
         }

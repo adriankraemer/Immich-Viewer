@@ -1,5 +1,14 @@
 import SwiftUI
 
+// MARK: - Cinematic Theme Constants
+private enum GridTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    static let textPrimary = Color.white
+    static let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+    static let textTertiary = Color(red: 99/255, green: 99/255, blue: 102/255)
+}
+
 struct AssetGridView: View {
     // MARK: - ViewModel
     @StateObject private var viewModel: AssetGridViewModel
@@ -18,6 +27,7 @@ struct AssetGridView: View {
     @FocusState private var focusedAssetId: String?
     @State private var isProgrammaticFocusChange = false
     @State private var shouldScrollToAsset: String?
+    @State private var loadingRotation: Double = 0
     
     // MARK: - Layout
     private let columns = [
@@ -127,41 +137,90 @@ struct AssetGridView: View {
     
     // MARK: - Subviews
     
+    // MARK: - Cinematic Loading View
     private var loadingView: some View {
-        ProgressView("Loading photos...")
-            .foregroundColor(.white)
-            .scaleEffect(1.5)
-    }
-    
-    private func errorView(message: String) -> some View {
-        VStack {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 60))
-                .foregroundColor(.orange)
-            Text("Error")
-                .font(.title)
-                .foregroundColor(.white)
-            Text(message)
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding()
-            Button("Retry") {
-                viewModel.loadAssets()
-            }
-            .buttonStyle(.borderedProminent)
+        VStack(spacing: 24) {
+            // Animated loading ring
+            CinematicLoader()
+            
+            Text("Loading photos...")
+                .font(.headline)
+                .foregroundColor(GridTheme.textSecondary)
         }
     }
     
+    // MARK: - Cinematic Error View
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 24) {
+            ZStack {
+                Circle()
+                    .fill(GridTheme.surface)
+                    .frame(width: 120, height: 120)
+                
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 50))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.orange, Color.red],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
+            
+            VStack(spacing: 12) {
+                Text("Something went wrong")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(GridTheme.textPrimary)
+                
+                Text(message)
+                    .font(.body)
+                    .foregroundColor(GridTheme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 500)
+            }
+            
+            Button(action: { viewModel.loadAssets() }) {
+                HStack(spacing: 10) {
+                    Image(systemName: "arrow.clockwise")
+                    Text("Try Again")
+                }
+                .font(.headline)
+                .foregroundColor(.black)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 16)
+                .background(GridTheme.accent)
+                .cornerRadius(12)
+            }
+            .buttonStyle(CardButtonStyle())
+        }
+        .padding(40)
+    }
+    
+    // MARK: - Cinematic Empty State
     private var emptyStateView: some View {
-        VStack {
-            Image(systemName: "photo.on.rectangle.angled")
-                .font(.system(size: 60))
-                .foregroundColor(.gray)
-            Text(viewModel.emptyStateTitle)
-                .font(.title)
-                .foregroundColor(.white)
-            Text(viewModel.emptyStateMessage)
-                .foregroundColor(.gray)
+        VStack(spacing: 24) {
+            ZStack {
+                Circle()
+                    .fill(GridTheme.surface)
+                    .frame(width: 120, height: 120)
+                
+                Image(systemName: "photo.on.rectangle.angled")
+                    .font(.system(size: 50))
+                    .foregroundColor(GridTheme.textTertiary)
+            }
+            
+            VStack(spacing: 12) {
+                Text(viewModel.emptyStateTitle)
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(GridTheme.textPrimary)
+                
+                Text(viewModel.emptyStateMessage)
+                    .font(.body)
+                    .foregroundColor(GridTheme.textSecondary)
+            }
         }
     }
     
@@ -218,15 +277,41 @@ struct AssetGridView: View {
     }
     
     private var loadingMoreIndicator: some View {
-        HStack {
+        HStack(spacing: 16) {
             Spacer()
-            ProgressView("Loading more...")
-                .foregroundColor(.white)
-                .scaleEffect(1.2)
+            
+            // Mini cinematic loader
+            ZStack {
+                Circle()
+                    .stroke(GridTheme.surface, lineWidth: 3)
+                    .frame(width: 40, height: 40)
+                
+                Circle()
+                    .trim(from: 0, to: 0.7)
+                    .stroke(
+                        AngularGradient(
+                            colors: [GridTheme.accent, GridTheme.accent.opacity(0.3)],
+                            center: .center
+                        ),
+                        style: StrokeStyle(lineWidth: 3, lineCap: .round)
+                    )
+                    .frame(width: 40, height: 40)
+                    .rotationEffect(.degrees(loadingRotation))
+            }
+            
+            Text("Loading more...")
+                .font(.subheadline)
+                .foregroundColor(GridTheme.textSecondary)
+            
             Spacer()
         }
         .frame(height: 100)
         .padding()
+        .onAppear {
+            withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                loadingRotation = 360
+            }
+        }
     }
     
     // MARK: - Event Handlers
@@ -316,5 +401,39 @@ struct AssetGridView: View {
     private func startSlideshow() {
         NotificationCenter.default.post(name: NSNotification.Name("stopAutoSlideshowTimer"), object: nil)
         showingSlideshow = true
+    }
+}
+
+// MARK: - Cinematic Loader Component
+struct CinematicLoader: View {
+    @State private var rotation: Double = 0
+    
+    private let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    private let accentLight = Color(red: 255/255, green: 200/255, blue: 100/255)
+    private let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    
+    var body: some View {
+        ZStack {
+            Circle()
+                .stroke(surface, lineWidth: 4)
+                .frame(width: 70, height: 70)
+            
+            Circle()
+                .trim(from: 0, to: 0.7)
+                .stroke(
+                    AngularGradient(
+                        colors: [accent, accentLight, accent],
+                        center: .center
+                    ),
+                    style: StrokeStyle(lineWidth: 4, lineCap: .round)
+                )
+                .frame(width: 70, height: 70)
+                .rotationEffect(.degrees(rotation))
+        }
+        .onAppear {
+            withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
+                rotation = 360
+            }
+        }
     }
 }

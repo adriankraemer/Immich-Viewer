@@ -1,6 +1,10 @@
 import SwiftUI
 
-
+// MARK: - Cinematic Theme for Overlay
+private enum OverlayTheme {
+    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
+    static let surface = Color(red: 20/255, green: 20/255, blue: 22/255)
+}
 
 // MARK: - LockScreenStyleOverlay View
 struct LockScreenStyleOverlay: View {
@@ -17,77 +21,118 @@ struct LockScreenStyleOverlay: View {
     }
     
     var body: some View {
-        
-        
-        VStack(alignment: .trailing, spacing: 24) { // Increased spacing for tvOS
-            // MARK: - Clock and Date Display
+        VStack(alignment: .trailing, spacing: 24) {
+            // MARK: - Clock and Date Display (Slideshow Mode)
             if isSlideshowMode {
-                
-                VStack(alignment: .trailing, spacing: 12) { // Increased spacing
-                    // Current time in large text
+                VStack(alignment: .trailing, spacing: 12) {
+                    // Current time with cinematic styling
                     Text(formatCurrentTime())
-                        .font(.system(size: isSlideshowMode ? 100 : 48, weight: .light, design: .default)) // Larger sizes
-                        .foregroundColor(.black)
-                        .shadow(color: .white.opacity(0.6), radius: 6, x: 0, y: 3) // Slightly stronger shadow
+                        .font(.system(size: 100, weight: .thin, design: .default))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.8), radius: 20, x: 0, y: 8)
                     
                     // Current date
                     Text(formatCurrentDate())
-                        .font(.system(size: isSlideshowMode ? 32 : 22, weight: .regular, design: .default)) // Larger sizes
-                        .foregroundColor(.black.opacity(0.95))
-                        .shadow(color: .white.opacity(0.6), radius: 6, x: 0, y: 3)
+                        .font(.system(size: 32, weight: .light, design: .default))
+                        .foregroundColor(.white.opacity(0.9))
+                        .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 4)
                 }
                 .padding(.horizontal, 48)
-                .padding(.top, 12)
-                .padding(.bottom, 24)
+                .padding(.top, 16)
+                .padding(.bottom, 28)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.black.opacity(0.6)))
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(OverlayTheme.surface.opacity(0.75))
+                        
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.08), Color.clear],
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                        
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [Color.white.opacity(0.15), Color.white.opacity(0.05)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    }
+                )
+                .shadow(color: .black.opacity(0.5), radius: 20, x: 0, y: 10)
             }
             
-            Spacer() // Pushes content to the top (or bottom if this is the only spacer)
-            VStack(alignment: .trailing, spacing: 0) { // This VStack will get the single background and shadow
-                // MARK: - Group for internal padding (all text/HStacks inside this will share the padding)
-                Group {
-                    // MARK: - People names with elegant styling
-                    let nonEmptyNames = asset.people.map(\.name).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-                    
-                    if !nonEmptyNames.isEmpty {
-                        Text(nonEmptyNames.joined(separator: ", "))
-                            .font(.system(size: 24, weight: .medium, design: .rounded))
-                            .foregroundColor(.white)
-                    }
-                    
-                    // MARK: - Location with elegant styling
-                    if let location = getLocationString() {
-                        HStack(spacing: 0) {
-                            Image(systemName: "location.fill")
-                                .font(.system(size: 20))
-                                .foregroundColor(.white.opacity(0.85))
-                            Text(location)
-                                .font(.system(size: 20, weight: .regular, design: .rounded))
-                                .foregroundColor(.white)
-                        }
-                    }
-                    
-                    // MARK: - Date with elegant styling
-                    HStack(spacing: 0) {
-                        Image(systemName: "calendar")
-                            .font(.system(size: 20))
-                            .foregroundColor(.white.opacity(0.85))
-                        Text(getDisplayDate())
+            Spacer()
+            
+            // MARK: - Photo Info with Glassmorphism
+            VStack(alignment: .trailing, spacing: 8) {
+                // People names
+                let nonEmptyNames = asset.people.map(\.name).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                
+                if !nonEmptyNames.isEmpty {
+                    Text(nonEmptyNames.joined(separator: ", "))
+                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                
+                // Location with icon
+                if let location = getLocationString() {
+                    HStack(spacing: 8) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 18))
+                            .foregroundColor(OverlayTheme.accent)
+                        Text(location)
                             .font(.system(size: 20, weight: .regular, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(.white.opacity(0.95))
                     }
                 }
+                
+                // Date with icon
+                HStack(spacing: 8) {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 18))
+                        .foregroundColor(OverlayTheme.accent)
+                    Text(getDisplayDate())
+                        .font(.system(size: 20, weight: .regular, design: .rounded))
+                        .foregroundColor(.white.opacity(0.95))
+                }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 16)
             .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.black.opacity(0.6)))
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(OverlayTheme.surface.opacity(0.7))
+                    
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.06), Color.clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.12), Color.white.opacity(0.04)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            )
+            .shadow(color: .black.opacity(0.4), radius: 15, x: 0, y: 8)
         }
-        //        .padding(40) // Overall padding for the entire overlay to push it in from edges
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing) // Align content to top right
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .onAppear {
             if isSlideshowMode {
                 startTimeUpdate()

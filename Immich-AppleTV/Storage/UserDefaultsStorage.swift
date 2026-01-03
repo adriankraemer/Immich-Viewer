@@ -22,6 +22,7 @@ class UserDefaultsStorage: UserStorage {
         
         let key = "\(UserDefaultsKeys.userPrefix)\(user.id)"
         userDefaults.set(userData, forKey: key)
+        userDefaults.synchronize() // Ensure data is persisted immediately
         debugLog("UserDefaultsStorage: Saved user \(user.email) with ID \(user.id)")
     }
     
@@ -54,7 +55,7 @@ class UserDefaultsStorage: UserStorage {
     func removeUser(withId id: String) throws {
         let userKey = "\(UserDefaultsKeys.userPrefix)\(id)"
         userDefaults.removeObject(forKey: userKey)
-        
+        userDefaults.synchronize() // Ensure data is persisted immediately
         debugLog("UserDefaultsStorage: Removed user with ID \(id)")
     }
     
@@ -75,7 +76,7 @@ class UserDefaultsStorage: UserStorage {
         // Remove all user data
         let userKeys = allKeys.filter { $0.hasPrefix(UserDefaultsKeys.userPrefix) }
         userKeys.forEach { userDefaults.removeObject(forKey: $0) }
-        
+        userDefaults.synchronize() // Ensure data is persisted immediately
         debugLog("UserDefaultsStorage: Removed all user data")
     }
     

@@ -42,9 +42,9 @@ class KeychainTokenStorage {
     
     func removeAllTokens() throws {
         // Query for all token items in our service
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: service
         ]
         
         let status = SecItemDelete(query as CFDictionary)
@@ -63,24 +63,24 @@ class KeychainTokenStorage {
     /// Saves data to Keychain, deleting existing item first if present
     /// Uses kSecAttrAccessibleWhenUnlocked for security (requires device unlock)
     private func saveData(_ data: Data, account: String) throws {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
-        ]
-        
         // Delete existing item first to avoid conflicts
-        let deleteQuery: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account
+        let deleteQuery: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: account
         ]
         
         SecItemDelete(deleteQuery as CFDictionary)
         
         // Add new item
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: account,
+            kSecValueData: data,
+            kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked
+        ]
+        
         let status = SecItemAdd(query as CFDictionary, nil)
         
         if status != errSecSuccess {
@@ -90,12 +90,12 @@ class KeychainTokenStorage {
     }
     
     private func loadData(account: String) throws -> Data {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: account,
+            kSecReturnData: true,
+            kSecMatchLimit: kSecMatchLimitOne
         ]
         
         var result: AnyObject?
@@ -110,10 +110,10 @@ class KeychainTokenStorage {
     }
     
     private func deleteItem(account: String) throws {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account
+        let query: [CFString: Any] = [
+            kSecClass: kSecClassGenericPassword,
+            kSecAttrService: service,
+            kSecAttrAccount: account
         ]
         
         let status = SecItemDelete(query as CFDictionary)

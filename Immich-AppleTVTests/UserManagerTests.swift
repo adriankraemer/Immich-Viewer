@@ -308,5 +308,46 @@ struct UserManagerTests {
         #expect(userManager.savedUsers.count == 1)
         #expect(userManager.savedUsers.first?.id == user2.id)
     }
+    
+    @Test("UserManager should throw error when switching to user with missing token")
+    func testSwitchToUserWithMissingToken() async throws {
+        let storage = MockUserStorage()
+        let userManager = UserManager(storage: storage)
+        
+        let user1 = SavedUser(
+            id: "user-1",
+            email: "user1@example.com",
+            name: "User 1",
+            serverURL: "https://example.com",
+            authType: .jwt
+        )
+        
+        let user2 = SavedUser(
+            id: "user-2",
+            email: "user2@example.com",
+            name: "User 2",
+            serverURL: "https://example.com",
+            authType: .jwt
+        )
+        
+        // Save user1 with token
+        try await userManager.saveUser(user1, token: "token-1")
+        
+        // Save user2 but don't save a token for them
+        try storage.saveUser(user2)
+        await MainActor.run {
+            userManager.savedUsers.append(user2)
+        }
+        
+        // Attempting to switch to user2 should throw tokenNotFound error
+        do {
+            _ = try await userManager.switchToUser(user2)
+            Issue.record("Expected UserStorageError.tokenNotFound to be thrown")
+        } catch let error as UserStorageError {
+            #expect(error == .tokenNotFound, "Expected tokenNotFound error, got \(error)")
+        } catch {
+            Issue.record("Expected UserStorageError.tokenNotFound, got \(error)")
+        }
+    }
 }
 

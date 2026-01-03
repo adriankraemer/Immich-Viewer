@@ -12,7 +12,7 @@ struct AssetServiceTests {
         let assetService = AssetService(networkService: networkService)
         
         // Just verify it initializes without error
-        // AssetService is a struct, so it's always non-nil
+        // AssetService is a class, so it's always non-nil
         _ = assetService
     }
     
@@ -250,6 +250,63 @@ struct AssetServiceTests {
         
         // Should not be equal because they have different IDs
         #expect(asset1 != asset3)
+    }
+    
+    @Test("AssetService should throw error when loading video URL for non-video asset")
+    func testLoadVideoURLWithNonVideoAsset() async throws {
+        let userManager = UserManager(storage: MockUserStorage())
+        let networkService = NetworkService(userManager: userManager)
+        let assetService = AssetService(networkService: networkService)
+        
+        // Set baseURL for URL construction
+        await MainActor.run {
+            networkService.baseURL = "https://example.com"
+        }
+        
+        // Create an image asset (not a video)
+        let imageAsset = ImmichAsset(
+            id: "image-1",
+            deviceAssetId: "device-1",
+            deviceId: "device-1",
+            ownerId: "owner-1",
+            libraryId: nil,
+            type: .image,
+            originalPath: "/path/to/image",
+            originalFileName: "image.jpg",
+            originalMimeType: "image/jpeg",
+            resized: false,
+            thumbhash: nil,
+            fileModifiedAt: "2024-01-01T00:00:00Z",
+            fileCreatedAt: "2024-01-01T00:00:00Z",
+            localDateTime: "2024-01-01T00:00:00Z",
+            updatedAt: "2024-01-01T00:00:00Z",
+            isFavorite: false,
+            isArchived: false,
+            isOffline: false,
+            isTrashed: false,
+            checksum: "checksum",
+            duration: nil,
+            hasMetadata: true,
+            livePhotoVideoId: nil,
+            people: [],
+            visibility: "VISIBLE",
+            duplicateId: nil,
+            exifInfo: nil
+        )
+        
+        // Attempting to load video URL for an image should throw clientError(400)
+        do {
+            _ = try await assetService.loadVideoURL(asset: imageAsset)
+            Issue.record("Expected ImmichError.clientError(400) to be thrown")
+        } catch let error as ImmichError {
+            if case .clientError(let code) = error {
+                #expect(code == 400, "Expected clientError(400), got clientError(\(code))")
+            } else {
+                Issue.record("Expected ImmichError.clientError(400), got \(error)")
+            }
+        } catch {
+            Issue.record("Expected ImmichError.clientError(400), got \(error)")
+        }
     }
 }
 

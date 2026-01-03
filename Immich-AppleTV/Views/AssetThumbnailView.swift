@@ -14,72 +14,37 @@ struct AssetThumbnailView: View {
     @State private var image: UIImage?
     @State private var isLoading = true
     @State private var loadingTask: Task<Void, Never>?
-    @State private var shimmerOffset: CGFloat = -320
     let isFocused: Bool
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
-            // Background with glassmorphism
+            // Background - simple solid color for performance
             RoundedRectangle(cornerRadius: 16)
-                .fill(ThumbnailTheme.surface.opacity(0.6))
+                .fill(ThumbnailTheme.surface)
                 .frame(width: 320, height: 320)
             
             if isLoading {
-                // Skeleton loading animation
-                ZStack {
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(ThumbnailTheme.surface.opacity(0.8))
-                    
-                    // Shimmer effect
-                    LinearGradient(
-                        colors: [
-                            Color.clear,
-                            Color.white.opacity(0.08),
-                            Color.clear
-                        ],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                    .offset(x: shimmerOffset)
-                    .onAppear {
-                        withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
-                            shimmerOffset = 320
-                        }
-                    }
-                }
-                .frame(width: 320, height: 320)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                // Simple loading state - no animation for performance
+                ProgressView()
+                    .scaleEffect(1.2)
+                    .frame(width: 320, height: 320)
             } else if let image = image {
-                ZStack {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 320, height: 320)
-                        .clipped()
-                        .cornerRadius(16)
-                    
-                    // Subtle gradient overlay for depth
-                    LinearGradient(
-                        colors: [
-                            Color.clear,
-                            Color.clear,
-                            Color.black.opacity(0.4)
-                        ],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
+                // Image with drawingGroup for GPU rendering
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 320, height: 320)
+                    .clipped()
                     .cornerRadius(16)
-                }
+                    .drawingGroup() // Rasterize for better scroll performance
             } else {
                 // Empty state
-                VStack(spacing: 12) {
-                    Image(systemName: "photo")
-                        .font(.system(size: 40, weight: .light))
-                        .foregroundColor(ThumbnailTheme.textSecondary)
-                }
+                Image(systemName: "photo")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundColor(ThumbnailTheme.textSecondary)
             }
             
-            // Video indicator with cinematic styling
+            // Video indicator - simplified
             if asset.type == .video {
                 VStack {
                     HStack {
@@ -87,104 +52,62 @@ struct AssetThumbnailView: View {
                         ZStack {
                             Circle()
                                 .fill(Color.black.opacity(0.7))
-                                .frame(width: 50, height: 50)
-                            
-                            Circle()
-                                .strokeBorder(
-                                    LinearGradient(
-                                        colors: [Color.white.opacity(0.3), Color.white.opacity(0.1)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 1.5
-                                )
-                                .frame(width: 50, height: 50)
+                                .frame(width: 44, height: 44)
                             
                             Image(systemName: "play.fill")
-                                .font(.system(size: 18, weight: .semibold))
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                                 .offset(x: 2)
                         }
-                        .shadow(color: .black.opacity(0.5), radius: 8, x: 0, y: 4)
-                        .padding(12)
+                        .padding(10)
                     }
                     Spacer()
                 }
             }
             
-            // Favorite heart indicator with glow
+            // Favorite heart indicator - simplified, no blur
             if asset.isFavorite {
                 VStack {
                     Spacer()
                     HStack {
-                        ZStack {
-                            // Glow effect
-                            Image(systemName: "heart.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(.red)
-                                .blur(radius: 6)
-                            
-                            Image(systemName: "heart.fill")
-                                .font(.system(size: 14))
-                                .foregroundColor(.red)
-                        }
-                        .padding(10)
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(.red)
+                            .padding(10)
                         Spacer()
                     }
                 }
             }
             
-            // Date badge with glassmorphism
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(DateFormatter.formatSpecificISO8601(asset.exifInfo?.dateTimeOriginal ?? asset.fileCreatedAt, includeTime: false))
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white.opacity(0.9))
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(
-                ZStack {
+            // Date badge - simplified background
+            Text(DateFormatter.formatSpecificISO8601(asset.exifInfo?.dateTimeOriginal ?? asset.fileCreatedAt, includeTime: false))
+                .font(.caption2)
+                .fontWeight(.medium)
+                .foregroundColor(.white.opacity(0.9))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.black.opacity(0.6))
-                    
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.white.opacity(0.1), Color.clear],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                    
-                    RoundedRectangle(cornerRadius: 8)
-                        .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
-                }
-            )
-            .padding(10)
+                )
+                .padding(10)
         }
         .frame(width: 320, height: 320)
-        // Cinematic card styling with golden glow on focus
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        // Simplified border - solid color instead of gradient when not focused
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .strokeBorder(
-                    LinearGradient(
-                        colors: [
-                            isFocused ? ThumbnailTheme.accent.opacity(0.9) : Color.white.opacity(0.1),
-                            isFocused ? ThumbnailTheme.accent.opacity(0.4) : Color.white.opacity(0.03)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
+                    isFocused ? ThumbnailTheme.accent : Color.white.opacity(0.08),
                     lineWidth: isFocused ? 3 : 1
                 )
         )
+        // Only apply shadow when focused for performance
         .shadow(
-            color: isFocused ? ThumbnailTheme.accent.opacity(0.4) : Color.black.opacity(0.3),
-            radius: isFocused ? 20 : 8,
+            color: isFocused ? ThumbnailTheme.accent.opacity(0.35) : Color.clear,
+            radius: isFocused ? 15 : 0,
             x: 0,
-            y: isFocused ? 10 : 4
+            y: isFocused ? 8 : 0
         )
         .onAppear {
             loadThumbnail()

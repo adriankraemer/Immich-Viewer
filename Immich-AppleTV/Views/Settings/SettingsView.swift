@@ -382,13 +382,7 @@ struct SettingsView: View {
             // Category List
             ScrollView {
                 LazyVStack(spacing: 8) {
-                    #if DEBUG
-                    let categories = SettingsCategory.allCases
-                    #else
-                    let categories = SettingsCategory.allCases.filter { $0 != .cache }
-                    #endif
-                    
-                    ForEach(categories) { category in
+                    ForEach(SettingsCategory.allCases) { category in
                         SidebarCategoryButton(
                             category: category,
                             selectedCategory: $selectedCategory,

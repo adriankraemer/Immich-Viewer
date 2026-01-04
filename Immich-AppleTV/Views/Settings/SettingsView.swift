@@ -154,13 +154,18 @@ struct SettingsRow: View {
 struct SidebarCategoryRow: View {
     let category: SettingsCategory
     let isSelected: Bool
+    let isFocused: Bool
+    
+    private var isHighlighted: Bool {
+        isSelected || isFocused
+    }
     
     var body: some View {
         HStack(spacing: 16) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(
-                        isSelected
+                        isHighlighted
                             ? SettingsTheme.accent.opacity(0.3)
                             : SettingsTheme.surface.opacity(0.4)
                     )
@@ -168,13 +173,13 @@ struct SidebarCategoryRow: View {
                 
                 Image(systemName: category.icon)
                     .font(.system(size: 22, weight: .medium))
-                    .foregroundColor(isSelected ? SettingsTheme.accent : SettingsTheme.textSecondary)
+                    .foregroundColor(isHighlighted ? SettingsTheme.accent : SettingsTheme.textSecondary)
             }
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(category.rawValue)
-                    .font(.system(size: 24, weight: isSelected ? .semibold : .medium))
-                    .foregroundColor(isSelected ? SettingsTheme.textPrimary : SettingsTheme.textSecondary)
+                    .font(.system(size: 24, weight: isHighlighted ? .semibold : .medium))
+                    .foregroundColor(isHighlighted ? SettingsTheme.textPrimary : SettingsTheme.textSecondary)
                 
                 Text(category.subtitle)
                     .font(.system(size: 16))
@@ -183,7 +188,7 @@ struct SidebarCategoryRow: View {
             
             Spacer()
             
-            if isSelected {
+            if isHighlighted {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(SettingsTheme.accent)
@@ -194,7 +199,7 @@ struct SidebarCategoryRow: View {
         .background(
             RoundedRectangle(cornerRadius: 14)
                 .fill(
-                    isSelected
+                    isHighlighted
                         ? LinearGradient(
                             colors: [SettingsTheme.accent.opacity(0.15), SettingsTheme.accent.opacity(0.05)],
                             startPoint: .leading,
@@ -206,10 +211,39 @@ struct SidebarCategoryRow: View {
         .overlay(
             RoundedRectangle(cornerRadius: 14)
                 .strokeBorder(
-                    isSelected ? SettingsTheme.accent.opacity(0.4) : Color.clear,
+                    isHighlighted ? SettingsTheme.accent.opacity(0.4) : Color.clear,
                     lineWidth: 1.5
                 )
         )
+    }
+}
+
+// MARK: - Focusable Sidebar Category Button
+
+struct SidebarCategoryButton: View {
+    let category: SettingsCategory
+    @Binding var selectedCategory: SettingsCategory
+    @FocusState.Binding var focusedCategory: SettingsCategory?
+    
+    var body: some View {
+        Button {
+            selectedCategory = category
+        } label: {
+            SidebarCategoryRow(
+                category: category,
+                isSelected: selectedCategory == category,
+                isFocused: focusedCategory == category
+            )
+        }
+        .buttonStyle(SidebarButtonStyle())
+        .focused($focusedCategory, equals: category)
+        .onChange(of: focusedCategory) { _, newValue in
+            if let focused = newValue {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    selectedCategory = focused
+                }
+            }
+        }
     }
 }
 
@@ -247,7 +281,7 @@ struct SettingsView: View {
     @FocusState private var isMinusFocused: Bool
     @FocusState private var isPlusFocused: Bool
     @FocusState private var focusedColor: String?
-    @FocusState private var focusedSidebar: Bool
+    @FocusState private var focusedCategory: SettingsCategory?
     
     var body: some View {
         ZStack {
@@ -358,17 +392,11 @@ struct SettingsView: View {
                     #endif
                     
                     ForEach(categories) { category in
-                        Button {
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                selectedCategory = category
-                            }
-                        } label: {
-                            SidebarCategoryRow(
-                                category: category,
-                                isSelected: selectedCategory == category
-                            )
-                        }
-                        .buttonStyle(SidebarButtonStyle())
+                        SidebarCategoryButton(
+                            category: category,
+                            selectedCategory: $selectedCategory,
+                            focusedCategory: $focusedCategory
+                        )
                     }
                 }
                 .padding(.horizontal, 16)

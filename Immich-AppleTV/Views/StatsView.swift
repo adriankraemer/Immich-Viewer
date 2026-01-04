@@ -368,6 +368,273 @@ struct StatCard: View {
     }
 }
 
+// MARK: - Embedded Stats View (for Settings)
+
+struct EmbeddedStatsView: View {
+    @StateObject private var viewModel: StatsViewModel
+    
+    init(statsService: StatsService) {
+        _viewModel = StateObject(wrappedValue: StatsViewModel(
+            statsService: statsService
+        ))
+    }
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            // Stats Sections
+            if let stats = viewModel.statsData {
+                embeddedAssetStatsSection(stats.assetData)
+                embeddedExploreStatsSection(stats.exploreData)
+                embeddedPeopleStatsSection(stats.peopleData)
+                
+                // Last updated info
+                if let lastUpdated = viewModel.formattedLastUpdated {
+                    HStack {
+                        Text("Last updated: \(lastUpdated)")
+                            .font(.caption)
+                            .foregroundColor(StatsTheme.textSecondary)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            viewModel.refreshStats()
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 14, weight: .semibold))
+                                Text("Refresh")
+                                    .font(.subheadline)
+                            }
+                            .foregroundColor(StatsTheme.accent)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(StatsTheme.accent.opacity(0.15))
+                            )
+                        }
+                        .buttonStyle(CardButtonStyle())
+                    }
+                    .padding(.top, 8)
+                }
+            }
+            
+            // Loading State
+            if viewModel.isLoading {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                    Text("Loading statistics...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 200)
+            }
+            
+            // Error State
+            if viewModel.hasError {
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.title)
+                        .foregroundColor(.red)
+                    
+                    Text("Failed to load statistics")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    Button(action: {
+                        viewModel.retry()
+                    }) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("Retry")
+                                .font(.subheadline)
+                        }
+                        .foregroundColor(.red)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.red.opacity(0.15))
+                        )
+                    }
+                    .buttonStyle(CardButtonStyle())
+                }
+                .padding()
+            }
+        }
+        .onAppear {
+            viewModel.loadStatsIfNeeded()
+        }
+    }
+    
+    private func embeddedAssetStatsSection(_ assetData: AssetStatistics) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Library Content")
+                .font(.headline)
+                .foregroundColor(StatsTheme.textSecondary)
+            
+            HStack(spacing: 20) {
+                EmbeddedStatCard(
+                    icon: "photo.stack.fill",
+                    title: "Total Assets",
+                    count: assetData.total,
+                    color: .blue
+                )
+                
+                EmbeddedStatCard(
+                    icon: "photo.fill",
+                    title: "Images",
+                    count: assetData.images,
+                    color: .green
+                )
+                
+                EmbeddedStatCard(
+                    icon: "video.fill",
+                    title: "Videos",
+                    count: assetData.videos,
+                    color: .orange
+                )
+            }
+        }
+    }
+    
+    private func embeddedExploreStatsSection(_ exploreData: ExploreStatsData) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Places Visited")
+                .font(.headline)
+                .foregroundColor(StatsTheme.textSecondary)
+            
+            HStack(spacing: 20) {
+                EmbeddedStatCard(
+                    icon: "globe",
+                    title: "Countries",
+                    count: exploreData.countries.count,
+                    color: .green
+                )
+                
+                EmbeddedStatCard(
+                    icon: "map",
+                    title: "States",
+                    count: exploreData.states.count,
+                    color: .purple
+                )
+                
+                EmbeddedStatCard(
+                    icon: "building.2",
+                    title: "Cities",
+                    count: exploreData.cities.count,
+                    color: .orange
+                )
+            }
+        }
+    }
+    
+    private func embeddedPeopleStatsSection(_ peopleData: PeopleStatsData) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("People")
+                .font(.headline)
+                .foregroundColor(StatsTheme.textSecondary)
+            
+            HStack(spacing: 20) {
+                EmbeddedStatCard(
+                    icon: "person.3.fill",
+                    title: "Total",
+                    count: peopleData.totalPeople,
+                    color: .blue
+                )
+                
+                EmbeddedStatCard(
+                    icon: "person.fill.checkmark",
+                    title: "Named",
+                    count: peopleData.namedPeople,
+                    color: .green
+                )
+                
+                EmbeddedStatCard(
+                    icon: "person.fill.questionmark",
+                    title: "Unnamed",
+                    count: peopleData.unnamedPeople,
+                    color: .gray
+                )
+                
+                EmbeddedStatCard(
+                    icon: "heart.fill",
+                    title: "Favorites",
+                    count: peopleData.favoritePeople,
+                    color: .red
+                )
+            }
+        }
+    }
+}
+
+// MARK: - Embedded Stat Card (Smaller for Settings)
+
+struct EmbeddedStatCard: View {
+    let icon: String
+    let title: String
+    let count: Int
+    let color: Color
+    
+    private let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
+    private let textPrimary = Color.white
+    private let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
+    
+    var body: some View {
+        Button(action: {}) {
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [color.opacity(0.25), color.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(color)
+                }
+                
+                VStack(spacing: 4) {
+                    Text("\(count)")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(textPrimary)
+                    
+                    Text(title)
+                        .font(.caption)
+                        .foregroundColor(textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(16)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(surface.opacity(0.6))
+                    
+                    RoundedRectangle(cornerRadius: 14)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [color.opacity(0.3), Color.white.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            )
+        }
+        .buttonStyle(CardButtonStyle())
+    }
+}
+
 // MARK: - Preview
 
 #Preview {

@@ -258,7 +258,6 @@ struct SettingsView: View {
     @State private var showingDeleteUserAlert = false
     @State private var userToDelete: SavedUser?
     @State private var showingSignIn = false
-    @State private var showingStats = false
     @AppStorage("hideImageOverlay") private var hideImageOverlay = true
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "ambilight"
@@ -291,6 +290,7 @@ struct SettingsView: View {
             HStack(spacing: 0) {
                 // Left Sidebar
                 sidebar
+                    .focusSection()
                 
                 // Divider
                 Rectangle()
@@ -300,13 +300,11 @@ struct SettingsView: View {
                 
                 // Right Content Area
                 contentArea
+                    .focusSection()
             }
         }
         .fullScreenCover(isPresented: $showingSignIn) {
             SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
-        }
-        .fullScreenCover(isPresented: $showingStats) {
-            StatsView(statsService: createStatsService())
         }
         .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
             Button("Cancel", role: .cancel) { }
@@ -917,62 +915,7 @@ struct SettingsView: View {
     // MARK: - Statistics Content
     
     private var statisticsContent: some View {
-        VStack(spacing: 12) {
-            Button(action: {
-                showingStats = true
-            }) {
-                HStack(spacing: 16) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.blue.opacity(0.2), Color.blue.opacity(0.1)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 56, height: 56)
-                        
-                        Image(systemName: "chart.bar.xaxis")
-                            .foregroundColor(.blue)
-                            .font(.system(size: 24, weight: .medium))
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("View Library Statistics")
-                            .font(.headline)
-                            .foregroundColor(SettingsTheme.textPrimary)
-                        Text("See detailed stats about your photos, videos, people, and locations")
-                            .font(.subheadline)
-                            .foregroundColor(SettingsTheme.textSecondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(SettingsTheme.textSecondary)
-                        .font(.system(size: 16, weight: .semibold))
-                }
-                .padding(24)
-                .background(
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 16)
-                            .fill(SettingsTheme.surface.opacity(0.6))
-                        
-                        RoundedRectangle(cornerRadius: 16)
-                            .strokeBorder(
-                                LinearGradient(
-                                    colors: [Color.blue.opacity(0.3), Color.white.opacity(0.05)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    }
-                )
-            }
-            .buttonStyle(CardButtonStyle())
-        }
+        EmbeddedStatsView(statsService: createStatsService())
     }
     
     // MARK: - Cache Content

@@ -34,10 +34,6 @@ struct SharedGridView<Item: GridDisplayable>: View {
     let onRetry: () -> Void
     
     @FocusState private var focusedItemId: String?
-    @State private var globalAnimationTimer: Timer?
-    /// Trigger for thumbnail animations (incremented periodically)
-    @State private var animationTrigger: Int = 0
-    @AppStorage("enableThumbnailAnimation") private var enableThumbnailAnimation = true
     
     var body: some View {
         ZStack {
@@ -128,8 +124,7 @@ struct SharedGridView<Item: GridDisplayable>: View {
                                     item: item,
                                     config: config,
                                     thumbnailProvider: thumbnailProvider,
-                                    isFocused: focusedItemId == item.id,
-                                    animationTrigger: animationTrigger
+                                    isFocused: focusedItemId == item.id
                                 )
                             }
                             .frame(width: config.itemWidth, height: config.itemHeight)
@@ -142,26 +137,6 @@ struct SharedGridView<Item: GridDisplayable>: View {
                 }
             }
         }
-        .onAppear {
-            startGlobalAnimation()
-        }
-        .onDisappear {
-            stopGlobalAnimation()
-        }
-    }
-    
-    private func startGlobalAnimation() {
-        guard enableThumbnailAnimation else { return }
-        stopGlobalAnimation()
-        
-        globalAnimationTimer = Timer.scheduledTimer(withTimeInterval: 4.0, repeats: true) { _ in
-            animationTrigger += 1
-        }
-    }
-    
-    private func stopGlobalAnimation() {
-        globalAnimationTimer?.invalidate()
-        globalAnimationTimer = nil
     }
 }
 
@@ -238,13 +213,10 @@ struct SharedGridItemView<Item: GridDisplayable>: View {
     let config: GridConfig
     let thumbnailProvider: ThumbnailProvider
     let isFocused: Bool
-    let animationTrigger: Int
     
     @ObservedObject private var thumbnailCache = ThumbnailCache.shared
-    @State private var thumbnails: [UIImage] = []
-    @State private var currentThumbnailIndex = 0
+    @State private var thumbnail: UIImage?
     @State private var isLoadingThumbnails = false
-    @State private var enableThumbnailAnimation: Bool = UserDefaults.standard.enableThumbnailAnimation
     
     var body: some View {
         VStack(spacing: 0) {
@@ -260,19 +232,15 @@ struct SharedGridItemView<Item: GridDisplayable>: View {
                     SkeletonLoadingView()
                         .frame(width: config.itemWidth - 20, height: 280)
                         .cornerRadius(16)
-                } else if !thumbnails.isEmpty {
-                    // Animated thumbnails with cinematic overlay
+                } else if let thumbnail = thumbnail {
+                    // Thumbnail with cinematic overlay
                     ZStack {
-                        ForEach(Array(thumbnails.enumerated()), id: \.offset) { index, thumbnail in
-                            Image(uiImage: thumbnail)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: config.itemWidth - 20, height: 280)
-                                .clipped()
-                                .cornerRadius(16)
-                                .opacity(index == currentThumbnailIndex ? 1.0 : 0.0)
-                                .animation(.easeInOut(duration: 1.5), value: currentThumbnailIndex)
-                        }
+                        Image(uiImage: thumbnail)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: config.itemWidth - 20, height: 280)
+                            .clipped()
+                            .cornerRadius(16)
                         
                         // Subtle gradient overlay for depth
                         LinearGradient(
@@ -432,29 +400,18 @@ struct SharedGridItemView<Item: GridDisplayable>: View {
                 .fill(isFocused ? CinematicTheme.surfaceLight.opacity(0.3) : CinematicTheme.surface.opacity(0.3))
         )
         .onAppear {
-            loadThumbnails()
-        }
-        .onChange(of: animationTrigger) { _, _ in
-            // Only animate if conditions are met
-            if enableThumbnailAnimation && !isFocused && thumbnails.count > 1 {
-                withAnimation(.easeInOut(duration: 1.5)) {
-                    currentThumbnailIndex = (currentThumbnailIndex + 1) % thumbnails.count
-                }
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
-            enableThumbnailAnimation = UserDefaults.standard.enableThumbnailAnimation
+            loadThumbnail()
         }
     }
     
-    private func loadThumbnails() {
+    private func loadThumbnail() {
         guard !isLoadingThumbnails else { return }
         isLoadingThumbnails = true
         
         Task {
             let loadedThumbnails = await thumbnailProvider.loadThumbnails(for: item)
             await MainActor.run {
-                self.thumbnails = loadedThumbnails
+                self.thumbnail = loadedThumbnails.first
                 self.isLoadingThumbnails = false
             }
         }

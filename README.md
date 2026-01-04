@@ -1,83 +1,130 @@
-# Immich-AppleTV
+# Immich for Apple TV
 
-A native Apple TV app for browsing your self-hosted Immich photo library.
+<p align="center">
+  <img src="Immich-AppleTV/icon.svg" alt="Immich AppleTV" width="200"/>
+</p>
 
-## Beta Testing
+**Turn your Apple TV into a beautiful digital photo frame** — browse, explore, and enjoy your self-hosted [Immich](https://immich.app) photo library on the big screen.
 
-Join the beta test on TestFlight: [https://testflight.apple.com/join/7nGMT7cz](https://testflight.apple.com/join/7nGMT7cz)
+---
 
-## Features
+## 🎬 Get Started
 
-### Photo Browsing
-- **Photos Tab**: Browse all your photos and videos in a beautiful grid layout
-- **Albums**: View personal and shared albums with cover images
-- **People**: Browse photos by recognized faces using Immich's face recognition
-- **Tags**: Organize and browse photos by tags
-- **Folders**: Navigate your photo library by folder structure
+**Join the Beta on TestFlight:**  
+[https://testflight.apple.com/join/7nGMT7cz](https://testflight.apple.com/join/7nGMT7cz)
 
-### Discovery & Exploration
-- **Explore**: Discover library statistics, city-based photo groupings, and highlights
-- **World Map**: Interactive map view showing photo locations around the world
-- **Search**: Full-text search across assets and albums with faceted results
+---
 
-### Slideshow
-- **Ken Burns Effect**: Cinematic pan and zoom animations
-- **Auto-Slideshow**: Automatic slideshow after inactivity timeout
-- **Shuffle Mode**: Randomize photo order
-- **Customizable Intervals**: Adjust slideshow timing to your preference
-- **Background Color**: Customize slideshow background
-- **Reflections**: Optional reflection effects for photos
+## ✨ Features
 
-### Media Features
-- **Full-Screen Viewing**: High-quality image and video playback
-- **EXIF Information**: View detailed photo metadata overlay
-- **RAW Support**: Automatic conversion of RAW images to preview format
-- **Video Playback**: Native video player for video assets
-- **Thumbnail Animations**: Optional animated thumbnail previews
+### 📸 Browse Your Memories
 
-### User Experience
-- **Multiple Account Support**: Switch between multiple Immich accounts
-- **Authentication Options**: Sign in with email/password or API key
-- **Top Shelf Integration**: Display recent or random photos on Apple TV home screen
-- **Deep Linking**: Open specific photos via URL scheme (`immichgallery://asset/{id}`)
-- **Customizable Navigation**: Choose between tab bar or sidebar navigation style
-- **Configurable Tabs**: Show/hide Albums, Tags, and Folders tabs
-- **Default Startup Tab**: Set which tab opens when the app launches
-- **24-Hour Clock**: Optional 24-hour time format
+| Feature | Description |
+|---------|-------------|
+| **Photos** | View all your photos and videos in a stunning grid layout |
+| **Albums** | Access personal and shared albums with beautiful cover images |
+| **People** | Browse photos by person using Immich's smart face recognition |
+| **Tags** | Find photos organized by your custom tags |
+| **Folders** | Navigate your library using your original folder structure |
+| **Favorites** | Quick access to your favorite moments |
 
-### Settings & Customization
-- **User Management**: Add, switch, and remove user accounts
-- **Display Preferences**: Hide image overlays, adjust slideshow settings
-- **Top Shelf Configuration**: Choose carousel or sectioned style, recent or random photos
-- **Sort Options**: Customize photo sorting order
+### 🗺️ Explore & Discover
 
-## Requirements
+| Feature | Description |
+|---------|-------------|
+| **World Map** | See where your photos were taken on an interactive globe |
+| **Explore** | Discover your library through cities, statistics, and highlights |
+| **Search** | Find any photo or album instantly with powerful search |
 
-- Apple TV (4th generation or later)
-- tvOS 15.0 or later
-- An Immich server accessible on your network
+### 🖼️ Slideshow — Your Digital Photo Frame
 
-## Getting Started
+Transform your TV into an elegant photo frame with the built-in slideshow:
 
-1. Launch the app on your Apple TV
-2. Sign in with your Immich server URL
-3. Enter your credentials (email/password or API key)
-4. Start browsing your photos
+- **Ken Burns Effect** — Cinematic pan and zoom animations bring your photos to life
+- **Auto-Start** — Automatically begins after a period of inactivity (configurable)
+- **Shuffle Mode** — Randomize the order for variety
+- **Customizable Timing** — Set how long each photo displays
+- **Reflection Effects** — Optional elegant reflections beneath photos
+- **Custom Backgrounds** — Choose your preferred backdrop color
 
-## Architecture
+### 🎥 Media Playback
 
-This app follows a service-oriented architecture with clear separation between:
-- **Presentation Layer**: SwiftUI views and view models
-- **Business Logic Layer**: Service classes for API interactions
-- **Data Layer**: Storage abstractions (UserDefaults + Keychain)
-- **Infrastructure Layer**: Network, caching, and persistence
+- **High-Quality Viewing** — Full-resolution photos on your big screen
+- **Video Support** — Watch your videos with the native player
+- **RAW Support** — View RAW photos (automatically converted for display)
+- **EXIF Details** — See camera info, date, location, and more with a single click
 
-For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md).
+### 👥 Multi-Account Support
 
-## License
+- **Multiple Users** — Add accounts for different family members or servers
+- **Easy Switching** — Quickly switch between accounts
+- **Flexible Login** — Sign in with email/password or API key
 
-GPL-3.0. See [LICENSE](LICENSE) for details.
+### 🎨 Customization
 
-## Acknowledgments
+| Setting | Options |
+|---------|---------|
+| **Navigation Style** | Choose between tab bar or sidebar layout |
+| **Visible Tabs** | Show or hide Albums, Tags, and Folders |
+| **Default Tab** | Pick which view opens when you launch the app |
+| **Top Shelf** | Display recent or random photos on your Apple TV home screen |
+| **Clock Format** | 12-hour or 24-hour time display |
+| **Slideshow Settings** | Timing, effects, background, and more |
 
-Built for [Immich](https://immich.app). Forked from [mensadilabs/Immich-Gallery](https://github.com/mensadilabs/Immich-Gallery).
+### 📺 Top Shelf Integration
+
+Your photos appear right on the Apple TV home screen:
+
+- **Recent Photos** — Show your latest memories
+- **Random Selection** — Surprise yourself with random picks
+- **Two Styles** — Carousel (scrolling) or sectioned (grid) layout
+- **Quick Access** — Click any photo to open it directly in the app
+
+---
+
+## 📋 Requirements
+
+| Requirement | Details |
+|-------------|---------|
+| **Apple TV** | 4th generation or newer |
+| **tvOS** | Version 15.0 or later |
+| **Immich Server** | Any version accessible on your network |
+
+---
+
+## 🚀 Quick Setup
+
+1. **Install** the app from TestFlight on your Apple TV
+2. **Open** the app and enter your Immich server URL
+3. **Sign in** with your email/password or API key
+4. **Enjoy** your photos on the big screen!
+
+> 💡 **Tip:** Your server URL typically looks like `http://192.168.1.x:2283` or `https://photos.yourdomain.com`
+
+---
+
+## 🔗 Deep Linking
+
+Open specific photos from other apps or automations using:
+```
+immichgallery://asset/{photo-id}
+```
+
+---
+
+## 📖 For Developers
+
+For technical architecture details, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
+---
+
+## 📄 License
+
+GPL-3.0 — See [LICENSE](LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Built for [Immich](https://immich.app) — the self-hosted Google Photos alternative
+- Forked from [mensadilabs/Immich-Gallery](https://github.com/mensadilabs/Immich-Gallery)

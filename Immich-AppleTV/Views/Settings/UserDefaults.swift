@@ -56,17 +56,6 @@ extension UserDefaults {
         set { set(newValue, forKey: UserDefaultsKeys.enableKenBurnsEffect) }
     }
     
-    var enableThumbnailAnimation: Bool {
-        get { 
-            // Default to true if the key doesn't exist yet
-            if object(forKey: UserDefaultsKeys.enableThumbnailAnimation) == nil {
-                return true
-            }
-            return bool(forKey: UserDefaultsKeys.enableThumbnailAnimation)
-        }
-        set { set(newValue, forKey: UserDefaultsKeys.enableThumbnailAnimation) }
-    }
-    
     var enableSlideshowShuffle: Bool {
         get { bool(forKey: UserDefaultsKeys.enableSlideshowShuffle) }
         set { set(newValue, forKey: UserDefaultsKeys.enableSlideshowShuffle) }

@@ -15,19 +15,14 @@ class AlbumThumbnailProvider: ThumbnailProvider {
     func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let album = item as? ImmichAlbum else { return [] }
         
-        if shouldUseStaticThumbnail(),
-           let staticThumbnail = await loadStaticThumbnail(for: album) {
-            return [staticThumbnail]
+        if let thumbnail = await loadThumbnail(for: album) {
+            return [thumbnail]
         }
         
-        return await loadAnimatedThumbnails(for: album)
+        return []
     }
     
-    private func shouldUseStaticThumbnail() -> Bool {
-        return !UserDefaults.standard.enableThumbnailAnimation
-    }
-    
-    private func loadStaticThumbnail(for album: ImmichAlbum) async -> UIImage? {
+    private func loadThumbnail(for album: ImmichAlbum) async -> UIImage? {
         guard let thumbnailId = album.albumThumbnailAssetId, !thumbnailId.isEmpty else {
             return nil
         }
@@ -37,36 +32,8 @@ class AlbumThumbnailProvider: ThumbnailProvider {
                 try await self.assetService.loadImage(assetId: thumbnailId, size: "thumbnail")
             }
         } catch {
-            debugLog("Failed to load static thumbnail for album \(album.id): \(error)")
+            debugLog("Failed to load thumbnail for album \(album.id): \(error)")
             return nil
-        }
-    }
-    
-    private func loadAnimatedThumbnails(for album: ImmichAlbum) async -> [UIImage] {
-        do {
-            let albumProvider = AlbumAssetProvider(albumService: albumService, albumId: album.id)
-            let searchResult = try await albumProvider.fetchAssets(page: 1, limit: 10)
-            let imageAssets = searchResult.assets.filter { $0.type == .image }
-            
-            var loadedThumbnails: [UIImage] = []
-            
-            for asset in imageAssets.prefix(10) {
-                do {
-                    let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
-                        try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
-                    }
-                    if let thumbnail = thumbnail {
-                        loadedThumbnails.append(thumbnail)
-                    }
-                } catch {
-                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
-                }
-            }
-            
-            return loadedThumbnails
-        } catch {
-            debugLog("Failed to fetch assets for album \(album.id): \(error)")
-            return []
         }
     }
 }
@@ -85,29 +52,19 @@ class PeopleThumbnailProvider: ThumbnailProvider {
         guard let person = item as? Person else { return [] }
         
         do {
-            let searchResult = try await assetService.fetchAssets(page: 1, limit: 10, personId: person.id)
-            let imageAssets = searchResult.assets.filter { $0.type == .image }
+            let searchResult = try await assetService.fetchAssets(page: 1, limit: 1, personId: person.id)
+            guard let asset = searchResult.assets.first(where: { $0.type == .image }) else { return [] }
             
-            var loadedThumbnails: [UIImage] = []
-            
-            for asset in imageAssets.prefix(10) {
-                do {
-                    let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
-                        try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
-                    }
-                    if let thumbnail = thumbnail {
-                        loadedThumbnails.append(thumbnail)
-                    }
-                } catch {
-                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
-                }
+            let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
+                try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
             }
-            
-            return loadedThumbnails
+            if let thumbnail = thumbnail {
+                return [thumbnail]
+            }
         } catch {
             debugLog("Failed to fetch assets for person \(person.id): \(error)")
-            return []
         }
+        return []
     }
 }
 
@@ -125,29 +82,19 @@ class TagThumbnailProvider: ThumbnailProvider {
         guard let tag = item as? Tag else { return [] }
         
         do {
-            let searchResult = try await assetService.fetchAssets(page: 1, limit: 10, tagId: tag.id)
-            let imageAssets = searchResult.assets.filter { $0.type == .image }
+            let searchResult = try await assetService.fetchAssets(page: 1, limit: 1, tagId: tag.id)
+            guard let asset = searchResult.assets.first(where: { $0.type == .image }) else { return [] }
             
-            var loadedThumbnails: [UIImage] = []
-            
-            for asset in imageAssets.prefix(10) {
-                do {
-                    let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
-                        try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
-                    }
-                    if let thumbnail = thumbnail {
-                        loadedThumbnails.append(thumbnail)
-                    }
-                } catch {
-                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
-                }
+            let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
+                try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
             }
-            
-            return loadedThumbnails
+            if let thumbnail = thumbnail {
+                return [thumbnail]
+            }
         } catch {
             debugLog("Failed to fetch assets for tag \(tag.id): \(error)")
-            return []
         }
+        return []
     }
 }
 
@@ -165,29 +112,19 @@ class FolderThumbnailProvider: ThumbnailProvider {
         guard let folder = item as? ImmichFolder else { return [] }
         
         do {
-            let searchResult = try await assetService.fetchAssets(page: 1, limit: 10, folderPath: folder.path)
-            let imageAssets = searchResult.assets.filter { $0.type == .image }
+            let searchResult = try await assetService.fetchAssets(page: 1, limit: 1, folderPath: folder.path)
+            guard let asset = searchResult.assets.first(where: { $0.type == .image }) else { return [] }
             
-            var loadedThumbnails: [UIImage] = []
-            
-            for asset in imageAssets.prefix(10) {
-                do {
-                    let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
-                        try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
-                    }
-                    if let thumbnail = thumbnail {
-                        loadedThumbnails.append(thumbnail)
-                    }
-                } catch {
-                    debugLog("Failed to load thumbnail for asset \(asset.id): \(error)")
-                }
+            let thumbnail = try await thumbnailCache.getThumbnail(for: asset.id, size: "thumbnail") {
+                try await self.assetService.loadImage(assetId: asset.id, size: "thumbnail")
             }
-            
-            return loadedThumbnails
+            if let thumbnail = thumbnail {
+                return [thumbnail]
+            }
         } catch {
             debugLog("Failed to fetch assets for folder \(folder.path): \(error)")
-            return []
         }
+        return []
     }
 }
 
@@ -204,41 +141,23 @@ class ContinentThumbnailProvider: ThumbnailProvider {
     func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let continent = item as? Continent else { return [] }
         
-        // Collect representative asset IDs from all countries in the continent
-        var assetIds: [String] = []
+        // Use continent representative asset, or first country's representative asset
+        let assetId: String? = continent.representativeAssetId ?? continent.countries.first?.representativeAssetId
         
-        for country in continent.countries {
-            if let assetId = country.representativeAssetId {
-                assetIds.append(assetId)
+        guard let assetId = assetId else { return [] }
+        
+        do {
+            let thumbnail = try await thumbnailCache.getThumbnail(for: assetId, size: "thumbnail") {
+                try await self.assetService.loadImage(assetId: assetId, size: "thumbnail")
             }
-        }
-        
-        // If we have a continent representative asset, use it first
-        if let continentAssetId = continent.representativeAssetId {
-            assetIds.insert(continentAssetId, at: 0)
-        }
-        
-        // Remove duplicates while preserving order
-        var seen = Set<String>()
-        assetIds = assetIds.filter { seen.insert($0).inserted }
-        
-        // Load thumbnails from collected asset IDs
-        var loadedThumbnails: [UIImage] = []
-        
-        for assetId in assetIds.prefix(10) {
-            do {
-                let thumbnail = try await thumbnailCache.getThumbnail(for: assetId, size: "thumbnail") {
-                    try await self.assetService.loadImage(assetId: assetId, size: "thumbnail")
-                }
-                if let thumbnail = thumbnail {
-                    loadedThumbnails.append(thumbnail)
-                }
-            } catch {
-                debugLog("Failed to load thumbnail for continent asset \(assetId): \(error)")
+            if let thumbnail = thumbnail {
+                return [thumbnail]
             }
+        } catch {
+            debugLog("Failed to load thumbnail for continent asset \(assetId): \(error)")
         }
         
-        return loadedThumbnails
+        return []
     }
 }
 

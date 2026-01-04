@@ -23,12 +23,12 @@ private enum SettingsTheme {
 // MARK: - Settings Category Enum
 
 enum SettingsCategory: String, CaseIterable, Identifiable {
-    case account = "Account"
     case interface = "Interface"
     case topShelf = "Top Shelf"
     case sorting = "Sorting"
     case slideshow = "Slideshow"
     case statistics = "Statistics"
+    case account = "Account"
     #if DEBUG
     case cache = "Cache"
     #endif
@@ -253,7 +253,7 @@ struct SettingsView: View {
     @ObservedObject private var thumbnailCache = ThumbnailCache.shared
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var userManager: UserManager
-    @State private var selectedCategory: SettingsCategory = .account
+    @State private var selectedCategory: SettingsCategory = .interface
     @State private var showingClearCacheAlert = false
     @State private var showingDeleteUserAlert = false
     @State private var userToDelete: SavedUser?

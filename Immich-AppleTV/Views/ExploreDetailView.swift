@@ -7,6 +7,7 @@ struct ExploreDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var cityAssets: [ImmichAsset] = []
     @State private var slideshowTrigger: Bool = false
+    @State private var assetGridViewSlideshowTrigger: Bool = false
     
     var body: some View {
         NavigationView {
@@ -22,12 +23,14 @@ struct ExploreDetailView: View {
                     personId: nil,
                     tagId: nil,
                     city: city,
+                    folderPath: nil,
                     isAllPhotos: false,
                     isFavorite: false,
                     onAssetsLoaded: { loadedAssets in
                         self.cityAssets = loadedAssets
                     },
-                    deepLinkAssetId: nil
+                    deepLinkAssetId: nil,
+                    externalSlideshowTrigger: $assetGridViewSlideshowTrigger
                 )
             }
             .navigationTitle(city)
@@ -48,16 +51,6 @@ struct ExploreDetailView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $slideshowTrigger) {
-            SlideshowView(
-                albumId: nil,
-                personId: nil, 
-                tagId: nil,
-                city: city,
-                startingAssetId: nil,
-                isFavorite: false
-            )
-        }
         .onAppear(){
             debugLog("Explore detail view for city: \(city)")
         }
@@ -73,6 +66,7 @@ struct ExploreDetailView: View {
     private func startSlideshow() {
         // Stop auto-slideshow timer before starting slideshow
         NotificationCenter.default.post(name: NSNotification.Name("stopAutoSlideshowTimer"), object: nil)
-        slideshowTrigger = true
+        // Trigger slideshow through AssetGridView to use correct starting asset
+        assetGridViewSlideshowTrigger = true
     }
 }

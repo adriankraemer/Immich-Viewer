@@ -23,6 +23,7 @@ class AssetGridViewModel: ObservableObject {
     let personId: String?
     let tagId: String?
     let city: String?
+    let folderPath: String?
     let isAllPhotos: Bool
     let isFavorite: Bool
     
@@ -69,6 +70,7 @@ class AssetGridViewModel: ObservableObject {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
+        folderPath: String? = nil,
         isAllPhotos: Bool = false,
         isFavorite: Bool = false,
         onAssetsLoaded: (([ImmichAsset]) -> Void)? = nil
@@ -80,6 +82,7 @@ class AssetGridViewModel: ObservableObject {
         self.personId = personId
         self.tagId = tagId
         self.city = city
+        self.folderPath = folderPath
         self.isAllPhotos = isAllPhotos
         self.isFavorite = isFavorite
         self.onAssetsLoaded = onAssetsLoaded

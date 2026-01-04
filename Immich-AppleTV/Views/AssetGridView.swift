@@ -20,6 +20,7 @@ struct AssetGridView: View {
     
     // MARK: - Configuration
     let deepLinkAssetId: String?
+    let externalSlideshowTrigger: Binding<Bool>?
     
     // MARK: - Local State
     @State private var showingFullScreen = false
@@ -48,14 +49,17 @@ struct AssetGridView: View {
         personId: String?,
         tagId: String?,
         city: String?,
+        folderPath: String?,
         isAllPhotos: Bool,
         isFavorite: Bool,
         onAssetsLoaded: (([ImmichAsset]) -> Void)?,
-        deepLinkAssetId: String?
+        deepLinkAssetId: String?,
+        externalSlideshowTrigger: Binding<Bool>? = nil
     ) {
         self.assetService = assetService
         self.authService = authService
         self.deepLinkAssetId = deepLinkAssetId
+        self.externalSlideshowTrigger = externalSlideshowTrigger
         
         _viewModel = StateObject(wrappedValue: AssetGridViewModel(
             assetService: assetService,
@@ -65,6 +69,7 @@ struct AssetGridView: View {
             personId: personId,
             tagId: tagId,
             city: city,
+            folderPath: folderPath,
             isAllPhotos: isAllPhotos,
             isFavorite: isFavorite,
             onAssetsLoaded: onAssetsLoaded
@@ -108,6 +113,7 @@ struct AssetGridView: View {
                     personId: viewModel.personId,
                     tagId: viewModel.tagId,
                     city: viewModel.city,
+                    folderPath: viewModel.folderPath,
                     startingAssetId: viewModel.getSlideshowStartingAssetId(),
                     isFavorite: viewModel.isFavorite,
                     isAllPhotos: viewModel.isAllPhotos
@@ -132,6 +138,12 @@ struct AssetGridView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.startAutoSlideshow))) { _ in
             startSlideshow()
+        }
+        .onChange(of: externalSlideshowTrigger?.wrappedValue ?? false) { oldValue, newValue in
+            if newValue && !oldValue {
+                startSlideshow()
+                externalSlideshowTrigger?.wrappedValue = false
+            }
         }
     }
     

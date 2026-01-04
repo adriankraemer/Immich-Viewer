@@ -121,6 +121,7 @@ class SlideshowViewModel: ObservableObject {
     private let personId: String?
     private let tagId: String?
     private let city: String?
+    private let folderPath: String?
     private let startingAssetId: String?
     private let isFavorite: Bool
     private let isAllPhotos: Bool
@@ -153,6 +154,7 @@ class SlideshowViewModel: ObservableObject {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
+        folderPath: String? = nil,
         startingAssetId: String? = nil,
         isFavorite: Bool = false,
         isAllPhotos: Bool = false
@@ -163,6 +165,7 @@ class SlideshowViewModel: ObservableObject {
         self.personId = personId
         self.tagId = tagId
         self.city = city
+        self.folderPath = folderPath
         self.startingAssetId = startingAssetId
         self.isFavorite = isFavorite
         self.isAllPhotos = isAllPhotos
@@ -176,6 +179,7 @@ class SlideshowViewModel: ObservableObject {
             city: city,
             isAllPhotos: isAllPhotos,
             isFavorite: isFavorite,
+            folderPath: folderPath,
             assetService: assetService,
             albumService: albumService
         )

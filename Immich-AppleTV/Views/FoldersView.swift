@@ -90,6 +90,7 @@ struct FolderDetailView: View {
                     personId: nil,
                     tagId: nil,
                     city: nil,
+                    folderPath: folder.path,
                     isAllPhotos: false,
                     isFavorite: false,
                     onAssetsLoaded: nil,

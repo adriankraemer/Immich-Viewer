@@ -8,6 +8,7 @@ struct CountryDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var countryAssets: [ImmichAsset] = []
     @State private var slideshowTrigger: Bool = false
+    @State private var assetGridViewSlideshowTrigger: Bool = false
     
     init(country: Country, assetService: AssetService, authService: AuthenticationService, exploreService: ExploreService) {
         _viewModel = StateObject(wrappedValue: CountryViewModel(country: country, assetService: assetService, exploreService: exploreService))
@@ -30,12 +31,14 @@ struct CountryDetailView: View {
                     personId: nil,
                     tagId: nil,
                     city: nil,
+                    folderPath: nil,
                     isAllPhotos: false,
                     isFavorite: false,
                     onAssetsLoaded: { loadedAssets in
                         self.countryAssets = loadedAssets
                     },
-                    deepLinkAssetId: nil
+                    deepLinkAssetId: nil,
+                    externalSlideshowTrigger: $assetGridViewSlideshowTrigger
                 )
             }
             .navigationTitle(viewModel.countryName)
@@ -56,16 +59,6 @@ struct CountryDetailView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $slideshowTrigger) {
-            SlideshowView(
-                albumId: nil,
-                personId: nil,
-                tagId: nil,
-                city: nil,
-                startingAssetId: nil,
-                isFavorite: false
-            )
-        }
         .onAppear {
             debugLog("Country detail view for country: \(viewModel.countryName)")
         }
@@ -74,7 +67,8 @@ struct CountryDetailView: View {
     private func startSlideshow() {
         // Stop auto-slideshow timer before starting slideshow
         NotificationCenter.default.post(name: NSNotification.Name("stopAutoSlideshowTimer"), object: nil)
-        slideshowTrigger = true
+        // Trigger slideshow through AssetGridView to use correct starting asset
+        assetGridViewSlideshowTrigger = true
     }
 }
 

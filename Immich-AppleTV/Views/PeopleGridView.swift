@@ -95,6 +95,7 @@ struct PersonPhotosView: View {
                     personId: person.id,
                     tagId: nil,
                     city: nil,
+                    folderPath: nil,
                     isAllPhotos: false,
                     isFavorite: false,
                     onAssetsLoaded: { loadedAssets in
@@ -140,7 +141,7 @@ struct PersonPhotosView: View {
             }
         }
         .fullScreenCover(isPresented: $slideshowTrigger) {
-            SlideshowView(albumId: nil, personId: person.id, tagId: nil, city: nil, startingAssetId: nil, isFavorite: false)
+            SlideshowView(albumId: nil, personId: person.id, tagId: nil, city: nil, folderPath: nil, startingAssetId: nil, isFavorite: false)
         }
     }
     

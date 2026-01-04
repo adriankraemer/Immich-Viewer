@@ -80,6 +80,7 @@ struct TagDetailView: View {
                     personId: nil,
                     tagId: tag.id,
                     city: nil,
+                    folderPath: nil,
                     isAllPhotos: false,
                     isFavorite: false,
                     onAssetsLoaded: nil,

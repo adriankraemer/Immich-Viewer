@@ -112,7 +112,7 @@ struct ContentView: View {
                                 isAllPhotos: true,
                                 assetService: assetService
                             ),
-                            albumId: nil, personId: nil, tagId: nil, city: nil, isAllPhotos: true, isFavorite: false,
+                            albumId: nil, personId: nil, tagId: nil, city: nil, folderPath: nil, isAllPhotos: true, isFavorite: false,
                             onAssetsLoaded: nil, 
                             deepLinkAssetId: deepLinkAssetId
                         )

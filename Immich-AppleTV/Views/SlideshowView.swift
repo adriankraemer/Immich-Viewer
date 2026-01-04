@@ -21,6 +21,7 @@ struct SlideshowView: View {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
+        folderPath: String? = nil,
         startingAssetId: String? = nil,
         isFavorite: Bool = false,
         isAllPhotos: Bool = false
@@ -32,6 +33,7 @@ struct SlideshowView: View {
             personId: personId,
             tagId: tagId,
             city: city,
+            folderPath: folderPath,
             startingAssetId: startingAssetId,
             isFavorite: isFavorite,
             isAllPhotos: isAllPhotos
@@ -44,6 +46,7 @@ struct SlideshowView: View {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
+        folderPath: String? = nil,
         startingAssetId: String? = nil,
         isFavorite: Bool = false,
         isAllPhotos: Bool = false
@@ -60,6 +63,7 @@ struct SlideshowView: View {
             personId: personId,
             tagId: tagId,
             city: city,
+            folderPath: folderPath,
             startingAssetId: startingAssetId,
             isFavorite: isFavorite,
             isAllPhotos: isAllPhotos
@@ -361,5 +365,5 @@ struct SlideshowView: View {
     UserDefaults.standard.set(true, forKey: "enableReflectionsInSlideshow")
     UserDefaults.standard.set(true, forKey: "enableKenBurnsEffect")
     
-    return SlideshowView(albumId: nil, personId: nil, tagId: nil, city: nil, startingAssetId: nil, isFavorite: false)
+    return SlideshowView(albumId: nil, personId: nil, tagId: nil, city: nil, folderPath: nil, startingAssetId: nil, isFavorite: false)
 }

@@ -17,6 +17,51 @@ private enum SettingsTheme {
     static let textPrimary = Color.white
     static let textSecondary = Color(red: 142/255, green: 142/255, blue: 147/255)
     static let success = Color(red: 52/255, green: 199/255, blue: 89/255)
+    static let sidebarWidth: CGFloat = 380
+}
+
+// MARK: - Settings Category Enum
+
+enum SettingsCategory: String, CaseIterable, Identifiable {
+    case account = "Account"
+    case interface = "Interface"
+    case topShelf = "Top Shelf"
+    case sorting = "Sorting"
+    case slideshow = "Slideshow"
+    case statistics = "Statistics"
+    #if DEBUG
+    case cache = "Cache"
+    #endif
+    
+    var id: String { rawValue }
+    
+    var icon: String {
+        switch self {
+        case .account: return "person.circle.fill"
+        case .interface: return "rectangle.3.group"
+        case .topShelf: return "tv"
+        case .sorting: return "arrow.up.arrow.down"
+        case .slideshow: return "play.rectangle.fill"
+        case .statistics: return "chart.bar.xaxis"
+        #if DEBUG
+        case .cache: return "internaldrive"
+        #endif
+        }
+    }
+    
+    var subtitle: String {
+        switch self {
+        case .account: return "Server & users"
+        case .interface: return "Tabs & navigation"
+        case .topShelf: return "Home screen display"
+        case .sorting: return "Photo ordering"
+        case .slideshow: return "Timing & effects"
+        case .statistics: return "Library insights"
+        #if DEBUG
+        case .cache: return "Storage management"
+        #endif
+        }
+    }
 }
 
 // MARK: - Reusable Components
@@ -104,12 +149,77 @@ struct SettingsRow: View {
     }
 }
 
+// MARK: - Sidebar Category Row
+
+struct SidebarCategoryRow: View {
+    let category: SettingsCategory
+    let isSelected: Bool
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(
+                        isSelected
+                            ? SettingsTheme.accent.opacity(0.3)
+                            : SettingsTheme.surface.opacity(0.4)
+                    )
+                    .frame(width: 48, height: 48)
+                
+                Image(systemName: category.icon)
+                    .font(.system(size: 22, weight: .medium))
+                    .foregroundColor(isSelected ? SettingsTheme.accent : SettingsTheme.textSecondary)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(category.rawValue)
+                    .font(.system(size: 24, weight: isSelected ? .semibold : .medium))
+                    .foregroundColor(isSelected ? SettingsTheme.textPrimary : SettingsTheme.textSecondary)
+                
+                Text(category.subtitle)
+                    .font(.system(size: 16))
+                    .foregroundColor(SettingsTheme.textSecondary.opacity(0.7))
+            }
+            
+            Spacer()
+            
+            if isSelected {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(SettingsTheme.accent)
+            }
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(
+                    isSelected
+                        ? LinearGradient(
+                            colors: [SettingsTheme.accent.opacity(0.15), SettingsTheme.accent.opacity(0.05)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                        : LinearGradient(colors: [Color.clear], startPoint: .leading, endPoint: .trailing)
+                )
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(
+                    isSelected ? SettingsTheme.accent.opacity(0.4) : Color.clear,
+                    lineWidth: 1.5
+                )
+        )
+    }
+}
+
 // MARK: - Main Settings View
 
 struct SettingsView: View {
     @ObservedObject private var thumbnailCache = ThumbnailCache.shared
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var userManager: UserManager
+    @State private var selectedCategory: SettingsCategory = .account
     @State private var showingClearCacheAlert = false
     @State private var showingDeleteUserAlert = false
     @State private var userToDelete: SavedUser?
@@ -137,7 +247,201 @@ struct SettingsView: View {
     @FocusState private var isMinusFocused: Bool
     @FocusState private var isPlusFocused: Bool
     @FocusState private var focusedColor: String?
+    @FocusState private var focusedSidebar: Bool
     
+    var body: some View {
+        ZStack {
+            SharedGradientBackground()
+                .ignoresSafeArea()
+            
+            HStack(spacing: 0) {
+                // Left Sidebar
+                sidebar
+                
+                // Divider
+                Rectangle()
+                    .fill(SettingsTheme.accent.opacity(0.3))
+                    .frame(width: 1)
+                    .padding(.vertical, 40)
+                
+                // Right Content Area
+                contentArea
+            }
+        }
+        .fullScreenCover(isPresented: $showingSignIn) {
+            SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
+        }
+        .fullScreenCover(isPresented: $showingStats) {
+            StatsView(statsService: createStatsService())
+        }
+        .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Clear All", role: .destructive) {
+                thumbnailCache.clearAllCaches()
+            }
+        } message: {
+            Text("This will remove all cached thumbnails from both memory and disk. Images will be re-downloaded when needed.")
+        }
+        .alert("Delete User", isPresented: $showingDeleteUserAlert) {
+            Button("Cancel", role: .cancel) {
+                userToDelete = nil
+            }
+            Button("Delete", role: .destructive) {
+                if let user = userToDelete {
+                    removeUser(user)
+                }
+                userToDelete = nil
+            }
+        } message: {
+            if let user = userToDelete {
+                let isCurrentUser = userManager.currentUser?.id == user.id
+                let isLastUser = userManager.savedUsers.count == 1
+                
+                if isCurrentUser && isLastUser {
+                    Text("Are you sure you want to delete this user? This will sign you out and you'll need to sign in again to access your photos.")
+                } else if isCurrentUser {
+                    Text("Are you sure you want to delete the current user? You will be switched to another saved user.")
+                } else {
+                    Text("Are you sure you want to delete this user account?")
+                }
+            } else {
+                Text("Are you sure you want to delete this user?")
+            }
+        }
+        .onChange(of: showAlbumsTab) { _, newValue in
+            if !newValue && defaultStartupTab == "albums" {
+                defaultStartupTab = "photos"
+            }
+        }
+        .onChange(of: showFoldersTab) { _, newValue in
+            if !newValue && defaultStartupTab == "folders" {
+                defaultStartupTab = "photos"
+            }
+        }
+        .onAppear {
+            userManager.loadUsers()
+            thumbnailCache.refreshCacheStatistics()
+        }
+    }
+    
+    // MARK: - Sidebar
+    
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 12) {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 32, weight: .medium))
+                        .foregroundColor(SettingsTheme.accent)
+                    
+                    Text("Settings")
+                        .font(.system(size: 42, weight: .bold))
+                        .foregroundColor(SettingsTheme.textPrimary)
+                }
+                
+                Text("Customize your experience")
+                    .font(.system(size: 18))
+                    .foregroundColor(SettingsTheme.textSecondary)
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 40)
+            .padding(.bottom, 32)
+            
+            // Category List
+            ScrollView {
+                LazyVStack(spacing: 8) {
+                    #if DEBUG
+                    let categories = SettingsCategory.allCases
+                    #else
+                    let categories = SettingsCategory.allCases.filter { $0 != .cache }
+                    #endif
+                    
+                    ForEach(categories) { category in
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                selectedCategory = category
+                            }
+                        } label: {
+                            SidebarCategoryRow(
+                                category: category,
+                                isSelected: selectedCategory == category
+                            )
+                        }
+                        .buttonStyle(SidebarButtonStyle())
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 40)
+            }
+        }
+        .frame(width: SettingsTheme.sidebarWidth)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color.black.opacity(0.3),
+                    Color.black.opacity(0.5)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        )
+    }
+    
+    // MARK: - Content Area
+    
+    private var contentArea: some View {
+        ScrollView {
+            LazyVStack(spacing: 24) {
+                // Category Title
+                HStack {
+                    Image(systemName: selectedCategory.icon)
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundColor(SettingsTheme.accent)
+                    
+                    Text(selectedCategory.rawValue)
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundColor(SettingsTheme.textPrimary)
+                    
+                    Spacer()
+                }
+                .padding(.bottom, 8)
+                
+                // Category Content
+                Group {
+                    switch selectedCategory {
+                    case .account:
+                        accountContent
+                    case .interface:
+                        interfaceContent
+                    case .topShelf:
+                        topShelfContent
+                    case .sorting:
+                        sortingContent
+                    case .slideshow:
+                        slideshowContent
+                    case .statistics:
+                        statisticsContent
+                    #if DEBUG
+                    case .cache:
+                        cacheContent
+                    #endif
+                    }
+                }
+            }
+            .padding(40)
+        }
+        .frame(maxWidth: .infinity)
+    }
+    
+    // MARK: - Account Content
+    
+    private var accountContent: some View {
+        VStack(spacing: 24) {
+            serverInfoSection
+            userActionsSection
+        }
+    }
     
     private var serverInfoSection: some View {
         Button(action: {
@@ -400,302 +704,261 @@ struct SettingsView: View {
         }
     }
     
-    var body: some View {
-        NavigationView {
-            ZStack {
-                SharedGradientBackground()
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    LazyVStack(spacing: 30) {
-                        
-                        serverInfoSection
-                        userActionsSection
-                        
-                        // Interface Settings Section
-                        SettingsSection(title: "Interface") {
-                            AnyView(VStack(spacing: 12) {
-                                    SettingsRow(
-                                        icon: "tag",
-                                        title: "Show Tags Tab",
-                                        subtitle: "Enable the tags tab in the main navigation",
-                                        content: AnyView(Toggle("", isOn: $showTagsTab).labelsHidden()),
-                                        isOn: showTagsTab
-                                    )
-                                    SettingsRow(
-                                        icon: "folder",
-                                        title: "Show Albums Tab",
-                                        subtitle: "Enable the albums tab in the main navigation",
-                                        content: AnyView(Toggle("", isOn: $showAlbumsTab).labelsHidden()),
-                                        isOn: showAlbumsTab
-                                    )
-                                    SettingsRow(
-                                        icon: "folder.fill",
-                                        title: "Show Folders Tab",
-                                        subtitle: "Enable the folders tab in the main navigation",
-                                        content: AnyView(Toggle("", isOn: $showFoldersTab).labelsHidden()),
-                                        isOn: showFoldersTab
-                                    )
-                                    SettingsRow(
-                                        icon: "play.rectangle.on.rectangle",
-                                        title: "Enable Thumbnail Animation",
-                                        subtitle: "Animate thumbnails in Albums, People, and Tags views (I recommend disabling this for larger libraries for significantly better performance).",
-                                        content: AnyView(Toggle("", isOn: $enableThumbnailAnimation).labelsHidden()),
-                                        isOn: enableThumbnailAnimation
-                                    )
-                                    
-                                    SettingsRow(
-                                        icon: "house",
-                                        title: "Default Startup Tab",
-                                        subtitle: "Choose which tab opens when the app starts",
-                                        content: AnyView(
-                                            Picker("Default Tab", selection: $defaultStartupTab) {
-                                                Text("All Photos").tag("photos")
-                                                if showAlbumsTab {
-                                                    Text("Albums").tag("albums")
-                                                }
-                                                Text("People").tag("people")
-                                                if showTagsTab {
-                                                    Text("Tags").tag("tags")
-                                                }
-                                                if showFoldersTab {
-                                                    Text("Folders").tag("folders")
-                                                }
-                                                Text("Explore").tag("explore")
-                                            }
-                                                .pickerStyle(.menu)
-                                                .frame(width: 300, alignment: .trailing)
-                                        )
-                                    )
-                                    
-                                    SettingsRow(
-                                        icon: "rectangle.split.3x1",
-                                        title: "Navigation Style",
-                                        subtitle: "Choose between a classic tab bar or the adaptive sidebar layout",
-                                        content: AnyView(
-                                            Picker("Navigation Style", selection: Binding(
-                                                get: { NavigationStyle(rawValue: navigationStyle) ?? .tabs },
-                                                set: { navigationStyle = $0.rawValue }
-                                            )) {
-                                                ForEach(NavigationStyle.allCases, id: \.self) { style in
-                                                    Text(style.displayName).tag(style)
-                                                }
-                                            }
-                                                .pickerStyle(.menu)
-                                                .frame(width: 300, alignment: .trailing)
-                                        )
-                                    )
-                                }
-                            )
+    // MARK: - Interface Content
+    
+    private var interfaceContent: some View {
+        VStack(spacing: 12) {
+            SettingsRow(
+                icon: "tag",
+                title: "Show Tags Tab",
+                subtitle: "Enable the tags tab in the main navigation",
+                content: AnyView(Toggle("", isOn: $showTagsTab).labelsHidden()),
+                isOn: showTagsTab
+            )
+            SettingsRow(
+                icon: "folder",
+                title: "Show Albums Tab",
+                subtitle: "Enable the albums tab in the main navigation",
+                content: AnyView(Toggle("", isOn: $showAlbumsTab).labelsHidden()),
+                isOn: showAlbumsTab
+            )
+            SettingsRow(
+                icon: "folder.fill",
+                title: "Show Folders Tab",
+                subtitle: "Enable the folders tab in the main navigation",
+                content: AnyView(Toggle("", isOn: $showFoldersTab).labelsHidden()),
+                isOn: showFoldersTab
+            )
+            SettingsRow(
+                icon: "play.rectangle.on.rectangle",
+                title: "Enable Thumbnail Animation",
+                subtitle: "Animate thumbnails in Albums, People, and Tags views (I recommend disabling this for larger libraries for significantly better performance).",
+                content: AnyView(Toggle("", isOn: $enableThumbnailAnimation).labelsHidden()),
+                isOn: enableThumbnailAnimation
+            )
+            
+            SettingsRow(
+                icon: "house",
+                title: "Default Startup Tab",
+                subtitle: "Choose which tab opens when the app starts",
+                content: AnyView(
+                    Picker("Default Tab", selection: $defaultStartupTab) {
+                        Text("All Photos").tag("photos")
+                        if showAlbumsTab {
+                            Text("Albums").tag("albums")
                         }
-                        
-                        // TopShelf Settings Section
-                        SettingsSection(title: "Top Shelf") {
-                            AnyView(VStack(spacing: 12) {
-                                SettingsRow(
-                                    icon: "tv",
-                                    title: "Top Shelf Extension",
-                                    subtitle: "Choose display style or disable Top Shelf entirely (Top shelf does not show portrait images)",
-                                    content: AnyView(
-                                        Picker("Top Shelf", selection: Binding(
-                                            get: { enableTopShelf ? topShelfStyle : "off" },
-                                            set: { newValue in
-                                                if newValue == "off" {
-                                                    enableTopShelf = false
-                                                } else {
-                                                    enableTopShelf = true
-                                                    topShelfStyle = newValue
-                                                }
-                                            }
-                                        )) {
-                                            Text("Off").tag("off")
-                                            Text("Compact").tag("sectioned")
-                                            Text("Fullscreen").tag("carousel")
-                                        }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 300, alignment: .trailing)
-                                    ),
-                                    isOn: enableTopShelf
-                                )
-                                
-                                if enableTopShelf {
-                                    SettingsRow(
-                                        icon: "photo.on.rectangle.angled",
-                                        title: "Image Selection",
-                                        subtitle: "Choose between recent photos or random photos from your library.",
-                                        content: AnyView(
-                                            Picker("Image Selection", selection: $topShelfImageSelection) {
-                                                Text("Recent Photos").tag("recent")
-                                                Text("Random Photos").tag("random")
-                                            }
-                                                .pickerStyle(.menu)
-                                                .frame(width: 500, alignment: .trailing)
-                                        )
-                                    )
-                                }
-                            })
+                        Text("People").tag("people")
+                        if showTagsTab {
+                            Text("Tags").tag("tags")
                         }
-                        
-                        // Sorting Settings Section
-                        SettingsSection(title: "Sorting") {
-                            AnyView(VStack(spacing: 12) {
-                                SettingsRow(
-                                    icon: "photo.on.rectangle",
-                                    title: "All Photos Sort Order",
-                                    subtitle: "Order photos in the All Photos tab",
-                                    content: AnyView(
-                                        Picker("All Photos Sort Order", selection: $allPhotosSortOrder) {
-                                            Text("Newest First").tag("desc")
-                                            Text("Oldest First").tag("asc")
-                                        }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 300, alignment: .trailing)
-                                    )
-                                )
-                                
-                                SettingsRow(
-                                    icon: "arrow.up.arrow.down",
-                                    title: "Albums & Collections Sort Order",
-                                    subtitle: "Order photos in Albums, People, and Tags",
-                                    content: AnyView(
-                                        Picker("Collections Sort Order", selection: $assetSortOrder) {
-                                            Text("Newest First").tag("desc")
-                                            Text("Oldest First").tag("asc")
-                                        }
-                                            .pickerStyle(.menu)
-                                            .frame(width: 300, alignment: .trailing)
-                                    )
-                                )
-                            })
+                        if showFoldersTab {
+                            Text("Folders").tag("folders")
                         }
-                        
-                        // Slideshow Settings Section
-                        SettingsSection(title: "Slideshow") {
-                            AnyView(VStack(spacing: 12) {
-                                SlideshowSettings(
-                                    slideshowInterval: $slideshowInterval,
-                                    slideshowBackgroundColor: $slideshowBackgroundColor,
-                                    use24HourClock: $use24HourClock,
-                                    hideOverlay: $hideImageOverlay,
-                                    enableReflections: $enableReflectionsInSlideshow,
-                                    enableKenBurns: $enableKenBurnsEffect,
-                                    enableShuffle: $enableSlideshowShuffle,
-                                    autoSlideshowTimeout: $autoSlideshowTimeout,
-                                    isMinusFocused: $isMinusFocused,
-                                    isPlusFocused: $isPlusFocused,
-                                    focusedColor: $focusedColor
-                                )
-                                .onChange(of: slideshowInterval) { _, newValue in
-                                    UserDefaults.standard.set(newValue, forKey: "slideshowInterval")
-                                }
-                            })
-                        }
-                        
-                        // Statistics Section
-                        SettingsSection(title: "Statistics") {
-                            AnyView(
-                                Button(action: {
-                                    showingStats = true
-                                }) {
-                                    HStack {
-                                        Image(systemName: "chart.bar.xaxis")
-                                            .foregroundColor(.blue)
-                                            .font(.title3)
-                                            .frame(width: 24)
-                                            .padding()
-                                        
-                                        VStack(alignment: .leading, spacing: 2) {
-                                            Text("View Library Statistics")
-                                                .font(.subheadline)
-                                                .foregroundColor(.primary)
-                                            Text("See detailed stats about your photos, videos, people, and locations")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
-                                        }
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(.secondary)
-                                            .font(.caption)
-                                    }
-                                    .padding(16)
-                                    .background(Color.gray.opacity(0.05))
-                                    .cornerRadius(12)
-                                }
-                                .buttonStyle(CardButtonStyle())
-                            )
-                        }
-                        
-                        // Cache Section (Debug only)
-                        
-#if DEBUG
-                        CacheSection(
-                            thumbnailCache: thumbnailCache,
-                            showingClearCacheAlert: $showingClearCacheAlert
-                        )
-#endif
+                        Text("Explore").tag("explore")
                     }
-                    .padding()
-                }
-            }
-            .fullScreenCover(isPresented: $showingSignIn) {
-                SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
-            }
-            .fullScreenCover(isPresented: $showingStats) {
-                StatsView(statsService: createStatsService())
-            }
-            .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Clear All", role: .destructive) {
-                    thumbnailCache.clearAllCaches()
-                }
-            } message: {
-                Text("This will remove all cached thumbnails from both memory and disk. Images will be re-downloaded when needed.")
-            }
-            .alert("Delete User", isPresented: $showingDeleteUserAlert) {
-                Button("Cancel", role: .cancel) {
-                    userToDelete = nil
-                }
-                Button("Delete", role: .destructive) {
-                    if let user = userToDelete {
-                        removeUser(user)
+                        .pickerStyle(.menu)
+                        .frame(width: 300, alignment: .trailing)
+                )
+            )
+            
+            SettingsRow(
+                icon: "rectangle.split.3x1",
+                title: "Navigation Style",
+                subtitle: "Choose between a classic tab bar or the adaptive sidebar layout",
+                content: AnyView(
+                    Picker("Navigation Style", selection: Binding(
+                        get: { NavigationStyle(rawValue: navigationStyle) ?? .tabs },
+                        set: { navigationStyle = $0.rawValue }
+                    )) {
+                        ForEach(NavigationStyle.allCases, id: \.self) { style in
+                            Text(style.displayName).tag(style)
+                        }
                     }
-                    userToDelete = nil
-                }
-            } message: {
-                if let user = userToDelete {
-                    let isCurrentUser = userManager.currentUser?.id == user.id
-                    let isLastUser = userManager.savedUsers.count == 1
-                    
-                    if isCurrentUser && isLastUser {
-                        Text("Are you sure you want to delete this user? This will sign you out and you'll need to sign in again to access your photos.")
-                    } else if isCurrentUser {
-                        Text("Are you sure you want to delete the current user? You will be switched to another saved user.")
-                    } else {
-                        Text("Are you sure you want to delete this user account?")
+                        .pickerStyle(.menu)
+                        .frame(width: 300, alignment: .trailing)
+                )
+            )
+        }
+    }
+    
+    // MARK: - Top Shelf Content
+    
+    private var topShelfContent: some View {
+        VStack(spacing: 12) {
+            SettingsRow(
+                icon: "tv",
+                title: "Top Shelf Extension",
+                subtitle: "Choose display style or disable Top Shelf entirely (Top shelf does not show portrait images)",
+                content: AnyView(
+                    Picker("Top Shelf", selection: Binding(
+                        get: { enableTopShelf ? topShelfStyle : "off" },
+                        set: { newValue in
+                            if newValue == "off" {
+                                enableTopShelf = false
+                            } else {
+                                enableTopShelf = true
+                                topShelfStyle = newValue
+                            }
+                        }
+                    )) {
+                        Text("Off").tag("off")
+                        Text("Compact").tag("sectioned")
+                        Text("Fullscreen").tag("carousel")
                     }
-                } else {
-                    Text("Are you sure you want to delete this user?")
-                }
-            }
-            .onChange(of: showAlbumsTab) { _, newValue in
-                if !newValue && defaultStartupTab == "albums" {
-                    defaultStartupTab = "photos"
-                }
-            }
-            .onChange(of: showFoldersTab) { _, newValue in
-                if !newValue && defaultStartupTab == "folders" {
-                    defaultStartupTab = "photos"
-                }
-            }
-            .onAppear {
-                userManager.loadUsers()
-                thumbnailCache.refreshCacheStatistics()
+                        .pickerStyle(.menu)
+                        .frame(width: 300, alignment: .trailing)
+                ),
+                isOn: enableTopShelf
+            )
+            
+            if enableTopShelf {
+                SettingsRow(
+                    icon: "photo.on.rectangle.angled",
+                    title: "Image Selection",
+                    subtitle: "Choose between recent photos or random photos from your library.",
+                    content: AnyView(
+                        Picker("Image Selection", selection: $topShelfImageSelection) {
+                            Text("Recent Photos").tag("recent")
+                            Text("Random Photos").tag("random")
+                        }
+                            .pickerStyle(.menu)
+                            .frame(width: 500, alignment: .trailing)
+                    )
+                )
             }
         }
     }
     
+    // MARK: - Sorting Content
+    
+    private var sortingContent: some View {
+        VStack(spacing: 12) {
+            SettingsRow(
+                icon: "photo.on.rectangle",
+                title: "All Photos Sort Order",
+                subtitle: "Order photos in the All Photos tab",
+                content: AnyView(
+                    Picker("All Photos Sort Order", selection: $allPhotosSortOrder) {
+                        Text("Newest First").tag("desc")
+                        Text("Oldest First").tag("asc")
+                    }
+                        .pickerStyle(.menu)
+                        .frame(width: 300, alignment: .trailing)
+                )
+            )
+            
+            SettingsRow(
+                icon: "arrow.up.arrow.down",
+                title: "Albums & Collections Sort Order",
+                subtitle: "Order photos in Albums, People, and Tags",
+                content: AnyView(
+                    Picker("Collections Sort Order", selection: $assetSortOrder) {
+                        Text("Newest First").tag("desc")
+                        Text("Oldest First").tag("asc")
+                    }
+                        .pickerStyle(.menu)
+                        .frame(width: 300, alignment: .trailing)
+                )
+            )
+        }
+    }
+    
+    // MARK: - Slideshow Content
+    
+    private var slideshowContent: some View {
+        VStack(spacing: 12) {
+            SlideshowSettings(
+                slideshowInterval: $slideshowInterval,
+                slideshowBackgroundColor: $slideshowBackgroundColor,
+                use24HourClock: $use24HourClock,
+                hideOverlay: $hideImageOverlay,
+                enableReflections: $enableReflectionsInSlideshow,
+                enableKenBurns: $enableKenBurnsEffect,
+                enableShuffle: $enableSlideshowShuffle,
+                autoSlideshowTimeout: $autoSlideshowTimeout,
+                isMinusFocused: $isMinusFocused,
+                isPlusFocused: $isPlusFocused,
+                focusedColor: $focusedColor
+            )
+            .onChange(of: slideshowInterval) { _, newValue in
+                UserDefaults.standard.set(newValue, forKey: "slideshowInterval")
+            }
+        }
+    }
+    
+    // MARK: - Statistics Content
+    
+    private var statisticsContent: some View {
+        VStack(spacing: 12) {
+            Button(action: {
+                showingStats = true
+            }) {
+                HStack(spacing: 16) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.blue.opacity(0.2), Color.blue.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 56, height: 56)
+                        
+                        Image(systemName: "chart.bar.xaxis")
+                            .foregroundColor(.blue)
+                            .font(.system(size: 24, weight: .medium))
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("View Library Statistics")
+                            .font(.headline)
+                            .foregroundColor(SettingsTheme.textPrimary)
+                        Text("See detailed stats about your photos, videos, people, and locations")
+                            .font(.subheadline)
+                            .foregroundColor(SettingsTheme.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(SettingsTheme.textSecondary)
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .padding(24)
+                .background(
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(SettingsTheme.surface.opacity(0.6))
+                        
+                        RoundedRectangle(cornerRadius: 16)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [Color.blue.opacity(0.3), Color.white.opacity(0.05)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    }
+                )
+            }
+            .buttonStyle(CardButtonStyle())
+        }
+    }
+    
+    // MARK: - Cache Content
+    
+    #if DEBUG
+    private var cacheContent: some View {
+        CacheSection(
+            thumbnailCache: thumbnailCache,
+            showingClearCacheAlert: $showingClearCacheAlert
+        )
+    }
+    #endif
+    
+    // MARK: - Helper Functions
     
     private func switchToUser(_ user: SavedUser) {
         Task {
@@ -781,6 +1044,28 @@ struct SettingsView: View {
         let exploreService = ExploreService(networkService: networkService)
         let peopleService = PeopleService(networkService: networkService)
         return StatsService(exploreService: exploreService, peopleService: peopleService, networkService: networkService)
+    }
+}
+
+// MARK: - Sidebar Button Style
+
+struct SidebarButtonStyle: ButtonStyle {
+    @Environment(\.isFocused) var isFocused
+    
+    private let accentColor = Color(red: 245/255, green: 166/255, blue: 35/255)
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.98 : (isFocused ? 1.02 : 1.0))
+            .brightness(isFocused ? 0.05 : 0)
+            .shadow(
+                color: isFocused ? accentColor.opacity(0.3) : Color.clear,
+                radius: isFocused ? 12 : 0,
+                x: 0,
+                y: isFocused ? 4 : 0
+            )
+            .animation(.easeOut(duration: 0.15), value: isFocused)
+            .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
 }
 

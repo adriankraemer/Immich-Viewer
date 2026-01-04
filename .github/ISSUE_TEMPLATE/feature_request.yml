@@ -1,0 +1,88 @@
+name: Feature Request
+description: Suggest a new feature or enhancement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Your ideas help make this app better.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: Is your feature request related to a problem? Please describe.
+      placeholder: I'm always frustrated when...
+    validations:
+      required: false
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe the solution you'd like to see.
+      placeholder: I would like to see...
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Describe any alternative solutions or features you've considered.
+      placeholder: I've also thought about...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What area of the app does this feature relate to?
+      options:
+        - Photo Browsing
+        - Albums
+        - People
+        - Tags
+        - Folders
+        - Explore
+        - World Map
+        - Search
+        - Slideshow
+        - Video Playback
+        - Settings
+        - Authentication
+        - Top Shelf
+        - UI/UX
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: Use Case
+      description: How would you use this feature? What's the main benefit?
+      placeholder: This would help me...
+    validations:
+      required: false
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups or Examples
+      description: If applicable, add mockups, screenshots, or examples of similar features in other apps.
+      placeholder: Drag and drop images here, or paste image URLs...
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to make sure this feature hasn't been requested already
+          required: true
+        - label: I have provided all the information requested above
+          required: true
+

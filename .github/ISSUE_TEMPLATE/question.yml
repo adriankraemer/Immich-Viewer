@@ -1,0 +1,71 @@
+name: Question / Support
+description: Ask a question or get help with using the app
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question or need help? We're here to assist!
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+      placeholder: Ask your question here...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide any relevant context about your question (what you're trying to do, what you've tried, etc.)
+      placeholder: I'm trying to...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What area does your question relate to?
+      options:
+        - Installation / Setup
+        - Authentication / Login
+        - Using the App
+        - Configuration / Settings
+        - Troubleshooting
+        - Integration with Immich
+        - General
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: tvos_version
+    attributes:
+      label: tvOS Version
+      description: What version of tvOS are you running? (optional but helpful)
+      placeholder: "17.0"
+    validations:
+      required: false
+
+  - type: input
+    id: app_version
+    attributes:
+      label: App Version
+      description: What version of the app are you using? (optional but helpful)
+      placeholder: "1.0.0"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues and documentation for an answer
+          required: true
+

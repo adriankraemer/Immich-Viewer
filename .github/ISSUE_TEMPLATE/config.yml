@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Immich Community
+    url: https://github.com/immich-app/immich/discussions
+    about: Ask questions and discuss Immich-related topics with the community
+  - name: Immich Documentation
+    url: https://immich.app/docs
+    about: Check the official Immich documentation for server setup and features
+

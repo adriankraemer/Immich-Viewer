@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreImage.CIFilterBuiltins
 
 // MARK: - About Theme Constants
 private enum AboutTheme {
@@ -33,11 +34,9 @@ struct AboutSettingsView: View {
         VStack(spacing: 40) {
             // Hero Section with App Logo
             heroSection
-                .focusSection()
             
             // Credits Content
             creditsSection
-                .focusSection()
         }
         .onAppear {
             withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
@@ -124,19 +123,17 @@ struct AboutSettingsView: View {
             // Developer Credit
             developerCredit
             
-            // Links Section
-            VStack(spacing: 16) {
-                linkButton(
+            // Links Section with QR Codes - Grid Layout
+            HStack(spacing: 20) {
+                qrCodeCard(
                     title: "App Website",
-                    subtitle: "immich.adriank.app",
                     icon: "globe",
                     url: "https://immich.adriank.app",
                     gradient: [AboutTheme.accent, AboutTheme.accentLight]
                 )
                 
-                linkButton(
+                qrCodeCard(
                     title: "Immich",
-                    subtitle: "Self-hosted photo & video backup",
                     icon: "photo.stack",
                     url: "https://immich.app",
                     gradient: [AboutTheme.immichPink, AboutTheme.immichBlue]
@@ -210,7 +207,116 @@ struct AboutSettingsView: View {
         .padding(.vertical, 8)
     }
     
-    // MARK: - Link Button
+    // MARK: - QR Code Generator
+    
+    private func generateQRCode(from string: String) -> UIImage? {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        
+        filter.message = Data(string.utf8)
+        filter.correctionLevel = "M"
+        
+        guard let outputImage = filter.outputImage else { return nil }
+        
+        // Scale up the QR code for better quality
+        let scale = 10.0
+        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+        
+        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
+        
+        return UIImage(cgImage: cgImage)
+    }
+    
+    // MARK: - QR Code Card
+    
+    private func qrCodeCard(title: String, icon: String, url: String, gradient: [Color]) -> some View {
+        Button(action: {
+            // QR codes are for scanning, no action needed
+        }) {
+            VStack(spacing: 16) {
+                // Icon with gradient background
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(
+                            LinearGradient(
+                                colors: gradient.map { $0.opacity(0.2) },
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 52, height: 52)
+                    
+                    Image(systemName: icon)
+                        .font(.system(size: 22, weight: .medium))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: gradient,
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+                
+                // Title
+                Text(title)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(AboutTheme.textPrimary)
+                
+                // QR Code
+                if let qrImage = generateQRCode(from: url) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white)
+                            .frame(width: 140, height: 140)
+                        
+                        Image(uiImage: qrImage)
+                            .interpolation(.none)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 120, height: 120)
+                    }
+                    .shadow(color: gradient[0].opacity(0.3), radius: 12, x: 0, y: 4)
+                }
+                
+                // URL display
+                Text(URL(string: url)?.host ?? url)
+                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .foregroundColor(gradient[0].opacity(0.9))
+                    .lineLimit(1)
+            }
+            .padding(24)
+            .frame(maxWidth: .infinity)
+            .aspectRatio(1, contentMode: .fit)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(AboutTheme.surface.opacity(0.6))
+                    
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.white.opacity(0.04), Color.clear],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                    
+                    RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [gradient[0].opacity(0.25), Color.white.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 1
+                        )
+                }
+            )
+        }
+        .buttonStyle(CardButtonStyle())
+    }
+    
+    // MARK: - Link Button (Deprecated)
     
     private func linkButton(title: String, subtitle: String, icon: String, url: String, gradient: [Color]) -> some View {
         Button(action: {

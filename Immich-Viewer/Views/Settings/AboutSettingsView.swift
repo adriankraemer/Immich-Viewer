@@ -121,6 +121,9 @@ struct AboutSettingsView: View {
             // Divider with film reel aesthetic
             filmDivider
             
+            // Developer Credit
+            developerCredit
+            
             // Links Section
             VStack(spacing: 16) {
                 linkButton(
@@ -154,6 +157,29 @@ struct AboutSettingsView: View {
         .padding(.horizontal, 40)
         .padding(.bottom, 60)
         .opacity(contentOpacity)
+    }
+    
+    // MARK: - Developer Credit
+    
+    private var developerCredit: some View {
+        VStack(spacing: 12) {
+            Text("Developer")
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundColor(AboutTheme.textSecondary)
+                .tracking(1.5)
+                .textCase(.uppercase)
+            
+            Text("Adrian Krämer")
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [AboutTheme.textPrimary, AboutTheme.accent.opacity(0.9)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        }
+        .padding(.vertical, 20)
     }
     
     // MARK: - Film Divider

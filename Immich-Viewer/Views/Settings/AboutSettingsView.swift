@@ -141,14 +141,6 @@ struct AboutSettingsView: View {
                     url: "https://immich.app",
                     gradient: [AboutTheme.immichPink, AboutTheme.immichBlue]
                 )
-                
-                linkButton(
-                    title: "Immich on GitHub",
-                    subtitle: "Open source • MIT License",
-                    icon: "chevron.left.forwardslash.chevron.right",
-                    url: "https://github.com/immich-app/immich",
-                    gradient: [AboutTheme.immichGreen, AboutTheme.immichBlue]
-                )
             }
             
             // Open Source Acknowledgment

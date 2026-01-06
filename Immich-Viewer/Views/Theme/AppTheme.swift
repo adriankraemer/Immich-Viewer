@@ -1,6 +1,6 @@
 //
 //  AppTheme.swift
-//  Immich-AppleTV
+//  Immich-Viewer
 //
 //  Cinematic Dark Theme - Premium Theater Experience
 //

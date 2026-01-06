@@ -18,14 +18,14 @@
 			containerPortal = 2F23BA652E1234C8005C563C /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2F23BA6C2E1234C8005C563C;
-			remoteInfo = "Immich-AppleTV";
+			remoteInfo = "Immich-Viewer";
 		};
 		2F23BA882E1234CA005C563C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 2F23BA652E1234C8005C563C /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 2F23BA6C2E1234C8005C563C;
-			remoteInfo = "Immich-AppleTV";
+			remoteInfo = "Immich-Viewer";
 		};
 		2F2863052E4971C90032B966 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,15 +52,15 @@
 
 /* Begin PBXFileReference section */
 		2901EDEF2F0559CE0035114F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		2F23BA6D2E1234C8005C563C /* Immich-AppleTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Immich-AppleTV.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2F23BA7D2E1234CA005C563C /* Immich-AppleTVTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Immich-AppleTVTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		2F23BA872E1234CA005C563C /* Immich-AppleTVUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Immich-AppleTVUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F23BA6D2E1234C8005C563C /* Immich-Viewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Immich-Viewer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F23BA7D2E1234CA005C563C /* Immich-ViewerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Immich-ViewerTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F23BA872E1234CA005C563C /* Immich-ViewerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Immich-ViewerUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F2862FD2E4971C90032B966 /* TopShelfExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TopShelfExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F2862FF2E4971C90032B966 /* TVServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = TVServices.framework; path = System/Library/Frameworks/TVServices.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		2F0443162E639D0C00BFB354 /* Exceptions for "Immich-AppleTV" folder in "TopShelfExtension" target */ = {
+		2F0443162E639D0C00BFB354 /* Exceptions for "Immich-Viewer" folder in "TopShelfExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Models/UserModels.swift,
@@ -89,22 +89,22 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		2F23BA6F2E1234C8005C563C /* Immich-AppleTV */ = {
+		2F23BA6F2E1234C8005C563C /* Immich-Viewer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				2F0443162E639D0C00BFB354 /* Exceptions for "Immich-AppleTV" folder in "TopShelfExtension" target */,
+				2F0443162E639D0C00BFB354 /* Exceptions for "Immich-Viewer" folder in "TopShelfExtension" target */,
 			);
-			path = "Immich-AppleTV";
+			path = "Immich-Viewer";
 			sourceTree = "<group>";
 		};
-		2F23BA802E1234CA005C563C /* Immich-AppleTVTests */ = {
+		2F23BA802E1234CA005C563C /* Immich-ViewerTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Immich-AppleTVTests";
+			path = "Immich-ViewerTests";
 			sourceTree = "<group>";
 		};
-		2F23BA8A2E1234CA005C563C /* Immich-AppleTVUITests */ = {
+		2F23BA8A2E1234CA005C563C /* Immich-ViewerUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = "Immich-AppleTVUITests";
+			path = "Immich-ViewerUITests";
 			sourceTree = "<group>";
 		};
 		2F2863012E4971C90032B966 /* TopShelfExtension */ = {
@@ -163,9 +163,9 @@
 			children = (
 				2901EDEF2F0559CE0035114F /* README.md */,
 				2FDBDAF32E4AC9D200344677 /* Shared */,
-				2F23BA6F2E1234C8005C563C /* Immich-AppleTV */,
-				2F23BA802E1234CA005C563C /* Immich-AppleTVTests */,
-				2F23BA8A2E1234CA005C563C /* Immich-AppleTVUITests */,
+				2F23BA6F2E1234C8005C563C /* Immich-Viewer */,
+				2F23BA802E1234CA005C563C /* Immich-ViewerTests */,
+				2F23BA8A2E1234CA005C563C /* Immich-ViewerUITests */,
 				2F2863012E4971C90032B966 /* TopShelfExtension */,
 				2F2862FE2E4971C90032B966 /* Frameworks */,
 				2F23BA6E2E1234C8005C563C /* Products */,
@@ -175,9 +175,9 @@
 		2F23BA6E2E1234C8005C563C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2F23BA6D2E1234C8005C563C /* Immich-AppleTV.app */,
-				2F23BA7D2E1234CA005C563C /* Immich-AppleTVTests.xctest */,
-				2F23BA872E1234CA005C563C /* Immich-AppleTVUITests.xctest */,
+				2F23BA6D2E1234C8005C563C /* Immich-Viewer.app */,
+				2F23BA7D2E1234CA005C563C /* Immich-ViewerTests.xctest */,
+				2F23BA872E1234CA005C563C /* Immich-ViewerUITests.xctest */,
 				2F2862FD2E4971C90032B966 /* TopShelfExtension.appex */,
 			);
 			name = Products;
@@ -194,9 +194,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2F23BA6C2E1234C8005C563C /* Immich-AppleTV */ = {
+		2F23BA6C2E1234C8005C563C /* Immich-Viewer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2F23BA912E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-AppleTV" */;
+			buildConfigurationList = 2F23BA912E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-Viewer" */;
 			buildPhases = (
 				2F23BA692E1234C8005C563C /* Sources */,
 				2F23BA6A2E1234C8005C563C /* Frameworks */,
@@ -209,19 +209,19 @@
 				2F2863062E4971C90032B966 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				2F23BA6F2E1234C8005C563C /* Immich-AppleTV */,
+				2F23BA6F2E1234C8005C563C /* Immich-Viewer */,
 				2FDBDAF32E4AC9D200344677 /* Shared */,
 			);
-			name = "Immich-AppleTV";
+			name = "Immich-Viewer";
 			packageProductDependencies = (
 			);
-			productName = "Immich-AppleTV";
-			productReference = 2F23BA6D2E1234C8005C563C /* Immich-AppleTV.app */;
+			productName = "Immich-Viewer";
+			productReference = 2F23BA6D2E1234C8005C563C /* Immich-Viewer.app */;
 			productType = "com.apple.product-type.application";
 		};
-		2F23BA7C2E1234CA005C563C /* Immich-AppleTVTests */ = {
+		2F23BA7C2E1234CA005C563C /* Immich-ViewerTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2F23BA942E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-AppleTVTests" */;
+			buildConfigurationList = 2F23BA942E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-ViewerTests" */;
 			buildPhases = (
 				2F23BA792E1234CA005C563C /* Sources */,
 				2F23BA7A2E1234CA005C563C /* Frameworks */,
@@ -233,18 +233,18 @@
 				2F23BA7F2E1234CA005C563C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				2F23BA802E1234CA005C563C /* Immich-AppleTVTests */,
+				2F23BA802E1234CA005C563C /* Immich-ViewerTests */,
 			);
-			name = "Immich-AppleTVTests";
+			name = "Immich-ViewerTests";
 			packageProductDependencies = (
 			);
-			productName = "Immich-AppleTVTests";
-			productReference = 2F23BA7D2E1234CA005C563C /* Immich-AppleTVTests.xctest */;
+			productName = "Immich-ViewerTests";
+			productReference = 2F23BA7D2E1234CA005C563C /* Immich-ViewerTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		2F23BA862E1234CA005C563C /* Immich-AppleTVUITests */ = {
+		2F23BA862E1234CA005C563C /* Immich-ViewerUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2F23BA972E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-AppleTVUITests" */;
+			buildConfigurationList = 2F23BA972E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-ViewerUITests" */;
 			buildPhases = (
 				2F23BA832E1234CA005C563C /* Sources */,
 				2F23BA842E1234CA005C563C /* Frameworks */,
@@ -256,13 +256,13 @@
 				2F23BA892E1234CA005C563C /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				2F23BA8A2E1234CA005C563C /* Immich-AppleTVUITests */,
+				2F23BA8A2E1234CA005C563C /* Immich-ViewerUITests */,
 			);
-			name = "Immich-AppleTVUITests";
+			name = "Immich-ViewerUITests";
 			packageProductDependencies = (
 			);
-			productName = "Immich-AppleTVUITests";
-			productReference = 2F23BA872E1234CA005C563C /* Immich-AppleTVUITests.xctest */;
+			productName = "Immich-ViewerUITests";
+			productReference = 2F23BA872E1234CA005C563C /* Immich-ViewerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		2F2862FC2E4971C90032B966 /* TopShelfExtension */ = {
@@ -313,7 +313,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2F23BA682E1234C8005C563C /* Build configuration list for PBXProject "Immich-AppleTV" */;
+			buildConfigurationList = 2F23BA682E1234C8005C563C /* Build configuration list for PBXProject "Immich-Viewer" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -327,9 +327,9 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2F23BA6C2E1234C8005C563C /* Immich-AppleTV */,
-				2F23BA7C2E1234CA005C563C /* Immich-AppleTVTests */,
-				2F23BA862E1234CA005C563C /* Immich-AppleTVUITests */,
+				2F23BA6C2E1234C8005C563C /* Immich-Viewer */,
+				2F23BA7C2E1234CA005C563C /* Immich-ViewerTests */,
+				2F23BA862E1234CA005C563C /* Immich-ViewerUITests */,
 				2F2862FC2E4971C90032B966 /* TopShelfExtension */,
 			);
 		};
@@ -401,12 +401,12 @@
 /* Begin PBXTargetDependency section */
 		2F23BA7F2E1234CA005C563C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2F23BA6C2E1234C8005C563C /* Immich-AppleTV */;
+			target = 2F23BA6C2E1234C8005C563C /* Immich-Viewer */;
 			targetProxy = 2F23BA7E2E1234CA005C563C /* PBXContainerItemProxy */;
 		};
 		2F23BA892E1234CA005C563C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2F23BA6C2E1234C8005C563C /* Immich-AppleTV */;
+			target = 2F23BA6C2E1234C8005C563C /* Immich-Viewer */;
 			targetProxy = 2F23BA882E1234CA005C563C /* PBXContainerItemProxy */;
 		};
 		2F2863062E4971C90032B966 /* PBXTargetDependency */ = {
@@ -546,15 +546,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = "Immich-AppleTV/Immich-AppleTV.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Immich-Viewer/Immich-Viewer.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1111;
-				DEVELOPMENT_ASSET_PATHS = "\"Immich-AppleTV/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Immich-Viewer/Preview Content\"";
 				DEVELOPMENT_TEAM = B92392R73Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Immich-AppleTV-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Immich AppleTV";
+				INFOPLIST_FILE = "Immich-Viewer-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Immich Viewer";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -578,15 +578,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = "Immich-AppleTV/Immich-AppleTV.entitlements";
+				CODE_SIGN_ENTITLEMENTS = "Immich-Viewer/Immich-Viewer.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1111;
-				DEVELOPMENT_ASSET_PATHS = "\"Immich-AppleTV/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"Immich-Viewer/Preview Content\"";
 				DEVELOPMENT_TEAM = B92392R73Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Immich-AppleTV-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Immich AppleTV";
+				INFOPLIST_FILE = "Immich-Viewer-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Immich Viewer";
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -613,12 +613,12 @@
 				DEVELOPMENT_TEAM = B92392R73Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.immich.photo.Immich-AppleTVTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.immich.photo.Immich-ViewerTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Immich-AppleTV.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Immich-AppleTV";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Immich-Viewer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Immich-Viewer";
 				TVOS_DEPLOYMENT_TARGET = 18.2;
 			};
 			name = Debug;
@@ -632,12 +632,12 @@
 				DEVELOPMENT_TEAM = B92392R73Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.immich.photo.Immich-AppleTVTests";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.immich.photo.Immich-ViewerTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Immich-AppleTV.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Immich-AppleTV";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Immich-Viewer.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Immich-Viewer";
 				TVOS_DEPLOYMENT_TARGET = 18.2;
 			};
 			name = Release;
@@ -650,12 +650,12 @@
 				DEVELOPMENT_TEAM = B92392R73Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.immich.photo.Immich-AppleTVUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.immich.photo.Immich-ViewerUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TEST_TARGET_NAME = "Immich-AppleTV";
+				TEST_TARGET_NAME = "Immich-Viewer";
 			};
 			name = Debug;
 		};
@@ -667,12 +667,12 @@
 				DEVELOPMENT_TEAM = B92392R73Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "app.immich.photo.Immich-AppleTVUITests";
+				PRODUCT_BUNDLE_IDENTIFIER = "app.immich.photo.Immich-ViewerUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
-				TEST_TARGET_NAME = "Immich-AppleTV";
+				TEST_TARGET_NAME = "Immich-Viewer";
 			};
 			name = Release;
 		};
@@ -733,7 +733,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2F23BA682E1234C8005C563C /* Build configuration list for PBXProject "Immich-AppleTV" */ = {
+		2F23BA682E1234C8005C563C /* Build configuration list for PBXProject "Immich-Viewer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2F23BA8F2E1234CA005C563C /* Debug */,
@@ -742,7 +742,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2F23BA912E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-AppleTV" */ = {
+		2F23BA912E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-Viewer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2F23BA922E1234CA005C563C /* Debug */,
@@ -751,7 +751,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2F23BA942E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-AppleTVTests" */ = {
+		2F23BA942E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-ViewerTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2F23BA952E1234CA005C563C /* Debug */,
@@ -760,7 +760,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2F23BA972E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-AppleTVUITests" */ = {
+		2F23BA972E1234CA005C563C /* Build configuration list for PBXNativeTarget "Immich-ViewerUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2F23BA982E1234CA005C563C /* Debug */,

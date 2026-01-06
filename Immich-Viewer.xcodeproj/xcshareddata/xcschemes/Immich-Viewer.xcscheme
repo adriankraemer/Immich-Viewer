@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2F23BA6C2E1234C8005C563C"
-               BuildableName = "Immich-AppleTV.app"
-               BlueprintName = "Immich-AppleTV"
-               ReferencedContainer = "container:Immich-AppleTV.xcodeproj">
+               BuildableName = "Immich-Viewer.app"
+               BlueprintName = "Immich-Viewer"
+               ReferencedContainer = "container:Immich-Viewer.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -36,9 +36,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2F23BA7C2E1234CA005C563C"
-               BuildableName = "Immich-AppleTVTests.xctest"
-               BlueprintName = "Immich-AppleTVTests"
-               ReferencedContainer = "container:Immich-AppleTV.xcodeproj">
+               BuildableName = "Immich-ViewerTests.xctest"
+               BlueprintName = "Immich-ViewerTests"
+               ReferencedContainer = "container:Immich-Viewer.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -47,9 +47,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2F23BA862E1234CA005C563C"
-               BuildableName = "Immich-AppleTVUITests.xctest"
-               BlueprintName = "Immich-AppleTVUITests"
-               ReferencedContainer = "container:Immich-AppleTV.xcodeproj">
+               BuildableName = "Immich-ViewerUITests.xctest"
+               BlueprintName = "Immich-ViewerUITests"
+               ReferencedContainer = "container:Immich-Viewer.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -69,9 +69,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2F23BA6C2E1234C8005C563C"
-            BuildableName = "Immich-AppleTV.app"
-            BlueprintName = "Immich-AppleTV"
-            ReferencedContainer = "container:Immich-AppleTV.xcodeproj">
+            BuildableName = "Immich-Viewer.app"
+            BlueprintName = "Immich-Viewer"
+            ReferencedContainer = "container:Immich-Viewer.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -86,9 +86,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "2F23BA6C2E1234C8005C563C"
-            BuildableName = "Immich-AppleTV.app"
-            BlueprintName = "Immich-AppleTV"
-            ReferencedContainer = "container:Immich-AppleTV.xcodeproj">
+            BuildableName = "Immich-Viewer.app"
+            BlueprintName = "Immich-Viewer"
+            ReferencedContainer = "container:Immich-Viewer.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

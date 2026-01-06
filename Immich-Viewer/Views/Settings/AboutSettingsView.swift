@@ -31,12 +31,20 @@ struct AboutSettingsView: View {
     
     var body: some View {
         VStack(spacing: 40) {
+            // Hero Section with App Logo
+            heroSection
+                .focusSection()
+            
             // Credits Content
             creditsSection
                 .focusSection()
         }
         .onAppear {
-            withAnimation(.easeOut(duration: 0.6).delay(0.1)) {
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
+                logoScale = 1.0
+                logoOpacity = 1.0
+            }
+            withAnimation(.easeOut(duration: 0.6).delay(0.4)) {
                 contentOpacity = 1.0
             }
         }

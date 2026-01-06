@@ -75,8 +75,6 @@ struct PersonPhotosView: View {
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var assetService: AssetService
     @Environment(\.dismiss) private var dismiss
-    @State private var personAssets: [ImmichAsset] = []
-    @State private var slideshowTrigger: Bool = false
     
     var body: some View {
         NavigationView {
@@ -98,57 +96,12 @@ struct PersonPhotosView: View {
                     folderPath: nil,
                     isAllPhotos: false,
                     isFavorite: false,
-                    onAssetsLoaded: { loadedAssets in
-                        self.personAssets = loadedAssets
-                    },
+                    onAssetsLoaded: nil,
                     deepLinkAssetId: nil
                 )
             }
             .navigationTitle(person.name.isEmpty ? "Unknown Person" : person.name)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: startSlideshow) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "play.fill")
-                            Text("Slideshow")
-                        }
-                        .foregroundColor(PersonDetailTheme.accent)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(PersonDetailTheme.accent.opacity(0.15))
-                        )
-                    }
-                    .disabled(personAssets.isEmpty)
-                }
-                
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "xmark")
-                            Text("Close")
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(PersonDetailTheme.surface.opacity(0.8))
-                        )
-                    }
-                }
-            }
         }
-        .fullScreenCover(isPresented: $slideshowTrigger) {
-            SlideshowView(albumId: nil, personId: person.id, tagId: nil, city: nil, folderPath: nil, startingAssetId: nil, isFavorite: false)
-        }
-    }
-    
-    private func startSlideshow() {
-        // Stop auto-slideshow timer before starting slideshow
-        NotificationCenter.default.post(name: NSNotification.Name("stopAutoSlideshowTimer"), object: nil)
-        slideshowTrigger = true
     }
 }
 

@@ -5,7 +5,6 @@ struct ContinentDetailView: View {
     @ObservedObject var assetService: AssetService
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var exploreService: ExploreService
-    @Environment(\.dismiss) private var dismiss
     @State private var selectedCountry: Country?
     
     init(continent: Continent, assetService: AssetService, authService: AuthenticationService, exploreService: ExploreService) {
@@ -37,14 +36,6 @@ struct ContinentDetailView: View {
                 )
             }
             .navigationTitle(viewModel.continentName)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Back") {
-                        dismiss()
-                    }
-                    .foregroundColor(.white)
-                }
-            }
         }
         .fullScreenCover(item: $selectedCountry) { country in
             CountryDetailView(country: country, assetService: assetService, authService: authService, exploreService: exploreService)

@@ -88,13 +88,6 @@ struct TagDetailView: View {
                 )
             }
             .navigationTitle(tag.name)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
         }
     }
 }

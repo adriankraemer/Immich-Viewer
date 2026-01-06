@@ -5,10 +5,6 @@ struct CountryDetailView: View {
     @ObservedObject var assetService: AssetService
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var exploreService: ExploreService
-    @Environment(\.dismiss) private var dismiss
-    @State private var countryAssets: [ImmichAsset] = []
-    @State private var slideshowTrigger: Bool = false
-    @State private var assetGridViewSlideshowTrigger: Bool = false
     
     init(country: Country, assetService: AssetService, authService: AuthenticationService, exploreService: ExploreService) {
         _viewModel = StateObject(wrappedValue: CountryViewModel(country: country, assetService: assetService, exploreService: exploreService))
@@ -34,41 +30,16 @@ struct CountryDetailView: View {
                     folderPath: nil,
                     isAllPhotos: false,
                     isFavorite: false,
-                    onAssetsLoaded: { loadedAssets in
-                        self.countryAssets = loadedAssets
-                    },
+                    onAssetsLoaded: nil,
                     deepLinkAssetId: nil,
-                    externalSlideshowTrigger: $assetGridViewSlideshowTrigger
+                    externalSlideshowTrigger: nil
                 )
             }
             .navigationTitle(viewModel.countryName)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: startSlideshow) {
-                        Image(systemName: "play.rectangle")
-                            .foregroundColor(.white)
-                    }
-                    .disabled(countryAssets.isEmpty)
-                }
-                
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .foregroundColor(.white)
-                }
-            }
         }
         .onAppear {
             debugLog("Country detail view for country: \(viewModel.countryName)")
         }
-    }
-    
-    private func startSlideshow() {
-        // Stop auto-slideshow timer before starting slideshow
-        NotificationCenter.default.post(name: NSNotification.Name("stopAutoSlideshowTimer"), object: nil)
-        // Trigger slideshow through AssetGridView to use correct starting asset
-        assetGridViewSlideshowTrigger = true
     }
 }
 

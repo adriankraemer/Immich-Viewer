@@ -66,12 +66,6 @@ struct AlbumListView: View {
     }
 }
 
-// MARK: - Cinematic Theme for Album Detail
-private enum AlbumDetailTheme {
-    static let accent = Color(red: 245/255, green: 166/255, blue: 35/255)
-    static let surface = Color(red: 30/255, green: 30/255, blue: 32/255)
-}
-
 // MARK: - Album Detail View
 
 struct AlbumDetailView: View {
@@ -79,9 +73,6 @@ struct AlbumDetailView: View {
     @ObservedObject var albumService: AlbumService
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var assetService: AssetService
-    @Environment(\.dismiss) private var dismiss
-    @State private var albumAssets: [ImmichAsset] = []
-    @State private var slideshowTrigger: Bool = false
     
     var body: some View {
         NavigationView {
@@ -100,58 +91,11 @@ struct AlbumDetailView: View {
                     folderPath: nil,
                     isAllPhotos: false,
                     isFavorite: album.id.hasPrefix("smart_") ? true : false,
-                    onAssetsLoaded: { loadedAssets in
-                        self.albumAssets = loadedAssets
-                    },
+                    onAssetsLoaded: nil,
                     deepLinkAssetId: nil
                 )
             }
             .navigationTitle(album.albumName)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: startSlideshow) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "play.fill")
-                            Text("Slideshow")
-                        }
-                        .foregroundColor(AlbumDetailTheme.accent)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(AlbumDetailTheme.accent.opacity(0.15))
-                        )
-                    }
-                    .disabled(albumAssets.isEmpty)
-                }
-                
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "xmark")
-                            Text("Close")
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(AlbumDetailTheme.surface.opacity(0.8))
-                        )
-                    }
-                }
-            }
-        }
-        .fullScreenCover(isPresented: $slideshowTrigger) {
-            SlideshowView(
-                albumId: album.id.hasPrefix("smart_") ? nil : album.id,
-                personId: nil,
-                tagId: nil,
-                city: nil,
-                folderPath: nil,
-                startingAssetId: nil,
-                isFavorite: album.id == "smart_favorites"
-            )
         }
         .onAppear {
             debugLog("AlbumDetailView: View appeared for album \(album.albumName)")
@@ -171,12 +115,6 @@ struct AlbumDetailView: View {
                 albumService: albumService
             )
         }
-    }
-    
-    private func startSlideshow() {
-        // Stop auto-slideshow timer before starting slideshow
-        NotificationCenter.default.post(name: NSNotification.Name("stopAutoSlideshowTimer"), object: nil)
-        slideshowTrigger = true
     }
 }
 

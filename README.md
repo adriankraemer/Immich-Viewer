@@ -103,15 +103,6 @@ Your photos appear right on the Apple TV home screen:
 
 ---
 
-## 🔗 Deep Linking
-
-Open specific photos from other apps or automations using:
-```
-immichgallery://asset/{photo-id}
-```
-
----
-
 ## 📖 For Developers
 
 For technical architecture details, see [ARCHITECTURE.md](ARCHITECTURE.md).

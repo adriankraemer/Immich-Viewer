@@ -29,6 +29,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     case slideshow = "Slideshow"
     case statistics = "Statistics"
     case account = "Account"
+    case about = "About"
     #if DEBUG
     case cache = "Cache"
     #endif
@@ -46,6 +47,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         #if DEBUG
         case .cache: return "internaldrive"
         #endif
+        case .about: return "info.circle.fill"
         }
     }
     
@@ -60,6 +62,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         #if DEBUG
         case .cache: return "Storage management"
         #endif
+        case .about: return "Credits & links"
         }
     }
 }
@@ -445,6 +448,8 @@ struct SettingsView: View {
                     case .cache:
                         cacheContent
                     #endif
+                    case .about:
+                        aboutContent
                     }
                 }
             }
@@ -901,6 +906,12 @@ struct SettingsView: View {
     
     private var statisticsContent: some View {
         EmbeddedStatsView(statsService: createStatsService())
+    }
+    
+    // MARK: - About Content
+    
+    private var aboutContent: some View {
+        AboutSettingsView()
     }
     
     // MARK: - Cache Content

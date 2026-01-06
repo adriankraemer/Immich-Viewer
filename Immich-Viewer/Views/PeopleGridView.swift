@@ -101,23 +101,6 @@ struct PersonPhotosView: View {
                 )
             }
             .navigationTitle(person.name.isEmpty ? "Unknown Person" : person.name)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { dismiss() }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "xmark")
-                            Text("Close")
-                        }
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(PersonDetailTheme.surface.opacity(0.8))
-                        )
-                    }
-                }
-            }
         }
     }
 }

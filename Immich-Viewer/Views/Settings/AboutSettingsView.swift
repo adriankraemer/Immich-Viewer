@@ -125,6 +125,8 @@ struct AboutSettingsView: View {
             
             // Links Section with QR Codes - Grid Layout
             HStack(spacing: 20) {
+                Spacer()
+                
                 qrCodeCard(
                     title: "App Website",
                     icon: "globe",
@@ -138,6 +140,15 @@ struct AboutSettingsView: View {
                     url: "https://immich.app",
                     gradient: [AboutTheme.immichPink, AboutTheme.immichBlue]
                 )
+                
+                qrCodeCard(
+                    title: "App Store",
+                    icon: "star.fill",
+                    url: "https://apps.apple.com/app/id6738990599",
+                    gradient: [AboutTheme.immichBlue, AboutTheme.immichGreen]
+                )
+                
+                Spacer()
             }
             
             // Open Source Acknowledgment

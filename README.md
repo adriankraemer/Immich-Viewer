@@ -1,7 +1,7 @@
 # Immich for Apple TV
 
 <p align="center">
-  <img src="Immich-AppleTV/icon.svg" alt="Immich AppleTV" width="200"/>
+  <img src="Immich-Viewer/icon.svg" alt="Immich AppleTV" width="200"/>
 </p>
 
 **Turn your Apple TV into a beautiful digital photo frame** — browse, explore, and enjoy your self-hosted [Immich](https://immich.app) photo library on the big screen.

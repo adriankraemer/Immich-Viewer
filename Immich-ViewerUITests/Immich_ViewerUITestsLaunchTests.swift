@@ -1,6 +1,6 @@
 import XCTest
 
-final class Immich_AppleTVUITestsLaunchTests: XCTestCase {
+final class Immich_ViewerUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

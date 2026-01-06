@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  Immich-AppleTV
+//  Immich-Viewer
 //
 //  Created by Adrian Kraemer on 2025-06-29.
 //

@@ -1,5 +1,5 @@
 import Foundation
-@testable import Immich_AppleTV
+@testable import Immich_Viewer
 
 /// Mock implementation of UserStorage for testing
 class MockUserStorage: UserStorageWithTokens {

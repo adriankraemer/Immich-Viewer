@@ -1,6 +1,6 @@
 # Test Suite Documentation
 
-This directory contains comprehensive test cases for the Immich-AppleTV application.
+This directory contains comprehensive test cases for the Immich-Viewer application.
 
 ## Test Files
 
@@ -65,7 +65,7 @@ Tests for the `AssetService` class and related models, covering:
 
 ### From Command Line
 ```bash
-xcodebuild test -scheme Immich-AppleTV -destination 'platform=tvOS Simulator,name=Apple TV'
+xcodebuild test -scheme Immich-Viewer -destination 'platform=tvOS Simulator,name=Apple TV'
 ```
 
 ## Test Coverage

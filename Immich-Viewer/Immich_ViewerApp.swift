@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct Immich_AppleTVApp: App {
+struct Immich_ViewerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()

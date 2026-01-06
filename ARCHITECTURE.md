@@ -1,6 +1,6 @@
 # Architecture Documentation
 
-This document provides a detailed overview of the Immich-AppleTV architecture, design patterns, and implementation details.
+This document provides a detailed overview of the Immich-Viewer architecture, design patterns, and implementation details.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ This document provides a detailed overview of the Immich-AppleTV architecture, d
 
 ## Overview
 
-Immich-AppleTV follows a **service-oriented architecture** with clear separation between:
+Immich-Viewer follows a **service-oriented architecture** with clear separation between:
 - **Presentation Layer**: SwiftUI views
 - **Business Logic Layer**: Service classes
 - **Data Layer**: Storage and network abstractions
@@ -390,7 +390,7 @@ enum ImmichError: Error {
 ### View Hierarchy
 
 ```
-Immich_AppleTVApp
+Immich_ViewerApp
 └── ContentView
     ├── SignInView (if not authenticated)
     └── TabView (if authenticated)
@@ -577,7 +577,7 @@ Automatic slideshow activation after user inactivity:
 
 URL scheme support for opening specific assets:
 - Format: `immichgallery://asset/{assetId}`
-- Handled in `Immich_AppleTVApp.onOpenURL()`
+- Handled in `Immich_ViewerApp.onOpenURL()`
 - Posts notification to `ContentView` for asset navigation
 - Automatically switches to Photos tab and highlights asset
 

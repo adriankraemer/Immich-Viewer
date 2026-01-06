@@ -176,7 +176,7 @@ class ContentProvider: TVTopShelfContentProvider {
         
         if topShelfStyle == "sectioned" {
             let item = TVTopShelfSectionedItem(identifier: "fallback")
-            item.title = "Immich-AppleTV"
+            item.title = "Immich-Viewer"
             item.displayAction = TVTopShelfAction(url: URL(string: "immichgallery://")!)
             
             let section = TVTopShelfItemCollection(items: [item])
@@ -185,7 +185,7 @@ class ContentProvider: TVTopShelfContentProvider {
             return TVTopShelfSectionedContent(sections: [section])
         } else {
             let item = TVTopShelfCarouselItem(identifier: "fallback")
-            item.title = "Immich-AppleTV"
+            item.title = "Immich-Viewer"
             item.displayAction = TVTopShelfAction(url: URL(string: "immichgallery://")!)
             
             return TVTopShelfCarouselContent(style: .details, items: [item])

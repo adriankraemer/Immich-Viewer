@@ -222,7 +222,7 @@ struct ContentView: View {
                     // .accentColor(.blue)
                 }
             }
-            .navigationTitle("Immich-AppleTV")
+            .navigationTitle("Immich-Viewer")
             .navigationBarHidden(true)
         }
         .navigationViewStyle(StackNavigationViewStyle())

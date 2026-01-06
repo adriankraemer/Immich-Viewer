@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import Immich_AppleTV
+@testable import Immich_Viewer
 
 @Suite("UserManager Tests")
 struct UserManagerTests {

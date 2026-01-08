@@ -29,6 +29,22 @@ class SimpleVideoPlayerViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private var timeObserver: Any?
     private var shouldBePlaying = false
+    private var isWaitingForInitialBuffer = false
+    private var hasTriedFallbackEndpoint = false
+    private var currentVideoURL: URL?
+    private var lastBufferAmount: TimeInterval = 0
+    private var bufferStallCount: Int = 0
+    private var bufferStallCheckTask: Task<Void, Never>?
+    
+    // MARK: - Buffer Configuration Constants
+    /// Forward buffer duration in seconds - larger buffer for remote streaming
+    private let forwardBufferDuration: TimeInterval = 30
+    /// Minimum seconds of buffer required before starting playback
+    private let minimumBufferBeforePlayback: TimeInterval = 5
+    /// Minimum seconds of buffer required before resuming after a stall
+    private let minimumBufferBeforeResume: TimeInterval = 10
+    /// Number of stall checks before considering buffer truly stalled
+    private let maxBufferStallChecks: Int = 5
     
     // MARK: - Initialization
     
@@ -67,8 +83,24 @@ class SimpleVideoPlayerViewModel: ObservableObject {
             return
         }
         
+        // Try the playback endpoint first, then fall back to original if needed
+        await loadVideoFromEndpoint(useOriginal: false)
+    }
+    
+    /// Loads video from specified endpoint (playback or original)
+    private func loadVideoFromEndpoint(useOriginal: Bool) async {
         do {
-            let videoURL = try await assetService.loadVideoURL(asset: asset)
+            let videoURL: URL
+            if useOriginal {
+                debugLog("SimpleVideoPlayerViewModel: Trying original video endpoint")
+                bufferStatus = "Trying original video..."
+                videoURL = try await assetService.loadOriginalVideoURL(asset: asset)
+            } else {
+                debugLog("SimpleVideoPlayerViewModel: Trying playback video endpoint")
+                videoURL = try await assetService.loadVideoURL(asset: asset)
+            }
+            
+            currentVideoURL = videoURL
             let headers = authenticationService.getAuthHeaders()
             
             debugLog("SimpleVideoPlayerViewModel: Video URL: \(videoURL)")
@@ -78,14 +110,44 @@ class SimpleVideoPlayerViewModel: ObservableObject {
             let authenticatedURL = addAuthToURL(videoURL, headers: headers)
             debugLog("SimpleVideoPlayerViewModel: Authenticated URL created")
             
-            // Create AVURLAsset with authenticated URL
-            // Also pass headers as backup for servers that support it
-            var options: [String: Any] = [:]
+            // Create AVURLAsset with options optimized for streaming
+            var options: [String: Any] = [
+                // Don't require precise duration - allows faster initial loading
+                AVURLAssetPreferPreciseDurationAndTimingKey: false
+            ]
             if !headers.isEmpty {
                 options["AVURLAssetHTTPHeaderFieldsKey"] = headers
             }
             
             let urlAsset = AVURLAsset(url: authenticatedURL, options: options)
+            
+            bufferStatus = "Verifying video..."
+            
+            // Verify the asset is playable before creating player
+            // This gives us better error information if the connection fails
+            do {
+                let isPlayable = try await urlAsset.load(.isPlayable)
+                let duration = try await urlAsset.load(.duration)
+                
+                guard isPlayable else {
+                    debugLog("SimpleVideoPlayerViewModel: Asset is not playable")
+                    throw VideoPlaybackError.unknown
+                }
+                
+                debugLog("SimpleVideoPlayerViewModel: Asset verified - playable: \(isPlayable), duration: \(duration.seconds)s")
+            } catch {
+                debugLog("SimpleVideoPlayerViewModel: Failed to verify asset: \(error)")
+                
+                // If this was the playback endpoint and we haven't tried the original yet, try it
+                if !useOriginal && !hasTriedFallbackEndpoint {
+                    debugLog("SimpleVideoPlayerViewModel: Falling back to original endpoint")
+                    hasTriedFallbackEndpoint = true
+                    await loadVideoFromEndpoint(useOriginal: true)
+                    return
+                }
+                
+                throw error
+            }
             
             bufferStatus = "Loading video..."
             
@@ -119,6 +181,15 @@ class SimpleVideoPlayerViewModel: ObservableObject {
             
         } catch {
             debugLog("SimpleVideoPlayerViewModel: Failed to load video: \(error)")
+            
+            // If this was the playback endpoint and we haven't tried the original yet, try it
+            if !useOriginal && !hasTriedFallbackEndpoint {
+                debugLog("SimpleVideoPlayerViewModel: Falling back to original endpoint after error")
+                hasTriedFallbackEndpoint = true
+                await loadVideoFromEndpoint(useOriginal: true)
+                return
+            }
+            
             handleLoadError(error)
         }
     }
@@ -141,9 +212,18 @@ class SimpleVideoPlayerViewModel: ObservableObject {
     
     private func setupLoadingTimeout() {
         Task {
-            try? await Task.sleep(nanoseconds: 20_000_000_000) // 20 seconds
+            try? await Task.sleep(nanoseconds: 30_000_000_000) // 30 seconds for initial connection
             await MainActor.run {
-                if self.isLoading && self.errorMessage == nil {
+                // Don't trigger timeout if:
+                // 1. We're already done loading
+                // 2. We already have an error
+                // 3. We're successfully building the initial buffer (player is ready, just waiting for buffer)
+                // 4. Playback has already started
+                
+                let isSuccessfullyBuffering = self.isWaitingForInitialBuffer && self.playerItem?.status == .readyToPlay
+                let hasStartedPlayback = self.shouldBePlaying && self.player?.rate ?? 0 > 0
+                
+                if self.isLoading && self.errorMessage == nil && !isSuccessfullyBuffering && !hasStartedPlayback {
                     debugLog("SimpleVideoPlayerViewModel: Timeout waiting for player to become ready")
                     
                     // Check player status for diagnostics
@@ -158,6 +238,8 @@ class SimpleVideoPlayerViewModel: ObservableObject {
                         self.isLoading = false
                         self.bufferStatus = ""
                     }
+                } else if isSuccessfullyBuffering {
+                    debugLog("SimpleVideoPlayerViewModel: Timeout skipped - successfully building initial buffer")
                 }
             }
         }
@@ -169,9 +251,20 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         await loadVideoIfNeeded(force: true)
     }
     
-    /// Retries with a different authentication method (kept for UI compatibility)
+    /// Retries with the original video endpoint (fallback)
     func retryWithFallback() async {
-        await retry()
+        cleanup()
+        hasAttemptedLoad = true
+        isLoading = true
+        isBuffering = false
+        errorMessage = nil
+        loadingProgress = 0.0
+        bufferStatus = "Trying original video..."
+        bufferPercentage = 0
+        hasTriedFallbackEndpoint = true
+        
+        // Skip playback endpoint and go directly to original
+        await loadVideoFromEndpoint(useOriginal: true)
     }
     
     /// Starts playback
@@ -200,6 +293,10 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         // Mark that we don't want playback anymore
         shouldBePlaying = false
         
+        // Cancel stall detection task
+        bufferStallCheckTask?.cancel()
+        bufferStallCheckTask = nil
+        
         // Cancel all subscriptions
         cancellables.removeAll()
         
@@ -215,6 +312,11 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         player = nil
         playerItem = nil
         hasAttemptedLoad = false
+        hasTriedFallbackEndpoint = false
+        isWaitingForInitialBuffer = false
+        currentVideoURL = nil
+        lastBufferAmount = 0
+        bufferStallCount = 0
         bufferStatus = ""
         bufferPercentage = 0
     }
@@ -294,8 +396,8 @@ class SimpleVideoPlayerViewModel: ObservableObject {
     
     private func configureBufferSettings(_ playerItem: AVPlayerItem) {
         // Set preferred forward buffer duration (in seconds)
-        // 10 seconds provides good balance between startup time and smooth playback
-        playerItem.preferredForwardBufferDuration = 10
+        // 30 seconds provides larger runway for remote streaming with variable network speeds
+        playerItem.preferredForwardBufferDuration = forwardBufferDuration
         
         // Configure for network streaming - continue buffering even when paused
         playerItem.canUseNetworkResourcesForLiveStreamingWhilePaused = true
@@ -306,7 +408,7 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         // Set preferred maximum resolution (0 = no limit)
         playerItem.preferredMaximumResolution = .zero
         
-        debugLog("SimpleVideoPlayerViewModel: Buffer configured - 10s forward buffer")
+        debugLog("SimpleVideoPlayerViewModel: Buffer configured - \(Int(forwardBufferDuration))s forward buffer")
     }
     
     // MARK: - Player Observers
@@ -355,11 +457,15 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         guard shouldBePlaying,
               let player = player,
               let playerItem = playerItem,
-              playerItem.status == .readyToPlay else { return }
+              playerItem.status == .readyToPlay,
+              !isWaitingForInitialBuffer else { return }
         
-        if player.rate == 0 {
-            if playerItem.isPlaybackLikelyToKeepUp || playerItem.isPlaybackBufferFull {
-                debugLog("SimpleVideoPlayerViewModel: Auto-resuming stalled playback")
+        if player.rate == 0 && isBuffering {
+            let currentBufferSeconds = getCurrentBufferSeconds()
+            
+            // Only resume if we have sufficient buffer or buffer is full
+            if currentBufferSeconds >= minimumBufferBeforeResume || playerItem.isPlaybackBufferFull {
+                debugLog("SimpleVideoPlayerViewModel: Auto-resuming with \(Int(currentBufferSeconds))s buffer")
                 isBuffering = false
                 bufferStatus = ""
                 player.play()
@@ -374,16 +480,31 @@ class SimpleVideoPlayerViewModel: ObservableObject {
               playerItem.status == .readyToPlay else { return }
         
         if player.rate == 0 {
-            debugLog("SimpleVideoPlayerViewModel: Attempting playback recovery")
+            let currentBufferSeconds = getCurrentBufferSeconds()
+            debugLog("SimpleVideoPlayerViewModel: Attempting playback recovery - buffer: \(Int(currentBufferSeconds))s")
             
-            if playerItem.isPlaybackLikelyToKeepUp || !playerItem.isPlaybackBufferEmpty {
+            // Wait for sufficient buffer before resuming to prevent rapid stall cycles
+            if currentBufferSeconds >= minimumBufferBeforeResume {
+                debugLog("SimpleVideoPlayerViewModel: Buffer sufficient (\(Int(currentBufferSeconds))s >= \(Int(minimumBufferBeforeResume))s), resuming")
+                isBuffering = false
+                bufferStatus = ""
                 player.play()
+            } else if playerItem.isPlaybackBufferFull {
+                // Buffer is full, resume regardless
+                debugLog("SimpleVideoPlayerViewModel: Buffer full, resuming")
+                isBuffering = false
+                bufferStatus = ""
+                player.play()
+            } else {
+                // Not enough buffer yet, update status and wait
+                bufferStatus = "Buffering: \(Int(currentBufferSeconds))s / \(Int(minimumBufferBeforeResume))s needed"
+                debugLog("SimpleVideoPlayerViewModel: Waiting for more buffer before resuming")
                 
+                // Schedule another check
                 Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 1_000_000_000)
-                    if self.shouldBePlaying && self.player?.rate == 0 {
-                        debugLog("SimpleVideoPlayerViewModel: Playback still stalled, retrying")
-                        self.player?.play()
+                    try? await Task.sleep(nanoseconds: 1_000_000_000) // Check again in 1 second
+                    if self.shouldBePlaying && self.player?.rate == 0 && !self.isLoading {
+                        self.attemptPlaybackRecovery()
                     }
                 }
             }
@@ -405,7 +526,9 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         bufferPercentage = percentBuffered
         
         if isBuffering {
-            bufferStatus = "Buffering: \(percentBuffered)%"
+            let currentBufferSeconds = getCurrentBufferSeconds()
+            let neededSeconds = Int(minimumBufferBeforeResume)
+            bufferStatus = "Buffering: \(Int(currentBufferSeconds))s / \(neededSeconds)s"
         }
     }
     
@@ -537,13 +660,30 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         switch status {
         case .readyToPlay:
             debugLog("SimpleVideoPlayerViewModel: Player ready to play")
-            isLoading = false
-            bufferStatus = ""
             
-            // Start playback when ready
-            debugLog("SimpleVideoPlayerViewModel: Starting playback")
-            shouldBePlaying = true
-            player?.play()
+            guard let playerItem = playerItem else { return }
+            
+            let currentBufferSeconds = getCurrentBufferSeconds()
+            
+            // Start playback if:
+            // 1. AVPlayer thinks it can keep up (it knows the bitrate and network speed), OR
+            // 2. We have our minimum buffer amount
+            // Trust AVPlayer's isPlaybackLikelyToKeepUp - it factors in bitrate and network conditions
+            if playerItem.isPlaybackLikelyToKeepUp || currentBufferSeconds >= minimumBufferBeforePlayback {
+                isLoading = false
+                isWaitingForInitialBuffer = false
+                bufferStatus = ""
+                bufferStallCheckTask?.cancel()
+                bufferStallCheckTask = nil
+                debugLog("SimpleVideoPlayerViewModel: Starting playback - buffer: \(String(format: "%.1f", currentBufferSeconds))s, likelyToKeepUp: \(playerItem.isPlaybackLikelyToKeepUp)")
+                shouldBePlaying = true
+                player?.play()
+            } else {
+                // Wait for more buffer before starting
+                isWaitingForInitialBuffer = true
+                bufferStatus = "Building buffer: \(Int(currentBufferSeconds))s"
+                debugLog("SimpleVideoPlayerViewModel: Waiting for initial buffer - have \(Int(currentBufferSeconds))s, likelyToKeepUp: \(playerItem.isPlaybackLikelyToKeepUp)")
+            }
             
         case .failed:
             debugLog("SimpleVideoPlayerViewModel: Player failed")
@@ -565,6 +705,33 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         }
     }
     
+    /// Returns the current amount of buffered content ahead of playback position in seconds
+    private func getCurrentBufferSeconds() -> TimeInterval {
+        guard let playerItem = playerItem else { return 0 }
+        
+        let currentTime = playerItem.currentTime()
+        
+        for value in playerItem.loadedTimeRanges {
+            let range = value.timeRangeValue
+            let rangeStart = range.start
+            let rangeEnd = CMTimeAdd(range.start, range.duration)
+            
+            // Check if current time is within this range
+            if CMTimeCompare(currentTime, rangeStart) >= 0 && CMTimeCompare(currentTime, rangeEnd) <= 0 {
+                // Return seconds from current position to end of this buffered range
+                let bufferedAhead = CMTimeSubtract(rangeEnd, currentTime)
+                return bufferedAhead.seconds
+            }
+        }
+        
+        // If we're at the start (time 0), return the first range's duration
+        if currentTime.seconds == 0, let firstRange = playerItem.loadedTimeRanges.first {
+            return firstRange.timeRangeValue.duration.seconds
+        }
+        
+        return 0
+    }
+    
     private func updateLoadingProgress(_ ranges: [NSValue]) {
         guard let duration = playerItem?.duration,
               duration.isNumeric,
@@ -580,11 +747,156 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         loadingProgress = min(totalBuffered / duration.seconds, 1.0)
         bufferPercentage = Int(loadingProgress * 100)
         
-        if isLoading || isBuffering {
+        // Check if we're waiting for initial buffer and now have enough
+        if isWaitingForInitialBuffer {
+            let currentBufferSeconds = getCurrentBufferSeconds()
+            
+            // Check if buffer is growing
+            if currentBufferSeconds > lastBufferAmount + 0.1 {
+                // Buffer is growing, reset stall counter
+                bufferStallCount = 0
+                lastBufferAmount = currentBufferSeconds
+                debugLog("SimpleVideoPlayerViewModel: Buffer growing - \(String(format: "%.1f", currentBufferSeconds))s")
+            }
+            
+            // Start playback if AVPlayer thinks it can keep up OR we have minimum buffer
+            let likelyToKeepUp = playerItem?.isPlaybackLikelyToKeepUp ?? false
+            if likelyToKeepUp || currentBufferSeconds >= minimumBufferBeforePlayback {
+                debugLog("SimpleVideoPlayerViewModel: Initial buffer ready - buffer: \(String(format: "%.1f", currentBufferSeconds))s, likelyToKeepUp: \(likelyToKeepUp)")
+                isWaitingForInitialBuffer = false
+                isLoading = false
+                bufferStatus = ""
+                bufferStallCheckTask?.cancel()
+                bufferStallCheckTask = nil
+                shouldBePlaying = true
+                player?.play()
+            } else {
+                bufferStatus = "Building buffer: \(Int(currentBufferSeconds))s"
+                
+                // Start stall detection if not already running
+                startBufferStallDetection()
+            }
+        } else if isLoading || isBuffering {
             let bufferedSeconds = Int(totalBuffered)
             let totalSeconds = Int(duration.seconds)
             bufferStatus = "Buffered: \(bufferedSeconds)s / \(totalSeconds)s"
         }
+    }
+    
+    /// Monitors buffer progress and detects if it has stalled
+    private func startBufferStallDetection() {
+        // Don't start if already running
+        guard bufferStallCheckTask == nil else { return }
+        
+        bufferStallCheckTask = Task { @MainActor in
+            while !Task.isCancelled && isWaitingForInitialBuffer {
+                try? await Task.sleep(nanoseconds: 2_000_000_000) // Check every 2 seconds
+                
+                guard !Task.isCancelled && isWaitingForInitialBuffer else { break }
+                
+                let currentBufferSeconds = getCurrentBufferSeconds()
+                
+                // Check if buffer hasn't grown
+                if currentBufferSeconds <= lastBufferAmount + 0.1 {
+                    bufferStallCount += 1
+                    debugLog("SimpleVideoPlayerViewModel: Buffer stall detected (\(bufferStallCount)/\(maxBufferStallChecks)) - stuck at \(String(format: "%.1f", currentBufferSeconds))s")
+                    
+                    // Log diagnostic info
+                    logBufferDiagnostics()
+                    
+                    if bufferStallCount >= maxBufferStallChecks {
+                        debugLog("SimpleVideoPlayerViewModel: Buffer stalled for too long, attempting fallback")
+                        
+                        // If we haven't tried the fallback endpoint yet, try it
+                        if !hasTriedFallbackEndpoint {
+                            hasTriedFallbackEndpoint = true
+                            bufferStallCheckTask?.cancel()
+                            bufferStallCheckTask = nil
+                            
+                            // Clean up current player and try fallback
+                            cleanupCurrentPlayer()
+                            await loadVideoFromEndpoint(useOriginal: true)
+                            return
+                        } else {
+                            // Already tried fallback, show error
+                            errorMessage = "Video streaming stalled. The server may not support streaming this video format."
+                            isLoading = false
+                            isWaitingForInitialBuffer = false
+                            bufferStatus = ""
+                            bufferStallCheckTask?.cancel()
+                            bufferStallCheckTask = nil
+                            return
+                        }
+                    }
+                } else {
+                    // Buffer is growing, reset counter
+                    bufferStallCount = 0
+                    lastBufferAmount = currentBufferSeconds
+                }
+            }
+            
+            bufferStallCheckTask = nil
+        }
+    }
+    
+    /// Logs diagnostic information about the current buffer state
+    private func logBufferDiagnostics() {
+        guard let playerItem = playerItem else { return }
+        
+        debugLog("SimpleVideoPlayerViewModel: === Buffer Diagnostics ===")
+        debugLog("  Status: \(playerItem.status.rawValue)")
+        debugLog("  isPlaybackBufferEmpty: \(playerItem.isPlaybackBufferEmpty)")
+        debugLog("  isPlaybackBufferFull: \(playerItem.isPlaybackBufferFull)")
+        debugLog("  isPlaybackLikelyToKeepUp: \(playerItem.isPlaybackLikelyToKeepUp)")
+        
+        if let duration = playerItem.duration.seconds.isNaN ? nil : playerItem.duration.seconds {
+            debugLog("  Duration: \(String(format: "%.1f", duration))s")
+        }
+        
+        debugLog("  Loaded ranges: \(playerItem.loadedTimeRanges.count)")
+        for (index, range) in playerItem.loadedTimeRanges.enumerated() {
+            let timeRange = range.timeRangeValue
+            debugLog("    Range \(index): \(String(format: "%.1f", timeRange.start.seconds))s - \(String(format: "%.1f", (timeRange.start + timeRange.duration).seconds))s")
+        }
+        
+        if let errorLog = playerItem.errorLog(), let lastError = errorLog.events.last {
+            debugLog("  Last error: domain=\(lastError.errorDomain), code=\(lastError.errorStatusCode), comment=\(lastError.errorComment ?? "none")")
+        }
+        
+        if let accessLog = playerItem.accessLog(), let lastAccess = accessLog.events.last {
+            debugLog("  Last access: bitrate=\(lastAccess.indicatedBitrate), requests=\(lastAccess.numberOfMediaRequests)")
+        }
+        
+        debugLog("SimpleVideoPlayerViewModel: === End Diagnostics ===")
+    }
+    
+    /// Cleans up the current player without resetting all state
+    private func cleanupCurrentPlayer() {
+        debugLog("SimpleVideoPlayerViewModel: Cleaning up current player for retry")
+        
+        // Cancel stall detection
+        bufferStallCheckTask?.cancel()
+        bufferStallCheckTask = nil
+        
+        // Cancel subscriptions
+        cancellables.removeAll()
+        
+        // Remove time observer
+        if let observer = timeObserver, let player = player {
+            player.removeTimeObserver(observer)
+            timeObserver = nil
+        }
+        
+        // Clean up player
+        player?.pause()
+        player?.replaceCurrentItem(with: nil)
+        player = nil
+        playerItem = nil
+        
+        // Reset buffer tracking
+        lastBufferAmount = 0
+        bufferStallCount = 0
+        isWaitingForInitialBuffer = false
     }
 }
 

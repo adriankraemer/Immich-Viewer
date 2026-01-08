@@ -167,7 +167,7 @@ class AssetService: ObservableObject {
         return nil
     }
 
-    /// Returns the playback URL for a video asset
+    /// Returns the playback URL for a video asset (transcoded version if available)
     /// The URL includes authentication and can be used directly with AVPlayer
     func loadVideoURL(asset: ImmichAsset) async throws -> URL {
         guard asset.type == .video else { throw ImmichError.clientError(400) }
@@ -175,7 +175,17 @@ class AssetService: ObservableObject {
         guard let url = URL(string: "\(networkService.baseURL)\(endpoint)") else {
             throw ImmichError.invalidURL
         }
-        // Note: URL includes authentication via networkService baseURL
+        return url
+    }
+    
+    /// Returns the original video URL for a video asset (non-transcoded)
+    /// Use this as a fallback if the playback endpoint fails
+    func loadOriginalVideoURL(asset: ImmichAsset) async throws -> URL {
+        guard asset.type == .video else { throw ImmichError.clientError(400) }
+        let endpoint = "/api/assets/\(asset.id)/original"
+        guard let url = URL(string: "\(networkService.baseURL)\(endpoint)") else {
+            throw ImmichError.invalidURL
+        }
         return url
     }
     

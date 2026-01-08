@@ -8,7 +8,7 @@ struct DisplaySettingsView: View {
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
     @AppStorage("navigationStyle") private var navigationStyle = NavigationStyle.tabs.rawValue
-    @AppStorage("folderViewMode") private var folderViewMode = "grid"
+    @AppStorage("folderViewMode") private var folderViewMode = "timeline"
     
     var body: some View {
         ScrollView {

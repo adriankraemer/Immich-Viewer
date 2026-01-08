@@ -3,11 +3,29 @@ import Foundation
 class FolderService: ObservableObject {
     private let networkService: NetworkService
     
-    // Cache for folder asset dates to avoid repeated API calls
-    private var folderDateCache: [String: Date] = [:]
+    // Thread-safe cache for folder asset dates to avoid repeated API calls
+    private let folderDateCache = FolderDateCache()
     
     init(networkService: NetworkService) {
         self.networkService = networkService
+    }
+    
+    // MARK: - Thread-safe Cache Actor
+    
+    private actor FolderDateCache {
+        private var cache: [String: Date] = [:]
+        
+        func get(_ key: String) -> Date? {
+            cache[key]
+        }
+        
+        func set(_ key: String, date: Date) {
+            cache[key] = date
+        }
+        
+        func clear() {
+            cache.removeAll()
+        }
     }
     
     func fetchUniquePaths() async throws -> [ImmichFolder] {
@@ -128,7 +146,7 @@ class FolderService: ObservableObject {
     /// Fetches the most recent asset date for a folder
     func fetchMostRecentAssetDate(for folderPath: String) async throws -> Date? {
         // Check cache first
-        if let cachedDate = folderDateCache[folderPath] {
+        if let cachedDate = await folderDateCache.get(folderPath) {
             return cachedDate
         }
         
@@ -156,7 +174,7 @@ class FolderService: ObservableObject {
         
         // Cache the result
         if let date = date {
-            folderDateCache[folderPath] = date
+            await folderDateCache.set(folderPath, date: date)
         }
         
         return date
@@ -284,8 +302,8 @@ class FolderService: ObservableObject {
     }
     
     /// Clears the folder date cache
-    func clearCache() {
-        folderDateCache.removeAll()
+    func clearCache() async {
+        await folderDateCache.clear()
     }
     
     // MARK: - Private Helpers

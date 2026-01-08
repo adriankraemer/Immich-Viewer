@@ -72,7 +72,7 @@ extension UserDefaults {
     }
     
     var folderViewMode: String {
-        get { string(forKey: UserDefaultsKeys.folderViewMode) ?? "grid" }
+        get { string(forKey: UserDefaultsKeys.folderViewMode) ?? "timeline" }
         set { set(newValue, forKey: UserDefaultsKeys.folderViewMode) }
     }
 }

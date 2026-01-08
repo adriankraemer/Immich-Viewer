@@ -8,6 +8,7 @@ struct DisplaySettingsView: View {
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
     @AppStorage("navigationStyle") private var navigationStyle = NavigationStyle.tabs.rawValue
+    @AppStorage("folderViewMode") private var folderViewMode = "grid"
     
     var body: some View {
         ScrollView {
@@ -76,6 +77,23 @@ struct DisplaySettingsView: View {
                                     .frame(width: 300, alignment: .trailing)
                             )
                         )
+                        
+                        if showFoldersTab {
+                            SettingsRow(
+                                icon: "list.bullet.indent",
+                                title: "Folder View Mode",
+                                subtitle: "Choose how folders are displayed in the Folders tab",
+                                content: AnyView(
+                                    Picker("Folder View", selection: $folderViewMode) {
+                                        Text("Grid").tag("grid")
+                                        Text("Tree").tag("tree")
+                                        Text("Timeline").tag("timeline")
+                                    }
+                                        .pickerStyle(.menu)
+                                        .frame(width: 300, alignment: .trailing)
+                                )
+                            )
+                        }
                     })
                 }
                 

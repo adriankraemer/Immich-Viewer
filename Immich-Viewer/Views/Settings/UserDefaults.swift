@@ -70,4 +70,9 @@ extension UserDefaults {
         get { string(forKey: UserDefaultsKeys.allPhotosSortOrder) ?? "desc" }
         set { set(newValue, forKey: UserDefaultsKeys.allPhotosSortOrder) }
     }
+    
+    var folderViewMode: String {
+        get { string(forKey: UserDefaultsKeys.folderViewMode) ?? "grid" }
+        set { set(newValue, forKey: UserDefaultsKeys.folderViewMode) }
+    }
 }

@@ -275,6 +275,7 @@ struct SettingsView: View {
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
     @AppStorage("navigationStyle") private var navigationStyle = NavigationStyle.tabs.rawValue
+    @AppStorage("folderViewMode") private var folderViewMode = "grid"
     @AppStorage("enableTopShelf", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var enableTopShelf = true
     @AppStorage("topShelfStyle", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfStyle = "carousel"
     @AppStorage("topShelfImageSelection", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfImageSelection = "recent"
@@ -750,7 +751,20 @@ struct SettingsView: View {
                 icon: "folder.fill",
                 title: "Show Folders Tab",
                 subtitle: "Enable the folders tab in the main navigation",
-                content: AnyView(Toggle("", isOn: $showFoldersTab).labelsHidden()),
+                content: AnyView(
+                    HStack(spacing: 16) {
+                        if showFoldersTab {
+                            Picker("View", selection: $folderViewMode) {
+                                Text("Grid").tag("grid")
+                                Text("Tree").tag("tree")
+                                Text("Timeline").tag("timeline")
+                            }
+                            .pickerStyle(.menu)
+                            .frame(width: 180)
+                        }
+                        Toggle("", isOn: $showFoldersTab).labelsHidden()
+                    }
+                ),
                 isOn: showFoldersTab
             )
             SettingsRow(
@@ -794,6 +808,7 @@ struct SettingsView: View {
                         .frame(width: 300, alignment: .trailing)
                 )
             )
+            
         }
     }
     

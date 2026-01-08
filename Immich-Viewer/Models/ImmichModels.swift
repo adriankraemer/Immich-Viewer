@@ -347,6 +347,18 @@ struct GridConfig {
 // MARK: - Folder Model
 struct ImmichFolder: GridDisplayable, Equatable, Hashable {
     let path: String
+    var children: [ImmichFolder]?      // For tree hierarchy
+    var mostRecentAssetDate: Date?     // For timeline grouping
+    var assetCount: Int?               // Number of assets in folder
+    
+    // Hashable/Equatable based on path only (children/date are mutable)
+    static func == (lhs: ImmichFolder, rhs: ImmichFolder) -> Bool {
+        lhs.path == rhs.path
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(path)
+    }
     
     var id: String { path }
     var primaryTitle: String {
@@ -359,13 +371,35 @@ struct ImmichFolder: GridDisplayable, Equatable, Hashable {
     var secondaryTitle: String? { path }
     var description: String? { nil }
     var thumbnailId: String? { nil }
-    var itemCount: Int? { nil }
+    var itemCount: Int? { assetCount }
     var gridCreatedAt: String? { nil }
     var isFavorite: Bool? { nil }
     var isShared: Bool? { nil }
     var sharingText: String? { nil }
     var iconName: String { "folder.fill" }
     var gridColor: Color? { Color.blue.opacity(0.5) }
+    
+    /// Whether this folder has child folders (for tree view)
+    var hasChildren: Bool {
+        guard let children = children else { return false }
+        return !children.isEmpty
+    }
+}
+
+// MARK: - Folder Timeline Group
+/// Groups folders by time period for timeline view
+struct FolderTimelineGroup: Identifiable {
+    let id: String
+    let title: String           // e.g., "January 2024", "2023", "December 15, 2024"
+    let folders: [ImmichFolder]
+    let startDate: Date?
+    
+    init(title: String, folders: [ImmichFolder], startDate: Date? = nil) {
+        self.id = title
+        self.title = title
+        self.folders = folders
+        self.startDate = startDate
+    }
 }
 
 

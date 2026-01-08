@@ -275,6 +275,7 @@ struct SettingsView: View {
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
     @AppStorage("navigationStyle") private var navigationStyle = NavigationStyle.tabs.rawValue
+    @AppStorage("folderViewMode") private var folderViewMode = "grid"
     @AppStorage("enableTopShelf", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var enableTopShelf = true
     @AppStorage("topShelfStyle", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfStyle = "carousel"
     @AppStorage("topShelfImageSelection", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfImageSelection = "recent"
@@ -794,6 +795,23 @@ struct SettingsView: View {
                         .frame(width: 300, alignment: .trailing)
                 )
             )
+            
+            if showFoldersTab {
+                SettingsRow(
+                    icon: "list.bullet.indent",
+                    title: "Folder View Mode",
+                    subtitle: "Choose how folders are displayed in the Folders tab",
+                    content: AnyView(
+                        Picker("Folder View", selection: $folderViewMode) {
+                            Text("Grid").tag("grid")
+                            Text("Tree").tag("tree")
+                            Text("Timeline").tag("timeline")
+                        }
+                            .pickerStyle(.menu)
+                            .frame(width: 300, alignment: .trailing)
+                    )
+                )
+            }
         }
     }
     

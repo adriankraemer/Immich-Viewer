@@ -35,6 +35,7 @@ struct UserDefaultsKeys {
     static let defaultStartupTab = "defaultStartupTab"
     static let lastSeenVersion = "lastSeenVersion"
     static let assetSortOrder = "assetSortOrder"
+    static let folderViewMode = "folderViewMode"
 }
 
 /// URL schemes supported by the app for deep linking

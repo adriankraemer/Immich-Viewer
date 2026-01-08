@@ -30,7 +30,7 @@ class FoldersViewModel: ObservableObject {
     // MARK: - View Mode
     var viewMode: FolderViewMode {
         let stored = UserDefaults.standard.folderViewMode
-        return FolderViewMode(rawValue: stored) ?? .grid
+        return FolderViewMode(rawValue: stored) ?? .timeline
     }
     
     // MARK: - Dependencies
@@ -161,7 +161,9 @@ class FoldersViewModel: ObservableObject {
             loadFolders()
         case .timeline:
             hasLoadedTimeline = false
-            folderService.clearCache()
+            Task {
+                await folderService.clearCache()
+            }
             loadFolders()
         }
     }

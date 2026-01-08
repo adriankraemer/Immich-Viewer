@@ -751,7 +751,20 @@ struct SettingsView: View {
                 icon: "folder.fill",
                 title: "Show Folders Tab",
                 subtitle: "Enable the folders tab in the main navigation",
-                content: AnyView(Toggle("", isOn: $showFoldersTab).labelsHidden()),
+                content: AnyView(
+                    HStack(spacing: 16) {
+                        if showFoldersTab {
+                            Picker("View", selection: $folderViewMode) {
+                                Text("Grid").tag("grid")
+                                Text("Tree").tag("tree")
+                                Text("Timeline").tag("timeline")
+                            }
+                            .pickerStyle(.menu)
+                            .frame(width: 180)
+                        }
+                        Toggle("", isOn: $showFoldersTab).labelsHidden()
+                    }
+                ),
                 isOn: showFoldersTab
             )
             SettingsRow(
@@ -796,22 +809,6 @@ struct SettingsView: View {
                 )
             )
             
-            if showFoldersTab {
-                SettingsRow(
-                    icon: "list.bullet.indent",
-                    title: "Folder View Mode",
-                    subtitle: "Choose how folders are displayed in the Folders tab",
-                    content: AnyView(
-                        Picker("Folder View", selection: $folderViewMode) {
-                            Text("Grid").tag("grid")
-                            Text("Tree").tag("tree")
-                            Text("Timeline").tag("timeline")
-                        }
-                            .pickerStyle(.menu)
-                            .frame(width: 300, alignment: .trailing)
-                    )
-                )
-            }
         }
     }
     

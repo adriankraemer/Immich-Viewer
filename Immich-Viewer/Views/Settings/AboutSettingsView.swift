@@ -30,6 +30,11 @@ struct AboutSettingsView: View {
     @State private var logoOpacity: Double = 0
     @State private var contentOpacity: Double = 0
     
+    // Pre-generated QR code images to avoid blocking the main thread
+    @State private var websiteQRCode: UIImage?
+    @State private var immichQRCode: UIImage?
+    @State private var appStoreQRCode: UIImage?
+    
     var body: some View {
         VStack(spacing: 40) {
             // Hero Section with App Logo
@@ -37,6 +42,18 @@ struct AboutSettingsView: View {
             
             // Credits Content
             creditsSection
+        }
+        .task {
+            // Generate QR codes asynchronously on a background thread
+            async let website = generateQRCodeAsync(from: "https://immich.adriank.app")
+            async let immich = generateQRCodeAsync(from: "https://immich.app")
+            async let appStore = generateQRCodeAsync(from: "https://apps.apple.com/app/id6738990599")
+            
+            let (websiteResult, immichResult, appStoreResult) = await (website, immich, appStore)
+            
+            websiteQRCode = websiteResult
+            immichQRCode = immichResult
+            appStoreQRCode = appStoreResult
         }
         .onAppear {
             withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
@@ -131,21 +148,24 @@ struct AboutSettingsView: View {
                     title: String(localized: "App Website"),
                     icon: "globe",
                     url: "https://immich.adriank.app",
-                    gradient: [AboutTheme.accent, AboutTheme.accentLight]
+                    gradient: [AboutTheme.accent, AboutTheme.accentLight],
+                    qrImage: websiteQRCode
                 )
                 
                 qrCodeCard(
                     title: String(localized: "Immich"),
                     icon: "photo.stack",
                     url: "https://immich.app",
-                    gradient: [AboutTheme.immichPink, AboutTheme.immichBlue]
+                    gradient: [AboutTheme.immichPink, AboutTheme.immichBlue],
+                    qrImage: immichQRCode
                 )
                 
                 qrCodeCard(
                     title: String(localized: "App Store"),
                     icon: "star.fill",
                     url: "https://apps.apple.com/app/id6738990599",
-                    gradient: [AboutTheme.immichBlue, AboutTheme.immichGreen]
+                    gradient: [AboutTheme.immichBlue, AboutTheme.immichGreen],
+                    qrImage: appStoreQRCode
                 )
                 
                 Spacer()
@@ -218,29 +238,31 @@ struct AboutSettingsView: View {
         .padding(.vertical, 8)
     }
     
-    // MARK: - QR Code Generator
+    // MARK: - QR Code Generator (Async)
     
-    private func generateQRCode(from string: String) -> UIImage? {
-        let context = CIContext()
-        let filter = CIFilter.qrCodeGenerator()
-        
-        filter.message = Data(string.utf8)
-        filter.correctionLevel = "M"
-        
-        guard let outputImage = filter.outputImage else { return nil }
-        
-        // Scale up the QR code for better quality
-        let scale = 10.0
-        let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-        
-        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
-        
-        return UIImage(cgImage: cgImage)
+    private func generateQRCodeAsync(from string: String) async -> UIImage? {
+        await Task.detached(priority: .userInitiated) {
+            let context = CIContext()
+            let filter = CIFilter.qrCodeGenerator()
+            
+            filter.message = Data(string.utf8)
+            filter.correctionLevel = "M"
+            
+            guard let outputImage = filter.outputImage else { return nil }
+            
+            // Scale up the QR code for better quality
+            let scale = 10.0
+            let scaledImage = outputImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+            
+            guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
+            
+            return UIImage(cgImage: cgImage)
+        }.value
     }
     
     // MARK: - QR Code Card
     
-    private func qrCodeCard(title: String, icon: String, url: String, gradient: [Color]) -> some View {
+    private func qrCodeCard(title: String, icon: String, url: String, gradient: [Color], qrImage: UIImage?) -> some View {
         Button(action: {
             // QR codes are for scanning, no action needed
         }) {
@@ -274,20 +296,23 @@ struct AboutSettingsView: View {
                     .foregroundColor(AboutTheme.textPrimary)
                 
                 // QR Code
-                if let qrImage = generateQRCode(from: url) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white)
-                            .frame(width: 140, height: 140)
-                        
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.white)
+                        .frame(width: 140, height: 140)
+                    
+                    if let qrImage {
                         Image(uiImage: qrImage)
                             .interpolation(.none)
                             .resizable()
                             .scaledToFit()
                             .frame(width: 120, height: 120)
+                    } else {
+                        ProgressView()
+                            .frame(width: 120, height: 120)
                     }
-                    .shadow(color: gradient[0].opacity(0.3), radius: 12, x: 0, y: 4)
                 }
+                .shadow(color: gradient[0].opacity(0.3), radius: 12, x: 0, y: 4)
                 
                 // URL display
                 Text(URL(string: url)?.host ?? url)

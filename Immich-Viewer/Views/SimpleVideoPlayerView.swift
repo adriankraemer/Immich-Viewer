@@ -111,7 +111,7 @@ struct SimpleVideoPlayerView: View {
             }
             
             VStack(spacing: 8) {
-                Text("Loading Video")
+                Text(String(localized: "Loading Video"))
                     .font(.headline)
                     .foregroundColor(VideoPlayerTheme.textPrimary)
                 
@@ -160,7 +160,7 @@ struct SimpleVideoPlayerView: View {
                     .foregroundColor(VideoPlayerTheme.textPrimary)
             }
             
-            Text("Buffering")
+            Text(String(localized: "Buffering"))
                 .font(.callout)
                 .foregroundColor(VideoPlayerTheme.textSecondary)
         }
@@ -195,7 +195,7 @@ struct SimpleVideoPlayerView: View {
             }
             
             VStack(spacing: 12) {
-                Text("Unable to Play Video")
+                Text(String(localized: "Unable to Play Video"))
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(VideoPlayerTheme.textPrimary)
@@ -216,7 +216,7 @@ struct SimpleVideoPlayerView: View {
                 }) {
                     HStack(spacing: 10) {
                         Image(systemName: "arrow.clockwise")
-                        Text("Try Again")
+                        Text(String(localized: "Try Again"))
                     }
                     .font(.headline)
                     .foregroundColor(.black)
@@ -236,7 +236,7 @@ struct SimpleVideoPlayerView: View {
                     }) {
                         HStack(spacing: 8) {
                             Image(systemName: "key")
-                            Text("Try Different Auth Method")
+                            Text(String(localized: "Try Different Auth Method"))
                         }
                         .font(.subheadline)
                         .foregroundColor(VideoPlayerTheme.textSecondary)

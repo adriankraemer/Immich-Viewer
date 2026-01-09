@@ -38,21 +38,21 @@ class AssetGridViewModel: ObservableObject {
     
     var emptyStateTitle: String {
         if personId != nil {
-            return "No Photos of Person"
+            return String(localized: "No Photos of Person")
         } else if albumId != nil {
-            return "No Photos in Album"
+            return String(localized: "No Photos in Album")
         } else {
-            return "No Photos Found"
+            return String(localized: "No Photos Found")
         }
     }
     
     var emptyStateMessage: String {
         if personId != nil {
-            return "This person has no photos"
+            return String(localized: "This person has no photos")
         } else if albumId != nil {
-            return "This album is empty"
+            return String(localized: "This album is empty")
         } else {
-            return "Your photos will appear here"
+            return String(localized: "Your photos will appear here")
         }
     }
     
@@ -93,7 +93,7 @@ class AssetGridViewModel: ObservableObject {
     /// Loads the initial set of assets
     func loadAssets() {
         guard authService.isAuthenticated else {
-            errorMessage = "Not authenticated. Please check your credentials."
+            errorMessage = String(localized: "Not authenticated. Please check your credentials.")
             return
         }
         

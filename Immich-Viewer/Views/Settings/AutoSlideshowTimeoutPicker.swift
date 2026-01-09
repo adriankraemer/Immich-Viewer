@@ -5,12 +5,12 @@ struct AutoSlideshowTimeoutPicker: View {
     let options: [Int] = [0, 1, 3, 5, 10, 15, 30, 60] // 0 = Off
     
     var body: some View {
-        Picker("Auto-Start After", selection: $timeout) {
+        Picker(String(localized: "Auto-Start After"), selection: $timeout) {
             ForEach(options, id: \.self) { value in
                 if value == 0 {
-                    Text("Off").tag(0)
+                    Text(String(localized: "Off")).tag(0)
                 } else {
-                    Text("\(value) min").tag(value)
+                    Text("\(value) \(String(localized: "min"))").tag(value)
                 }
             }
         }

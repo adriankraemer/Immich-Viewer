@@ -22,11 +22,11 @@ struct AccountSettingsView: View {
         .fullScreenCover(isPresented: $showingSignIn) {
             SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
         }
-        .alert("Delete User", isPresented: $showingDeleteUserAlert) {
-            Button("Cancel", role: .cancel) {
+        .alert(String(localized: "Delete User"), isPresented: $showingDeleteUserAlert) {
+            Button(String(localized: "Cancel"), role: .cancel) {
                 userToDelete = nil
             }
-            Button("Delete", role: .destructive) {
+            Button(String(localized: "Delete"), role: .destructive) {
                 if let user = userToDelete {
                     removeUser(user)
                 }
@@ -38,14 +38,14 @@ struct AccountSettingsView: View {
                 let isLastUser = userManager.savedUsers.count == 1
                 
                 if isCurrentUser && isLastUser {
-                    Text("Are you sure you want to delete this user? This will sign you out and you'll need to sign in again to access your photos.")
+                    Text(LocalizedStringResource("Are you sure you want to delete this user? This will sign you out and you'll need to sign in again to access your photos."))
                 } else if isCurrentUser {
-                    Text("Are you sure you want to delete the current user? You will be switched to another saved user.")
+                    Text(LocalizedStringResource("Are you sure you want to delete the current user? You will be switched to another saved user."))
                 } else {
-                    Text("Are you sure you want to delete this user account?")
+                    Text(LocalizedStringResource("Are you sure you want to delete this user account?"))
                 }
             } else {
-                Text("Are you sure you want to delete this user?")
+                Text(LocalizedStringResource("Are you sure you want to delete this user?"))
             }
         }
         .onAppear {
@@ -78,7 +78,7 @@ struct AccountSettingsView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Server Connection")
+                    Text(LocalizedStringResource("Server Connection"))
                         .font(.system(size: 32, weight: .semibold))
                         .foregroundColor(.primary)
                     
@@ -95,7 +95,7 @@ struct AccountSettingsView: View {
                         Image(systemName: "arrow.clockwise")
                             .foregroundColor(.blue)
                             .font(.system(size: 28))
-                        Text("Refresh")
+                        Text(LocalizedStringResource("Refresh"))
                             .font(.system(size: 24))
                             .foregroundColor(.blue)
                     }
@@ -145,7 +145,7 @@ struct AccountSettingsView: View {
                     Image(systemName: "person.badge.plus")
                         .font(.system(size: 32))
                         .foregroundColor(.blue)
-                    Text("Add User")
+                    Text(LocalizedStringResource("Add User"))
                         .font(.system(size: 28, weight: .semibold))
                         .foregroundColor(.primary)
                 }

@@ -110,7 +110,7 @@ struct FullScreenImageView: View {
     @ViewBuilder
     private var imageContent: some View {
         if viewModel.isLoading {
-            ProgressView("Loading...")
+            ProgressView(String(localized: "Loading..."))
                 .foregroundColor(.white)
                 .scaleEffect(1.5)
         } else if let image = viewModel.image {
@@ -143,7 +143,7 @@ struct FullScreenImageView: View {
                 Image(systemName: "photo")
                     .font(.system(size: 60))
                     .foregroundColor(.gray)
-                Text("Failed to load image")
+                Text(String(localized: "Failed to load image"))
                     .foregroundColor(.gray)
             }
         }
@@ -179,7 +179,7 @@ struct FullScreenImageView: View {
                             Image(systemName: "arrow.right")
                                 .font(.title2)
                                 .foregroundColor(.white.opacity(0.7))
-                            Text("Swipe to navigate")
+                            Text(String(localized: "Swipe to navigate"))
                                 .font(.caption)
                                 .foregroundColor(.white.opacity(0.7))
                         }
@@ -190,7 +190,7 @@ struct FullScreenImageView: View {
                             Image(systemName: "arrow.down")
                                 .font(.title2)
                                 .foregroundColor(.white.opacity(0.7))
-                            Text("Swipe up or down to show/hide details")
+                            Text(String(localized: "Swipe up or down to show/hide details"))
                                 .font(.caption)
                                 .foregroundColor(.white.opacity(0.7))
                         }
@@ -283,7 +283,7 @@ struct VideoThumbnailView: View {
             SharedOpaqueBackground()
             
             if isLoading {
-                ProgressView("Loading thumbnail...")
+                ProgressView(String(localized: "Loading thumbnail..."))
                     .foregroundColor(.white)
                     .scaleEffect(1.5)
             } else if let errorMessage = errorMessage {
@@ -291,14 +291,14 @@ struct VideoThumbnailView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 60))
                         .foregroundColor(.orange)
-                    Text("Error Loading Video")
+                    Text(String(localized: "Error Loading Video"))
                         .font(.title)
                         .foregroundColor(.white)
                     Text(errorMessage)
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .padding()
-                    Button("Retry") {
+                    Button(String(localized: "Retry")) {
                         loadThumbnailForVideo()
                     }
                     .buttonStyle(.borderedProminent)
@@ -348,7 +348,7 @@ struct VideoThumbnailView: View {
                     Image(systemName: "video")
                         .font(.system(size: 60))
                         .foregroundColor(.gray)
-                    Text("Failed to load video thumbnail")
+                    Text(String(localized: "Failed to load video thumbnail"))
                         .foregroundColor(.gray)
                 }
             }

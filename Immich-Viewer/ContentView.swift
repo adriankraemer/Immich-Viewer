@@ -14,15 +14,15 @@ enum TabName: Int, CaseIterable {
     
     var title: String {
         switch self {
-        case .photos: return "Photos"
-        case .albums: return "Albums"
-        case .people: return "People"
-        case .tags: return "Tags"
-        case .folders: return "Folders"
-        case .explore: return "Explore"
-        case .worldMap: return "WorldMap"
-        case .search: return "Search"
-        case .settings: return "Settings"
+        case .photos: return String(localized: "Photos")
+        case .albums: return String(localized: "Albums")
+        case .people: return String(localized: "People")
+        case .tags: return String(localized: "Tags")
+        case .folders: return String(localized: "Folders")
+        case .explore: return String(localized: "Explore")
+        case .worldMap: return String(localized: "World Map")
+        case .search: return String(localized: "Search")
+        case .settings: return String(localized: "Settings")
         }
     }
     

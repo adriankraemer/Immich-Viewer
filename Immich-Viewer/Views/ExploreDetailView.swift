@@ -44,7 +44,7 @@ struct ExploreDetailView: View {
                 }
                 
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
+                    Button(String(localized: "Done")) {
                         dismiss()
                     }
                     .foregroundColor(.white)

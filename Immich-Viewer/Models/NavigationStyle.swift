@@ -12,4 +12,13 @@ enum NavigationStyle: String, CaseIterable {
             return "Sidebar"
         }
     }
+    
+    var localizedDisplayName: String {
+        switch self {
+        case .tabs:
+            return String(localized: "Tabs")
+        case .sidebar:
+            return String(localized: "Sidebar")
+        }
+    }
 }

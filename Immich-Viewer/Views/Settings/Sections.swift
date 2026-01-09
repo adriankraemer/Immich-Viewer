@@ -16,13 +16,13 @@ struct CacheSection: View {
     @Binding var showingClearCacheAlert: Bool
     
     var body: some View {
-        SettingsSection(title: "Cache") {
+        SettingsSection(title: String(localized: "Cache")) {
             AnyView(VStack(spacing: 16) {
                 // Cache Actions
                 HStack(spacing: 16) {
                     ActionButton(
                         icon: "clock.arrow.circlepath",
-                        title: "Clear Expired",
+                        title: String(localized: "Clear Expired"),
                         color: .orange
                     ) {
                         thumbnailCache.clearExpiredCache()
@@ -30,7 +30,7 @@ struct CacheSection: View {
                     
                     ActionButton(
                         icon: "trash",
-                        title: "Clear All",
+                        title: String(localized: "Clear All"),
                         color: .red
                     ) {
                         showingClearCacheAlert = true
@@ -39,12 +39,12 @@ struct CacheSection: View {
                 
                 // Cache Information
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Current Usage")
+                    Text(String(localized: "Current Usage"))
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
                     HStack {
-                        Text("Memory Cache")
+                        Text(String(localized: "Memory Cache"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -52,14 +52,14 @@ struct CacheSection: View {
                             Text(formatBytes(thumbnailCache.memoryCacheSize))
                                 .font(.caption)
                                 .foregroundColor(.primary)
-                            Text("\(thumbnailCache.memoryCacheCount) images")
+                            Text(String(localized: "\(thumbnailCache.memoryCacheCount) images"))
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
                     }
                     
                     HStack {
-                        Text("Disk Cache")
+                        Text(String(localized: "Disk Cache"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -69,7 +69,7 @@ struct CacheSection: View {
                     }
                     
                     HStack {
-                        Text("Total Cache")
+                        Text(String(localized: "Total Cache"))
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundColor(.primary)
@@ -86,12 +86,12 @@ struct CacheSection: View {
                 
                 // Cache Limits
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Cache Limits")
+                    Text(String(localized: "Cache Limits"))
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
                     HStack {
-                        Text("Memory Limit")
+                        Text(String(localized: "Memory Limit"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -101,7 +101,7 @@ struct CacheSection: View {
                     }
                     
                     HStack {
-                        Text("Disk Limit")
+                        Text(String(localized: "Disk Limit"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -111,11 +111,11 @@ struct CacheSection: View {
                     }
                     
                     HStack {
-                        Text("Expiration")
+                        Text(String(localized: "Expiration"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
-                        Text("7 days")
+                        Text(String(localized: "7 days"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }

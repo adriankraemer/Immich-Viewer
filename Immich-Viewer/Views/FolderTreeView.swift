@@ -85,11 +85,11 @@ struct FolderTreeNode: View {
             .focused(focusedPath, equals: folder.path)
             .padding(.leading, indentation)
             .contextMenu {
-                Button("Open Folder") {
+                Button(String(localized: "Open Folder")) {
                     onSelect(folder)
                 }
                 if hasChildren {
-                    Button(isExpanded ? "Collapse" : "Expand") {
+                    Button(isExpanded ? String(localized: "Collapse") : String(localized: "Expand")) {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             if isExpanded {
                                 expandedPaths.remove(folder.path)
@@ -158,11 +158,11 @@ struct FolderRowContent: View {
                     .lineLimit(1)
                 
                 if let count = folder.assetCount {
-                    Text("\(count) items")
+                    Text("\(count) \(String(localized: "items"))")
                         .font(.system(size: 16))
                         .foregroundColor(TreeTheme.textSecondary)
                 } else if hasChildren {
-                    Text("\(folder.children?.count ?? 0) subfolders")
+                    Text("\(folder.children?.count ?? 0) \(String(localized: "subfolders"))")
                         .font(.system(size: 16))
                         .foregroundColor(TreeTheme.textSecondary)
                 }

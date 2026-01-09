@@ -77,7 +77,7 @@ class SimpleVideoPlayerViewModel: ObservableObject {
         // Validate asset type
         guard asset.type == .video else {
             debugLog("SimpleVideoPlayerViewModel: Asset is not a video")
-            errorMessage = "This asset is not a video"
+            errorMessage = String(localized: "This asset is not a video")
             isLoading = false
             bufferStatus = ""
             return

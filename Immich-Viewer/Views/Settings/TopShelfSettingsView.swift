@@ -26,9 +26,9 @@ struct TopShelfSettingsView: View {
                                         }
                                     }
                                 )) {
-                                    Text("Off").tag("off")
-                                    Text("Compact").tag("sectioned")
-                                    Text("Fullscreen").tag("carousel")
+                                    Text(LocalizedStringResource("Off")).tag("off")
+                                    Text(LocalizedStringResource("Compact")).tag("sectioned")
+                                    Text(LocalizedStringResource("Fullscreen")).tag("carousel")
                                 }
                                     .pickerStyle(.menu)
                                     .frame(width: 300, alignment: .trailing)
@@ -42,9 +42,9 @@ struct TopShelfSettingsView: View {
                                 title: "Image Selection",
                                 subtitle: "Choose between recent photos or random photos from your library.",
                                 content: AnyView(
-                                    Picker("Image Selection", selection: $topShelfImageSelection) {
-                                        Text("Recent Photos").tag("recent")
-                                        Text("Random Photos").tag("random")
+                                    Picker(String(localized: "Image Selection"), selection: $topShelfImageSelection) {
+                                        Text(LocalizedStringResource("Recent Photos")).tag("recent")
+                                        Text(LocalizedStringResource("Random Photos")).tag("random")
                                     }
                                         .pickerStyle(.menu)
                                         .frame(width: 500, alignment: .trailing)

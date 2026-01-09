@@ -100,7 +100,7 @@ struct PersonPhotosView: View {
                     deepLinkAssetId: nil
                 )
             }
-            .navigationTitle(person.name.isEmpty ? "Unknown Person" : person.name)
+            .navigationTitle(person.name.isEmpty ? String(localized: "Unknown Person") : person.name)
         }
     }
 }

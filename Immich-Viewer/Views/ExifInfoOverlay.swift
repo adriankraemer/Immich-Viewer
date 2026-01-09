@@ -11,7 +11,7 @@ struct ExifInfoOverlay: View {
                 Image(systemName: "info.circle.fill")
                     .foregroundColor(.white)
                     .font(.title3)
-                Text("Photo Information")
+                Text(String(localized: "Photo Information"))
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(.white)
@@ -21,61 +21,61 @@ struct ExifInfoOverlay: View {
             
             HStack{
                 
-                TechnicalInfoItem(icon: "tag", label: "Name", value: asset.originalFileName )
+                TechnicalInfoItem(icon: "tag", label: String(localized: "Name"), value: asset.originalFileName )
 
                 // Date and time
                 if let dateTimeOriginal = asset.exifInfo?.dateTimeOriginal {
-                    TechnicalInfoItem(icon: "calendar", label: "Date", value: DateFormatter.formatSpecificISO8601(dateTimeOriginal, includeTime: true))
+                    TechnicalInfoItem(icon: "calendar", label: String(localized: "Date"), value: DateFormatter.formatSpecificISO8601(dateTimeOriginal, includeTime: true))
                 } else {
-                    TechnicalInfoItem(icon: "calendar.badge.exclamationmark", label: "Date (file created)", value: DateFormatter.formatSpecificISO8601(asset.fileCreatedAt, includeTime: true))
+                    TechnicalInfoItem(icon: "calendar.badge.exclamationmark", label: String(localized: "Date (file created)"), value: DateFormatter.formatSpecificISO8601(asset.fileCreatedAt, includeTime: true))
                 }}
             .padding(.bottom, 8)
             
             HStack{
                 // Location
                 if let city = asset.exifInfo?.city, let state = asset.exifInfo?.state, let country = asset.exifInfo?.country {
-                    TechnicalInfoItem(icon: "map", label: "Location", value: "\(city), \(state), \(country)")
+                    TechnicalInfoItem(icon: "map", label: String(localized: "Location"), value: "\(city), \(state), \(country)")
                 } else if let city = asset.exifInfo?.city, let country = asset.exifInfo?.country {
-                    TechnicalInfoItem(icon: "map", label: "Location", value: "\(city), \(country)")
+                    TechnicalInfoItem(icon: "map", label: String(localized: "Location"), value: "\(city), \(country)")
                 } else if let country = asset.exifInfo?.country {
-                    TechnicalInfoItem(icon: "map", label: "Location", value: country)
+                    TechnicalInfoItem(icon: "map", label: String(localized: "Location"), value: country)
                 }
             } .padding(.bottom, 8)
             
             
             if let make = asset.exifInfo?.make, let model = asset.exifInfo?.model {
-                TechnicalInfoItem(icon: "camera", label: "Camera", value: "\(make) \(model)").padding(.bottom, 8)
+                TechnicalInfoItem(icon: "camera", label: String(localized: "Camera"), value: "\(make) \(model)").padding(.bottom, 8)
             }
             
             // Lens info
             if let lensModel = asset.exifInfo?.lensModel {
-                TechnicalInfoItem(icon: "camera.viewfinder", label: "Lens", value: lensModel).padding(.bottom, 8)
+                TechnicalInfoItem(icon: "camera.viewfinder", label: String(localized: "Lens"), value: lensModel).padding(.bottom, 8)
             }
             
             if let width = asset.exifInfo?.exifImageWidth, let height = asset.exifInfo?.exifImageHeight {
-                TechnicalInfoItem(icon: "lines.measurement.horizontal", label: "Image Size", value: "\(round(Double(width * height) / 1_000_000 * 10) / 10)MP • \(width)px ×  \(height)px").padding(.bottom, 8)
+                TechnicalInfoItem(icon: "lines.measurement.horizontal", label: String(localized: "Image Size"), value: "\(round(Double(width * height) / 1_000_000 * 10) / 10)MP • \(width)px ×  \(height)px").padding(.bottom, 8)
             }
             
             HStack{
                 // File info
                 if let fileSize = asset.exifInfo?.fileSizeInByte {
-                    TechnicalInfoItem(icon: "scalemass",  label: "File Size", value: formatFileSize(fileSize))
+                    TechnicalInfoItem(icon: "scalemass",  label: String(localized: "File Size"), value: formatFileSize(fileSize))
                 }
                 
                 if let fNumber = asset.exifInfo?.fNumber {
-                    TechnicalInfoItem(icon: "camera.aperture", label: "Aperture", value: "f/\(String(format: "%.1f", fNumber))")
+                    TechnicalInfoItem(icon: "camera.aperture", label: String(localized: "Aperture"), value: "f/\(String(format: "%.1f", fNumber))")
                 }
                 
                 if let focalLength = asset.exifInfo?.focalLength {
-                    TechnicalInfoItem(icon: "camera.macro.circle", label: "Focal Length", value: "\(Int(focalLength))mm")
+                    TechnicalInfoItem(icon: "camera.macro.circle", label: String(localized: "Focal Length"), value: "\(Int(focalLength))mm")
                 }
                 
                 if let iso = asset.exifInfo?.iso {
-                    TechnicalInfoItem(icon: "dial.high", label: "ISO", value: "\(iso)")
+                    TechnicalInfoItem(icon: "dial.high", label: String(localized: "ISO"), value: "\(iso)")
                 }
                 
                 if let exposureTime = asset.exifInfo?.exposureTime {
-                    TechnicalInfoItem(icon: "timer", label: "Shutter", value: exposureTime)
+                    TechnicalInfoItem(icon: "timer", label: String(localized: "Shutter"), value: exposureTime)
                 }
             }
         }

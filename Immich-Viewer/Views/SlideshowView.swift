@@ -143,14 +143,14 @@ struct SlideshowView: View {
             Image(systemName: "photo.on.rectangle.angled")
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
-            Text("No images to display")
+            Text(String(localized: "No images to display"))
                 .font(.title)
                 .foregroundColor(.white)
         }
     }
     
     private var loadingView: some View {
-        ProgressView("Loading...")
+        ProgressView(String(localized: "Loading..."))
             .foregroundColor(.white)
             .scaleEffect(1.5)
     }
@@ -160,7 +160,7 @@ struct SlideshowView: View {
             Image(systemName: "photo")
                 .font(.system(size: 60))
                 .foregroundColor(.gray)
-            Text("Failed to load image")
+            Text(String(localized: "Failed to load image"))
                 .foregroundColor(.gray)
         }
     }
@@ -206,7 +206,7 @@ struct SlideshowView: View {
                 .font(.system(size: 80, weight: .medium))
                 .foregroundColor(.white)
             
-            Text(viewModel.isPaused ? "Paused" : "Playing")
+            Text(viewModel.isPaused ? String(localized: "Paused") : String(localized: "Playing"))
                 .font(.title2)
                 .fontWeight(.medium)
                 .foregroundColor(.white)

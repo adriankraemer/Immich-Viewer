@@ -13,47 +13,47 @@ struct DisplaySettingsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 30) {
-                SettingsSection(title: "Interface") {
+                SettingsSection(title: String(localized: "Interface")) {
                     AnyView(VStack(spacing: 12) {
                         SettingsRow(
                             icon: "tag",
-                            title: "Show Tags Tab",
-                            subtitle: "Enable the tags tab in the main navigation",
+                            title: String(localized: "Show Tags Tab"),
+                            subtitle: String(localized: "Enable the tags tab in the main navigation"),
                             content: AnyView(Toggle("", isOn: $showTagsTab).labelsHidden()),
                             isOn: showTagsTab
                         )
                         SettingsRow(
                             icon: "folder",
-                            title: "Show Albums Tab",
-                            subtitle: "Enable the albums tab in the main navigation",
+                            title: String(localized: "Show Albums Tab"),
+                            subtitle: String(localized: "Enable the albums tab in the main navigation"),
                             content: AnyView(Toggle("", isOn: $showAlbumsTab).labelsHidden()),
                             isOn: showAlbumsTab
                         )
                         SettingsRow(
                             icon: "folder.fill",
-                            title: "Show Folders Tab",
-                            subtitle: "Enable the folders tab in the main navigation",
+                            title: String(localized: "Show Folders Tab"),
+                            subtitle: String(localized: "Enable the folders tab in the main navigation"),
                             content: AnyView(Toggle("", isOn: $showFoldersTab).labelsHidden()),
                             isOn: showFoldersTab
                         )
                         SettingsRow(
                             icon: "house",
-                            title: "Default Startup Tab",
-                            subtitle: "Choose which tab opens when the app starts",
+                            title: String(localized: "Default Startup Tab"),
+                            subtitle: String(localized: "Choose which tab opens when the app starts"),
                             content: AnyView(
-                                Picker("Default Tab", selection: $defaultStartupTab) {
-                                    Text("All Photos").tag("photos")
+                                Picker(String(localized: "Default Tab"), selection: $defaultStartupTab) {
+                                    Text(String(localized: "All Photos")).tag("photos")
                                     if showAlbumsTab {
-                                        Text("Albums").tag("albums")
+                                        Text(String(localized: "Albums")).tag("albums")
                                     }
-                                    Text("People").tag("people")
+                                    Text(String(localized: "People")).tag("people")
                                     if showTagsTab {
-                                        Text("Tags").tag("tags")
+                                        Text(String(localized: "Tags")).tag("tags")
                                     }
                                     if showFoldersTab {
-                                        Text("Folders").tag("folders")
+                                        Text(String(localized: "Folders")).tag("folders")
                                     }
-                                    Text("Explore").tag("explore")
+                                    Text(String(localized: "Explore")).tag("explore")
                                 }
                                     .pickerStyle(.menu)
                                     .frame(width: 300, alignment: .trailing)
@@ -62,15 +62,15 @@ struct DisplaySettingsView: View {
                         
                         SettingsRow(
                             icon: "rectangle.split.3x1",
-                            title: "Navigation Style",
-                            subtitle: "Choose between a classic tab bar or the adaptive sidebar layout",
+                            title: String(localized: "Navigation Style"),
+                            subtitle: String(localized: "Choose between a classic tab bar or the adaptive sidebar layout"),
                             content: AnyView(
-                                Picker("Navigation Style", selection: Binding(
+                                Picker(String(localized: "Navigation Style"), selection: Binding(
                                     get: { NavigationStyle(rawValue: navigationStyle) ?? .tabs },
                                     set: { navigationStyle = $0.rawValue }
                                 )) {
                                     ForEach(NavigationStyle.allCases, id: \.self) { style in
-                                        Text(style.displayName).tag(style)
+                                        Text(style.localizedDisplayName).tag(style)
                                     }
                                 }
                                     .pickerStyle(.menu)
@@ -81,13 +81,13 @@ struct DisplaySettingsView: View {
                         if showFoldersTab {
                             SettingsRow(
                                 icon: "list.bullet.indent",
-                                title: "Folder View Mode",
-                                subtitle: "Choose how folders are displayed in the Folders tab",
+                                title: String(localized: "Folder View Mode"),
+                                subtitle: String(localized: "Choose how folders are displayed in the Folders tab"),
                                 content: AnyView(
-                                    Picker("Folder View", selection: $folderViewMode) {
-                                        Text("Grid").tag("grid")
-                                        Text("Tree").tag("tree")
-                                        Text("Timeline").tag("timeline")
+                                    Picker(String(localized: "Folder View"), selection: $folderViewMode) {
+                                        Text(String(localized: "Grid")).tag("grid")
+                                        Text(String(localized: "Tree")).tag("tree")
+                                        Text(String(localized: "Timeline")).tag("timeline")
                                     }
                                         .pickerStyle(.menu)
                                         .frame(width: 300, alignment: .trailing)
@@ -97,16 +97,16 @@ struct DisplaySettingsView: View {
                     })
                 }
                 
-                SettingsSection(title: "Sorting") {
+                SettingsSection(title: String(localized: "Sorting")) {
                     AnyView(VStack(spacing: 12) {
                         SettingsRow(
                             icon: "photo.on.rectangle",
-                            title: "All Photos Sort Order",
-                            subtitle: "Order photos in the All Photos tab",
+                            title: String(localized: "All Photos Sort Order"),
+                            subtitle: String(localized: "Order photos in the All Photos tab"),
                             content: AnyView(
-                                Picker("All Photos Sort Order", selection: $allPhotosSortOrder) {
-                                    Text("Newest First").tag("desc")
-                                    Text("Oldest First").tag("asc")
+                                Picker(String(localized: "All Photos Sort Order"), selection: $allPhotosSortOrder) {
+                                    Text(String(localized: "Newest First")).tag("desc")
+                                    Text(String(localized: "Oldest First")).tag("asc")
                                 }
                                     .pickerStyle(.menu)
                                     .frame(width: 300, alignment: .trailing)
@@ -115,12 +115,12 @@ struct DisplaySettingsView: View {
                         
                         SettingsRow(
                             icon: "arrow.up.arrow.down",
-                            title: "Albums & Collections Sort Order",
-                            subtitle: "Order photos in Albums, People, and Tags",
+                            title: String(localized: "Albums & Collections Sort Order"),
+                            subtitle: String(localized: "Order photos in Albums, People, and Tags"),
                             content: AnyView(
-                                Picker("Collections Sort Order", selection: $assetSortOrder) {
-                                    Text("Newest First").tag("desc")
-                                    Text("Oldest First").tag("asc")
+                                Picker(String(localized: "Collections Sort Order"), selection: $assetSortOrder) {
+                                    Text(String(localized: "Newest First")).tag("desc")
+                                    Text(String(localized: "Oldest First")).tag("asc")
                                 }
                                     .pickerStyle(.menu)
                                     .frame(width: 300, alignment: .trailing)

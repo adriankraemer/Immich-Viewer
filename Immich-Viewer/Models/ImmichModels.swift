@@ -295,9 +295,9 @@ struct GridConfig {
         itemWidth: 490,
         itemHeight: 400,
         spacing: 100,
-        loadingText: "Loading albums...",
-        emptyStateText: "No Albums Found",
-        emptyStateDescription: "Your albums will appear here"
+        loadingText: String(localized: "Loading albums..."),
+        emptyStateText: String(localized: "No Albums Found"),
+        emptyStateDescription: String(localized: "Your albums will appear here")
     )
     
     static let peopleStyle = GridConfig(
@@ -310,9 +310,9 @@ struct GridConfig {
         itemWidth: 400,
         itemHeight: 450,
         spacing: 50,
-        loadingText: "Loading people...",
-        emptyStateText: "No People Found",
-        emptyStateDescription: "People detected in your photos will appear here"
+        loadingText: String(localized: "Loading people..."),
+        emptyStateText: String(localized: "No People Found"),
+        emptyStateDescription: String(localized: "People detected in your photos will appear here")
     )
     
     static let tagsStyle = GridConfig(
@@ -324,9 +324,9 @@ struct GridConfig {
         itemWidth: 490,
         itemHeight: 400,
         spacing: 100,
-        loadingText: "Loading tags...",
-        emptyStateText: "No Tags Found",
-        emptyStateDescription: "Your tags will appear here"
+        loadingText: String(localized: "Loading tags..."),
+        emptyStateText: String(localized: "No Tags Found"),
+        emptyStateDescription: String(localized: "Your tags will appear here")
     )
     
     static let foldersStyle = GridConfig(
@@ -338,9 +338,9 @@ struct GridConfig {
         itemWidth: 490,
         itemHeight: 360,
         spacing: 80,
-        loadingText: "Loading folders...",
-        emptyStateText: "No Folders Found",
-        emptyStateDescription: "Folders with indexed assets will appear here"
+        loadingText: String(localized: "Loading folders..."),
+        emptyStateText: String(localized: "No Folders Found"),
+        emptyStateDescription: String(localized: "Folders with indexed assets will appear here")
     )
 }
 

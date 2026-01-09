@@ -93,7 +93,7 @@ struct AboutSettingsView: View {
                         )
                     )
                 
-                Text("for Apple TV")
+                Text(String(localized: "for Apple TV"))
                     .font(.system(size: 22, weight: .medium))
                     .foregroundColor(AboutTheme.accent)
                     .tracking(2)
@@ -102,7 +102,7 @@ struct AboutSettingsView: View {
                 // Version badge
                 if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
                    let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
-                    Text("Version \(version) (\(build))")
+                    Text(String(localized: "Version \(version) (\(build))"))
                         .font(.system(size: 16, weight: .medium, design: .monospaced))
                         .foregroundColor(AboutTheme.textSecondary)
                         .padding(.top, 4)
@@ -128,21 +128,21 @@ struct AboutSettingsView: View {
                 Spacer()
                 
                 qrCodeCard(
-                    title: "App Website",
+                    title: String(localized: "App Website"),
                     icon: "globe",
                     url: "https://immich.adriank.app",
                     gradient: [AboutTheme.accent, AboutTheme.accentLight]
                 )
                 
                 qrCodeCard(
-                    title: "Immich",
+                    title: String(localized: "Immich"),
                     icon: "photo.stack",
                     url: "https://immich.app",
                     gradient: [AboutTheme.immichPink, AboutTheme.immichBlue]
                 )
                 
                 qrCodeCard(
-                    title: "App Store",
+                    title: String(localized: "App Store"),
                     icon: "star.fill",
                     url: "https://apps.apple.com/app/id6738990599",
                     gradient: [AboutTheme.immichBlue, AboutTheme.immichGreen]
@@ -163,7 +163,7 @@ struct AboutSettingsView: View {
     
     private var developerCredit: some View {
         VStack(spacing: 12) {
-            Text("Developer")
+            Text(String(localized: "Developer"))
                 .font(.system(size: 14, weight: .medium, design: .rounded))
                 .foregroundColor(AboutTheme.textSecondary)
                 .tracking(1.5)
@@ -432,11 +432,11 @@ struct AboutSettingsView: View {
             .padding(.horizontal, 60)
             
             VStack(spacing: 8) {
-                Text("Powered by Immich")
+                Text(String(localized: "Powered by Immich"))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(AboutTheme.textPrimary)
                 
-                Text("Immich is a high-performance, self-hosted photo and video management solution.")
+                Text(String(localized: "Immich is a high-performance, self-hosted photo and video management solution."))
                     .font(.system(size: 16))
                     .foregroundColor(AboutTheme.textSecondary)
                     .multilineTextAlignment(.center)
@@ -445,7 +445,7 @@ struct AboutSettingsView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "lock.open.fill")
                         .font(.system(size: 12))
-                    Text("Open Source")
+                    Text(String(localized: "Open Source"))
                     Text("•")
                     Text("AGPL-3.0 License")
                 }

@@ -50,7 +50,7 @@ struct ExploreView: View {
                             .rotationEffect(.degrees(exploreLoadingRotation))
                     }
                     
-                    Text("Loading explore data...")
+                    Text(String(localized: "Loading explore data..."))
                         .font(.headline)
                         .foregroundColor(ExploreTheme.textSecondary)
                 }
@@ -79,7 +79,7 @@ struct ExploreView: View {
                     }
                     
                     VStack(spacing: 12) {
-                        Text("Something went wrong")
+                        Text(String(localized: "Something went wrong"))
                             .font(.title2)
                             .fontWeight(.semibold)
                             .foregroundColor(ExploreTheme.textPrimary)
@@ -96,7 +96,7 @@ struct ExploreView: View {
                     }) {
                         HStack(spacing: 10) {
                             Image(systemName: "arrow.clockwise")
-                            Text("Try Again")
+                            Text(String(localized: "Try Again"))
                         }
                         .font(.headline)
                         .foregroundColor(.black)
@@ -121,12 +121,12 @@ struct ExploreView: View {
                     }
                     
                     VStack(spacing: 12) {
-                        Text("No Places Found")
+                        Text(String(localized: "No Places Found"))
                             .font(.title2)
                             .fontWeight(.semibold)
                             .foregroundColor(ExploreTheme.textPrimary)
                         
-                        Text("Photos with location data will appear here")
+                        Text(String(localized: "Photos with location data will appear here"))
                             .font(.body)
                             .foregroundColor(ExploreTheme.textSecondary)
                     }

@@ -75,4 +75,9 @@ extension UserDefaults {
         get { string(forKey: UserDefaultsKeys.folderViewMode) ?? "timeline" }
         set { set(newValue, forKey: UserDefaultsKeys.folderViewMode) }
     }
+    
+    var exploreViewMode: String {
+        get { string(forKey: UserDefaultsKeys.exploreViewMode) ?? "places" }
+        set { set(newValue, forKey: UserDefaultsKeys.exploreViewMode) }
+    }
 }

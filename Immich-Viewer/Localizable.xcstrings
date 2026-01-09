@@ -49,6 +49,38 @@
         }
       }
     },
+    "%lld years ago" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vor %lld Jahren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hace %lld años"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "il y a %lld ans"
+          }
+        }
+      }
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
     "%lld%%" : {
 
     },
@@ -76,6 +108,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "🔧 DÉTAILS TECHNIQUES"
+          }
+        }
+      }
+    },
+    "1 year ago" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "vor 1 Jahr"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hace 1 año"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "il y a 1 an"
           }
         }
       }
@@ -922,6 +976,28 @@
         }
       }
     },
+    "Choose between location-based places or on this day memories" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle zwischen ortsbezogenen Orten oder Erinnerungen an diesem Tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige entre lugares basados en ubicación o recuerdos de este día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez entre les lieux basés sur la localisation ou les souvenirs de ce jour"
+          }
+        }
+      }
+    },
     "Choose between recent photos or random photos from your library." : {
       "localizations" : {
         "de" : {
@@ -1273,6 +1349,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serveur connecté"
+          }
+        }
+      }
+    },
+    "Could not calculate memory date" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erinnerungsdatum konnte nicht berechnet werden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo calcular la fecha del recuerdo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible de calculer la date du souvenir"
           }
         }
       }
@@ -1920,6 +2018,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Explorer"
+          }
+        }
+      }
+    },
+    "Explore View" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entdecken-Ansicht"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista de exploración"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vue d'exploration"
           }
         }
       }
@@ -2958,6 +3078,28 @@
         }
       }
     },
+    "Loading memories..." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erinnerungen werden geladen..."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cargando recuerdos..."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chargement des souvenirs..."
+          }
+        }
+      }
+    },
     "Loading more..." : {
       "localizations" : {
         "de" : {
@@ -3196,6 +3338,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Assurez-vous que votre serveur Immich est accessible depuis cet appareil"
+          }
+        }
+      }
+    },
+    "Memories" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erinnerungen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuerdos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Souvenirs"
           }
         }
       }
@@ -3577,6 +3741,28 @@
         }
       }
     },
+    "No Memories Today" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Erinnerungen heute"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin recuerdos hoy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de souvenirs aujourd'hui"
+          }
+        }
+      }
+    },
     "No People Found" : {
       "localizations" : {
         "de" : {
@@ -3617,6 +3803,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucune photo trouvée"
+          }
+        }
+      }
+    },
+    "No photos found for this day" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Fotos für diesen Tag gefunden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontraron fotos para este día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune photo trouvée pour ce jour"
           }
         }
       }
@@ -3885,6 +4093,28 @@
         }
       }
     },
+    "On This Day" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "An diesem Tag"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En este día"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ce jour-là"
+          }
+        }
+      }
+    },
     "Oops! Unexpected Error" : {
       "localizations" : {
         "de" : {
@@ -4127,6 +4357,28 @@
         }
       }
     },
+    "photo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "foto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "photo"
+          }
+        }
+      }
+    },
     "Photo Information" : {
       "localizations" : {
         "de" : {
@@ -4171,6 +4423,28 @@
         }
       }
     },
+    "photos" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "fotos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "photos"
+          }
+        }
+      }
+    },
     "Photos" : {
       "localizations" : {
         "de" : {
@@ -4189,6 +4463,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Photos"
+          }
+        }
+      }
+    },
+    "Photos taken on this day in previous years will appear here" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos, die an diesem Tag in früheren Jahren aufgenommen wurden, erscheinen hier"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las fotos tomadas en este día en años anteriores aparecerán aquí"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les photos prises ce jour-là les années précédentes apparaîtront ici"
           }
         }
       }
@@ -4233,6 +4529,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les photos avec des données de localisation apparaîtront sur la carte"
+          }
+        }
+      }
+    },
+    "Places" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lugares"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lieux"
           }
         }
       }
@@ -5294,7 +5612,6 @@
       }
     },
     "Storage management" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

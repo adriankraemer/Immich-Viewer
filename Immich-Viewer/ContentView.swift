@@ -62,6 +62,7 @@ struct ContentView: View {
     @StateObject private var exploreService: ExploreService
     @StateObject private var mapService: MapService
     @StateObject private var searchService: SearchService
+    @StateObject private var memoriesService: MemoriesService
     // MARK: - Tab Management
     @State private var selectedTab = 0
     /// UUID used to force refresh of all tabs when changed
@@ -89,6 +90,7 @@ struct ContentView: View {
         _exploreService = StateObject(wrappedValue: ExploreService(networkService: networkService))
         _mapService = StateObject(wrappedValue: MapService(networkService: networkService))
         _searchService = StateObject(wrappedValue: SearchService(networkService: networkService))
+        _memoriesService = StateObject(wrappedValue: MemoriesService(networkService: networkService))
     }
     
     private var currentNavigationStyle: NavigationStyle {
@@ -161,7 +163,7 @@ struct ContentView: View {
                                 .tag(TabName.folders.rawValue)
                         }
                         
-                        ExploreView(exploreService: exploreService, assetService: assetService, authService: authService)
+                        ExploreView(exploreService: exploreService, assetService: assetService, authService: authService, memoriesService: memoriesService)
                             .errorBoundary(context: "Explore Tab")
                             .tabItem {
                                 Image(systemName: TabName.explore.iconName)

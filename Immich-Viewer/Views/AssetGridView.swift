@@ -49,9 +49,11 @@ struct AssetGridView: View {
         personId: String?,
         tagId: String?,
         city: String?,
+        countryName: String? = nil,
         folderPath: String?,
         isAllPhotos: Bool,
         isFavorite: Bool,
+        exploreService: ExploreService? = nil,
         onAssetsLoaded: (([ImmichAsset]) -> Void)?,
         deepLinkAssetId: String?,
         externalSlideshowTrigger: Binding<Bool>? = nil
@@ -69,9 +71,11 @@ struct AssetGridView: View {
             personId: personId,
             tagId: tagId,
             city: city,
+            countryName: countryName,
             folderPath: folderPath,
             isAllPhotos: isAllPhotos,
             isFavorite: isFavorite,
+            exploreService: exploreService,
             onAssetsLoaded: onAssetsLoaded
         ))
     }
@@ -113,10 +117,12 @@ struct AssetGridView: View {
                     personId: viewModel.personId,
                     tagId: viewModel.tagId,
                     city: viewModel.city,
+                    countryName: viewModel.countryName,
                     folderPath: viewModel.folderPath,
                     startingAssetId: viewModel.getSlideshowStartingAssetId(),
                     isFavorite: viewModel.isFavorite,
-                    isAllPhotos: viewModel.isAllPhotos
+                    isAllPhotos: viewModel.isAllPhotos,
+                    exploreService: viewModel.exploreService
                 )
             }
         }

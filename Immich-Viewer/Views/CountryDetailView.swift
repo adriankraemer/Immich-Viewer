@@ -27,9 +27,11 @@ struct CountryDetailView: View {
                     personId: nil,
                     tagId: nil,
                     city: nil,
+                    countryName: viewModel.countryName,
                     folderPath: nil,
                     isAllPhotos: false,
                     isFavorite: false,
+                    exploreService: exploreService,
                     onAssetsLoaded: nil,
                     deepLinkAssetId: nil,
                     externalSlideshowTrigger: nil

@@ -29,8 +29,8 @@ struct MemorySlideshowView: View {
     @State private var autoAdvanceTimer: Timer?
     @State private var showPauseNotification = false
     
-    // Slideshow interval from settings
-    @AppStorage(UserDefaultsKeys.slideshowInterval) private var slideshowInterval: Double = 6.0
+    // Memory slideshow uses a longer interval for a more relaxed viewing experience
+    private let memorySlideInterval: Double = 10.0
     
     private var assets: [ImmichAsset] {
         memory.assets
@@ -385,12 +385,12 @@ struct MemorySlideshowView: View {
         progress = 0
         
         // Animate progress bar
-        withAnimation(.linear(duration: slideshowInterval)) {
+        withAnimation(.linear(duration: memorySlideInterval)) {
             progress = 1.0
         }
         
         // Set timer to advance to next image
-        autoAdvanceTimer = Timer.scheduledTimer(withTimeInterval: slideshowInterval, repeats: false) { _ in
+        autoAdvanceTimer = Timer.scheduledTimer(withTimeInterval: memorySlideInterval, repeats: false) { _ in
             Task { @MainActor in
                 if currentIndex < assets.count - 1 {
                     navigateNext()

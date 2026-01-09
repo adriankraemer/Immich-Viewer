@@ -22,8 +22,8 @@ struct SlideshowSettings: View {
             // Slideshow Interval Setting
             SettingsRow(
                 icon: "timer",
-                title: String(localized: "Slideshow Interval"),
-                subtitle: String(localized: "Time between slides in slideshow mode"),
+                title: "Slideshow Interval",
+                subtitle: "Time between slides in slideshow mode",
                 content: AnyView(
                     HStack(spacing: 40) {
                         Button(action: {
@@ -81,8 +81,8 @@ struct SlideshowSettings: View {
             // Slideshow Background Color Setting
             SettingsRow(
                 icon: "paintbrush",
-                title: String(localized: "Slideshow Background"),
-                subtitle: String(localized: "Background style for slideshow mode"),
+                title: "Slideshow Background",
+                subtitle: "Background style for slideshow mode",
                 content: AnyView(
                     HStack {
                         // Color preview circle
@@ -122,12 +122,12 @@ struct SlideshowSettings: View {
             // Clock Format Setting
              SettingsRow(
                  icon: "clock",
-                 title: String(localized: "Clock Format"),
-                 subtitle: String(localized: "Time format for slideshow overlay."),
+                 title: "Clock Format",
+                 subtitle: "Time format for slideshow overlay.",
                  content: AnyView(
-                     Picker(String(localized: "Clock Format"), selection: $use24HourClock) {
-                         Text(String(localized: "12 Hour")).tag(false)
-                         Text(String(localized: "24 Hour")).tag(true)
+                     Picker("Clock Format", selection: $use24HourClock) {
+                         Text("12 Hour").tag(false)
+                         Text("24 Hour").tag(true)
                      }
                          .pickerStyle(.menu)
                          .frame(width: 300, alignment: .trailing)
@@ -136,10 +136,10 @@ struct SlideshowSettings: View {
             
             SettingsRow(
                 icon: "camera.macro.circle",
-                title: String(localized: "Image Effects"),
-                subtitle: String(localized: "Choose visual effects for slideshow images"),
+                title: "Image Effects",
+                subtitle: "Choose visual effects for slideshow images",
                 content: AnyView(
-                    Picker(String(localized: "Image Effects"), selection: Binding(
+                    Picker("Image Effects", selection: Binding(
                         get: {
                             if enableKenBurns {
                                 return "kenBurns"
@@ -163,9 +163,9 @@ struct SlideshowSettings: View {
                             }
                         }
                     )) {
-                        Text(String(localized: "None")).tag("none")
-                        Text(String(localized: "Reflections")).tag("reflections")
-                        Text(String(localized: "Pan and Zoom")).tag("kenBurns")
+                        Text("None").tag("none")
+                        Text("Reflections").tag("reflections")
+                        Text("Pan and Zoom").tag("kenBurns")
                     }
                     .pickerStyle(.menu)
                     .frame(width: 400, alignment: .trailing)
@@ -174,12 +174,12 @@ struct SlideshowSettings: View {
             
             SettingsRow(
                 icon: "shuffle",
-                title: String(localized: "Shuffle Images (beta)"),
-                subtitle: String(localized: "Randomly shuffle image order during slideshow"),
+                title: "Shuffle Images (beta)",
+                subtitle: "Randomly shuffle image order during slideshow",
                 content: AnyView(
-                    Picker(String(localized: "Shuffle Images"), selection: $enableShuffle) {
-                        Text(String(localized: "Off")).tag(false)
-                        Text(String(localized: "On")).tag(true)
+                    Picker("Shuffle Images", selection: $enableShuffle) {
+                        Text("Off").tag(false)
+                        Text("On").tag(true)
                     }
                     .pickerStyle(.menu)
                     .frame(width: 300, alignment: .trailing)
@@ -189,12 +189,12 @@ struct SlideshowSettings: View {
             
             SettingsRow(
                 icon: "eye.slash",
-                title: String(localized: "Hide Image Overlays"),
-                subtitle: String(localized: "Hide clock, date, location overlay from slideshow and fullscreen view."),
+                title: "Hide Image Overlays",
+                subtitle: "Hide clock, date, location overlay from slideshow and fullscreen view.",
                 content: AnyView(
-                    Picker(String(localized: "Hide Image Overlays"), selection: $hideOverlay) {
-                        Text(String(localized: "Off")).tag(false)
-                        Text(String(localized: "On")).tag(true)
+                    Picker("Hide Image Overlays", selection: $hideOverlay) {
+                        Text("Off").tag(false)
+                        Text("On").tag(true)
                     }
                     .pickerStyle(.menu)
                     .frame(width: 300, alignment: .trailing)
@@ -205,8 +205,8 @@ struct SlideshowSettings: View {
             
              SettingsRow(
                  icon: "clock.arrow.circlepath",
-                 title: String(localized: "Auto-Start Slideshow"),
-                 subtitle: String(localized: "Start slideshow after inactivity"),
+                 title: "Auto-Start Slideshow",
+                 subtitle: "Start slideshow after inactivity",
                  content: AnyView(AutoSlideshowTimeoutPicker(timeout: $autoSlideshowTimeout)),
                  isOn: autoSlideshowTimeout > 0
              )

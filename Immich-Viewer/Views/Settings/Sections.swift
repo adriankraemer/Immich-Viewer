@@ -16,13 +16,13 @@ struct CacheSection: View {
     @Binding var showingClearCacheAlert: Bool
     
     var body: some View {
-        SettingsSection(title: String(localized: "Cache")) {
+        SettingsSection(title: "Cache") {
             AnyView(VStack(spacing: 16) {
                 // Cache Actions
                 HStack(spacing: 16) {
                     ActionButton(
                         icon: "clock.arrow.circlepath",
-                        title: String(localized: "Clear Expired"),
+                        title: "Clear Expired",
                         color: .orange
                     ) {
                         thumbnailCache.clearExpiredCache()
@@ -30,7 +30,7 @@ struct CacheSection: View {
                     
                     ActionButton(
                         icon: "trash",
-                        title: String(localized: "Clear All"),
+                        title: "Clear All",
                         color: .red
                     ) {
                         showingClearCacheAlert = true
@@ -136,7 +136,7 @@ struct CacheSection: View {
 }
 
 struct SettingsSection: View {
-    let title: String
+    let title: LocalizedStringKey
     let content: () -> AnyView
     
     var body: some View {
@@ -167,7 +167,7 @@ struct SettingsSection: View {
 
 struct ActionButton: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let color: Color
     let action: () -> Void
     

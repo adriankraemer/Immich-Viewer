@@ -148,7 +148,7 @@ struct StatsView: View {
     }
     
     private func assetStatsSection(_ assetData: AssetStatistics) -> some View {
-        SettingsSection(title: String(localized: "Library Content")) {
+        SettingsSection(title: "Library Content") {
             AnyView(VStack(spacing: 32) {
                 HStack(spacing: 32) {
                     StatCard(
@@ -177,7 +177,7 @@ struct StatsView: View {
     }
     
     private func exploreStatsSection(_ exploreData: ExploreStatsData) -> some View {
-        SettingsSection(title: String(localized: "Places Visited")) {
+        SettingsSection(title: "Places Visited") {
             AnyView(VStack(spacing: 32) {
                 HStack(spacing: 32) {
                     StatCard(
@@ -206,7 +206,7 @@ struct StatsView: View {
     }
     
     private func peopleStatsSection(_ peopleData: PeopleStatsData) -> some View {
-        SettingsSection(title: String(localized: "People")) {
+        SettingsSection(title: "People") {
             AnyView(VStack(spacing: 32) {
                 VStack(spacing: 32) {
                     HStack(spacing: 32) {
@@ -574,7 +574,7 @@ struct EmbeddedStatsView: View {
 
 struct EmbeddedStatCard: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let count: Int
     let color: Color
     

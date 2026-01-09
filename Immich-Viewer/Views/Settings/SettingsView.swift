@@ -27,9 +27,9 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     case topShelf = "Top Shelf"
     case sorting = "Sorting"
     case slideshow = "Slideshow"
-    case statistics = "Statistics"
     case account = "Account"
     case about = "About"
+    case statistics = "Statistics"
     #if DEBUG
     case cache = "Cache"
     #endif
@@ -86,12 +86,12 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
 
 struct SettingsRow: View {
     let icon: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let content: AnyView
     let isOn: Bool
     
-    init(icon: String, title: String, subtitle: String, content: AnyView, isOn: Bool = false) {
+    init(icon: String, title: LocalizedStringKey, subtitle: LocalizedStringKey, content: AnyView, isOn: Bool = false) {
         self.icon = icon
         self.title = title
         self.subtitle = subtitle
@@ -750,22 +750,22 @@ struct SettingsView: View {
         VStack(spacing: 12) {
             SettingsRow(
                 icon: "tag",
-                title: String(localized: "Show Tags Tab"),
-                subtitle: String(localized: "Enable the tags tab in the main navigation"),
+                title: "Show Tags Tab",
+                subtitle: "Enable the tags tab in the main navigation",
                 content: AnyView(Toggle("", isOn: $showTagsTab).labelsHidden()),
                 isOn: showTagsTab
             )
             SettingsRow(
                 icon: "folder",
-                title: String(localized: "Show Albums Tab"),
-                subtitle: String(localized: "Enable the albums tab in the main navigation"),
+                title: "Show Albums Tab",
+                subtitle: "Enable the albums tab in the main navigation",
                 content: AnyView(Toggle("", isOn: $showAlbumsTab).labelsHidden()),
                 isOn: showAlbumsTab
             )
             SettingsRow(
                 icon: "folder.fill",
-                title: String(localized: "Show Folders Tab"),
-                subtitle: String(localized: "Enable the folders tab in the main navigation"),
+                title: "Show Folders Tab",
+                subtitle: "Enable the folders tab in the main navigation",
                 content: AnyView(
                     HStack(spacing: 16) {
                         if showFoldersTab {
@@ -784,8 +784,8 @@ struct SettingsView: View {
             )
             SettingsRow(
                 icon: "house",
-                title: String(localized: "Default Startup Tab"),
-                subtitle: String(localized: "Choose which tab opens when the app starts"),
+                title: "Default Startup Tab",
+                subtitle: "Choose which tab opens when the app starts",
                 content: AnyView(
                     Picker(String(localized: "Default Tab"), selection: $defaultStartupTab) {
                         Text(String(localized: "All Photos")).tag("photos")
@@ -808,8 +808,8 @@ struct SettingsView: View {
             
             SettingsRow(
                 icon: "rectangle.split.3x1",
-                title: String(localized: "Navigation Style"),
-                subtitle: String(localized: "Choose between a classic tab bar or the adaptive sidebar layout"),
+                title: "Navigation Style",
+                subtitle: "Choose between a classic tab bar or the adaptive sidebar layout",
                 content: AnyView(
                     Picker(String(localized: "Navigation Style"), selection: Binding(
                         get: { NavigationStyle(rawValue: navigationStyle) ?? .tabs },
@@ -833,8 +833,8 @@ struct SettingsView: View {
         VStack(spacing: 12) {
             SettingsRow(
                 icon: "tv",
-                title: String(localized: "Top Shelf Extension"),
-                subtitle: String(localized: "Choose display style or disable Top Shelf entirely (Top shelf does not show portrait images)"),
+                title: "Top Shelf Extension",
+                subtitle: "Choose display style or disable Top Shelf entirely (Top shelf does not show portrait images)",
                 content: AnyView(
                     Picker(String(localized: "Top Shelf"), selection: Binding(
                         get: { enableTopShelf ? topShelfStyle : "off" },
@@ -860,8 +860,8 @@ struct SettingsView: View {
             if enableTopShelf {
                 SettingsRow(
                     icon: "photo.on.rectangle.angled",
-                    title: String(localized: "Image Selection"),
-                    subtitle: String(localized: "Choose between recent photos or random photos from your library."),
+                    title: "Image Selection",
+                    subtitle: "Choose between recent photos or random photos from your library.",
                     content: AnyView(
                         Picker(String(localized: "Image Selection"), selection: $topShelfImageSelection) {
                             Text(String(localized: "Recent Photos")).tag("recent")
@@ -881,8 +881,8 @@ struct SettingsView: View {
         VStack(spacing: 12) {
             SettingsRow(
                 icon: "photo.on.rectangle",
-                title: String(localized: "All Photos Sort Order"),
-                subtitle: String(localized: "Order photos in the All Photos tab"),
+                title: "All Photos Sort Order",
+                subtitle: "Order photos in the All Photos tab",
                 content: AnyView(
                     Picker(String(localized: "All Photos Sort Order"), selection: $allPhotosSortOrder) {
                         Text(String(localized: "Newest First")).tag("desc")
@@ -895,8 +895,8 @@ struct SettingsView: View {
             
             SettingsRow(
                 icon: "arrow.up.arrow.down",
-                title: String(localized: "Albums & Collections Sort Order"),
-                subtitle: String(localized: "Order photos in Albums, People, and Tags"),
+                title: "Albums & Collections Sort Order",
+                subtitle: "Order photos in Albums, People, and Tags",
                 content: AnyView(
                     Picker(String(localized: "Collections Sort Order"), selection: $assetSortOrder) {
                         Text(String(localized: "Newest First")).tag("desc")

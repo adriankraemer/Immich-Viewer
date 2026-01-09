@@ -5612,6 +5612,7 @@
       }
     },
     "Storage management" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

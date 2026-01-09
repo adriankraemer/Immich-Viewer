@@ -21,10 +21,12 @@ struct SlideshowView: View {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
+        countryName: String? = nil,
         folderPath: String? = nil,
         startingAssetId: String? = nil,
         isFavorite: Bool = false,
-        isAllPhotos: Bool = false
+        isAllPhotos: Bool = false,
+        exploreService: ExploreService? = nil
     ) {
         _viewModel = StateObject(wrappedValue: SlideshowViewModel(
             assetService: assetService,
@@ -33,10 +35,12 @@ struct SlideshowView: View {
             personId: personId,
             tagId: tagId,
             city: city,
+            countryName: countryName,
             folderPath: folderPath,
             startingAssetId: startingAssetId,
             isFavorite: isFavorite,
-            isAllPhotos: isAllPhotos
+            isAllPhotos: isAllPhotos,
+            exploreService: exploreService
         ))
     }
     

@@ -1,35 +1,43 @@
 import Foundation
 
 /// Factory for creating appropriate AssetProvider instances
-/// Chooses between AlbumAssetProvider (for albums) and GeneralAssetProvider (for other filters)
+/// Chooses between AlbumAssetProvider (for albums), OnDemandCountryAssetProvider (for countries),
+/// and GeneralAssetProvider (for other filters)
 struct AssetProviderFactory {
     static func createProvider(
         albumId: String? = nil,
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
+        countryName: String? = nil,
         isAllPhotos: Bool = false,
         isFavorite: Bool = false,
         folderPath: String? = nil,
         assetService: AssetService,
-        albumService: AlbumService? = nil
+        albumService: AlbumService? = nil,
+        exploreService: ExploreService? = nil
     ) -> AssetProvider {
         
         // Use specialized provider for albums (handles caching and sorting)
         if let albumId = albumId, let albumService = albumService {
             return AlbumAssetProvider(albumService: albumService, albumId: albumId)
-        } else {
-            // Use general provider for other filters (person, tag, city, favorites, etc.)
-            return GeneralAssetProvider(
-                assetService: assetService,
-                personId: personId,
-                tagId: tagId,
-                city: city,
-                isAllPhotos: isAllPhotos,
-                isFavorite: isFavorite,
-                folderPath: folderPath
-            )
         }
+        
+        // Use specialized provider for country-based filtering
+        if let countryName = countryName, let exploreService = exploreService {
+            return OnDemandCountryAssetProvider(countryName: countryName, exploreService: exploreService)
+        }
+        
+        // Use general provider for other filters (person, tag, city, favorites, etc.)
+        return GeneralAssetProvider(
+            assetService: assetService,
+            personId: personId,
+            tagId: tagId,
+            city: city,
+            isAllPhotos: isAllPhotos,
+            isFavorite: isFavorite,
+            folderPath: folderPath
+        )
     }
 }
 

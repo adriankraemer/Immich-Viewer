@@ -23,9 +23,11 @@ class AssetGridViewModel: ObservableObject {
     let personId: String?
     let tagId: String?
     let city: String?
+    let countryName: String?
     let folderPath: String?
     let isAllPhotos: Bool
     let isFavorite: Bool
+    let exploreService: ExploreService?
     
     // MARK: - Internal State
     private var nextPage: String?
@@ -70,9 +72,11 @@ class AssetGridViewModel: ObservableObject {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
+        countryName: String? = nil,
         folderPath: String? = nil,
         isAllPhotos: Bool = false,
         isFavorite: Bool = false,
+        exploreService: ExploreService? = nil,
         onAssetsLoaded: (([ImmichAsset]) -> Void)? = nil
     ) {
         self.assetService = assetService
@@ -82,9 +86,11 @@ class AssetGridViewModel: ObservableObject {
         self.personId = personId
         self.tagId = tagId
         self.city = city
+        self.countryName = countryName
         self.folderPath = folderPath
         self.isAllPhotos = isAllPhotos
         self.isFavorite = isFavorite
+        self.exploreService = exploreService
         self.onAssetsLoaded = onAssetsLoaded
     }
     

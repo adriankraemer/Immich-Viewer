@@ -121,10 +121,12 @@ class SlideshowViewModel: ObservableObject {
     private let personId: String?
     private let tagId: String?
     private let city: String?
+    private let countryName: String?
     private let folderPath: String?
     private let startingAssetId: String?
     private let isFavorite: Bool
     private let isAllPhotos: Bool
+    private let exploreService: ExploreService?
     
     // MARK: - Tasks & Timers
     private var loadAssetsTask: Task<Void, Never>?
@@ -154,10 +156,12 @@ class SlideshowViewModel: ObservableObject {
         personId: String? = nil,
         tagId: String? = nil,
         city: String? = nil,
+        countryName: String? = nil,
         folderPath: String? = nil,
         startingAssetId: String? = nil,
         isFavorite: Bool = false,
-        isAllPhotos: Bool = false
+        isAllPhotos: Bool = false,
+        exploreService: ExploreService? = nil
     ) {
         self.assetService = assetService
         self.albumService = albumService
@@ -165,10 +169,12 @@ class SlideshowViewModel: ObservableObject {
         self.personId = personId
         self.tagId = tagId
         self.city = city
+        self.countryName = countryName
         self.folderPath = folderPath
         self.startingAssetId = startingAssetId
         self.isFavorite = isFavorite
         self.isAllPhotos = isAllPhotos
+        self.exploreService = exploreService
         self.settings = SlideshowConfiguration.load()
         
         // Create asset provider
@@ -177,11 +183,13 @@ class SlideshowViewModel: ObservableObject {
             personId: personId,
             tagId: tagId,
             city: city,
+            countryName: countryName,
             isAllPhotos: isAllPhotos,
             isFavorite: isFavorite,
             folderPath: folderPath,
             assetService: assetService,
-            albumService: albumService
+            albumService: albumService,
+            exploreService: exploreService
         )
     }
     

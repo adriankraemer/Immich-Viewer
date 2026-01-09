@@ -24,9 +24,9 @@ private enum SettingsTheme {
 
 enum SettingsCategory: String, CaseIterable, Identifiable {
     case interface = "Interface"
-    case topShelf = "Top Shelf"
-    case sorting = "Sorting"
     case slideshow = "Slideshow"
+    case sorting = "Sorting"
+    case topShelf = "Top Shelf"
     case account = "Account"
     case about = "About"
     case statistics = "Statistics"

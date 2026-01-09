@@ -15,13 +15,13 @@ struct CacheSettingsView: View {
             .padding(.horizontal, 40)
             .padding(.vertical, 20)
         }
-        .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Clear All", role: .destructive) {
+        .alert(String(localized: "Clear Cache"), isPresented: $showingClearCacheAlert) {
+            Button(String(localized: "Cancel"), role: .cancel) { }
+            Button(String(localized: "Clear All"), role: .destructive) {
                 thumbnailCache.clearAllCaches()
             }
         } message: {
-            Text("This will remove all cached thumbnails from both memory and disk. Images will be re-downloaded when needed.")
+            Text(String(localized: "This will remove all cached thumbnails from both memory and disk. Images will be re-downloaded when needed."))
         }
         .onAppear {
             thumbnailCache.refreshCacheStatistics()

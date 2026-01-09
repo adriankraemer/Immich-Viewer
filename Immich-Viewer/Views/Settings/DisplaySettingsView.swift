@@ -70,7 +70,7 @@ struct DisplaySettingsView: View {
                                     set: { navigationStyle = $0.rawValue }
                                 )) {
                                     ForEach(NavigationStyle.allCases, id: \.self) { style in
-                                        Text(style.displayName).tag(style)
+                                        Text(style.localizedDisplayName).tag(style)
                                     }
                                 }
                                     .pickerStyle(.menu)
@@ -144,4 +144,3 @@ struct DisplaySettingsView: View {
         }
     }
 }
-

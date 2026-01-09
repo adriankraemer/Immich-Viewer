@@ -106,13 +106,13 @@ struct SlideshowSettings: View {
                         }
                         .frame(width: 32, height: 32)
                         
-                        Picker("Background", selection: $slideshowBackgroundColor) {
-                            Text("Ambilight").tag("ambilight")
-                            Text("Black").tag("black")
-                            Text("White").tag("white")
-                            Text("Gray").tag("gray")
-                            Text("Blue").tag("blue")
-                            Text("Purple").tag("purple")
+                        Picker(String(localized: "Background"), selection: $slideshowBackgroundColor) {
+                            Text(String(localized: "Ambilight")).tag("ambilight")
+                            Text(String(localized: "Black")).tag("black")
+                            Text(String(localized: "White")).tag("white")
+                            Text(String(localized: "Gray")).tag("gray")
+                            Text(String(localized: "Blue")).tag("blue")
+                            Text(String(localized: "Purple")).tag("purple")
                         }
                         .pickerStyle(.menu)
                     }

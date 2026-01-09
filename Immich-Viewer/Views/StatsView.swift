@@ -81,13 +81,13 @@ struct StatsView: View {
             }
             
             VStack(alignment: .leading, spacing: 6) {
-                Text("Library Statistics")
+                Text(String(localized: "Library Statistics"))
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(StatsTheme.textPrimary)
                 
                 if let lastUpdated = viewModel.formattedLastUpdated {
-                    Text("Last updated: \(lastUpdated)")
+                    Text(String(localized: "Last updated: \(lastUpdated)"))
                         .font(.subheadline)
                         .foregroundColor(StatsTheme.textSecondary)
                 }
@@ -101,7 +101,7 @@ struct StatsView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 18, weight: .semibold))
-                    Text("Refresh")
+                    Text(String(localized: "Refresh"))
                         .font(.headline)
                 }
                 .foregroundColor(StatsTheme.accent)
@@ -153,21 +153,21 @@ struct StatsView: View {
                 HStack(spacing: 32) {
                     StatCard(
                         icon: "photo.stack.fill",
-                        title: "Total Assets",
+                        title: String(localized: "Total Assets"),
                         count: assetData.total,
                         color: .blue
                     )
                     
                     StatCard(
                         icon: "photo.fill",
-                        title: "Images",
+                        title: String(localized: "Images"),
                         count: assetData.images,
                         color: .green
                     )
                     
                     StatCard(
                         icon: "video.fill",
-                        title: "Videos",
+                        title: String(localized: "Videos"),
                         count: assetData.videos,
                         color: .orange
                     )
@@ -182,21 +182,21 @@ struct StatsView: View {
                 HStack(spacing: 32) {
                     StatCard(
                         icon: "globe",
-                        title: "Countries",
+                        title: String(localized: "Countries"),
                         count: exploreData.countries.count,
                         color: .green
                     )
                     
                     StatCard(
                         icon: "map",
-                        title: "States",
+                        title: String(localized: "States"),
                         count: exploreData.states.count,
                         color: .purple
                     )
                     
                     StatCard(
                         icon: "building.2",
-                        title: "Cities",
+                        title: String(localized: "Cities"),
                         count: exploreData.cities.count,
                         color: .orange
                     )
@@ -212,26 +212,26 @@ struct StatsView: View {
                     HStack(spacing: 32) {
                         StatCard(
                             icon: "person.3.fill",
-                            title: "Total People",
+                            title: String(localized: "Total People"),
                             count: peopleData.totalPeople,
                             color: .blue
                         )
                         StatCard(
                             icon: "person.fill.questionmark",
-                            title: "Unnamed",
+                            title: String(localized: "Unnamed"),
                             count: peopleData.unnamedPeople,
                             color: .gray
                         )
                         
                         StatCard(
                             icon: "person.fill.checkmark",
-                            title: "Named",
+                            title: String(localized: "Named"),
                             count: peopleData.namedPeople,
                             color: .green
                         )
                         StatCard(
                             icon: "heart.fill",
-                            title: "Favorites",
+                            title: String(localized: "Favorites"),
                             count: peopleData.favoritePeople,
                             color: .red
                         )
@@ -245,7 +245,7 @@ struct StatsView: View {
         VStack(spacing: 16) {
             ProgressView()
                 .scaleEffect(1.5)
-            Text("Loading statistics...")
+            Text(String(localized: "Loading statistics..."))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -258,11 +258,11 @@ struct StatsView: View {
                 .font(.title)
                 .foregroundColor(.red)
             
-            Text("Failed to load statistics")
+            Text(String(localized: "Failed to load statistics"))
                 .font(.headline)
                 .foregroundColor(.primary)
             
-            Text("Please check your connection and try again")
+            Text(String(localized: "Please check your connection and try again"))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -274,7 +274,7 @@ struct StatsView: View {
                     Image(systemName: "arrow.clockwise")
                         .font(.title2)
                         .foregroundColor(.red)
-                    Text("Retry")
+                    Text(String(localized: "Retry"))
                         .font(.caption)
                         .foregroundColor(.primary)
                 }
@@ -390,7 +390,7 @@ struct EmbeddedStatsView: View {
                 // Last updated info
                 if let lastUpdated = viewModel.formattedLastUpdated {
                     HStack {
-                        Text("Last updated: \(lastUpdated)")
+                        Text(LocalizedStringResource("Last updated: \(lastUpdated)"))
                             .font(.caption)
                             .foregroundColor(StatsTheme.textSecondary)
                         
@@ -402,7 +402,7 @@ struct EmbeddedStatsView: View {
                             HStack(spacing: 8) {
                                 Image(systemName: "arrow.clockwise")
                                     .font(.system(size: 14, weight: .semibold))
-                                Text("Refresh")
+                                Text(LocalizedStringResource("Refresh"))
                                     .font(.subheadline)
                             }
                             .foregroundColor(StatsTheme.accent)
@@ -424,7 +424,7 @@ struct EmbeddedStatsView: View {
                 VStack(spacing: 16) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text("Loading statistics...")
+                    Text(LocalizedStringResource("Loading statistics..."))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -438,7 +438,7 @@ struct EmbeddedStatsView: View {
                         .font(.title)
                         .foregroundColor(.red)
                     
-                    Text("Failed to load statistics")
+                    Text(LocalizedStringResource("Failed to load statistics"))
                         .font(.headline)
                         .foregroundColor(.primary)
                     
@@ -448,7 +448,7 @@ struct EmbeddedStatsView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: 16, weight: .semibold))
-                            Text("Retry")
+                            Text(LocalizedStringResource("Retry"))
                                 .font(.subheadline)
                         }
                         .foregroundColor(.red)
@@ -471,7 +471,7 @@ struct EmbeddedStatsView: View {
     
     private func embeddedAssetStatsSection(_ assetData: AssetStatistics) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Library Content")
+            Text(LocalizedStringResource("Library Content"))
                 .font(.headline)
                 .foregroundColor(StatsTheme.textSecondary)
             
@@ -502,7 +502,7 @@ struct EmbeddedStatsView: View {
     
     private func embeddedExploreStatsSection(_ exploreData: ExploreStatsData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Places Visited")
+            Text(LocalizedStringResource("Places Visited"))
                 .font(.headline)
                 .foregroundColor(StatsTheme.textSecondary)
             
@@ -533,7 +533,7 @@ struct EmbeddedStatsView: View {
     
     private func embeddedPeopleStatsSection(_ peopleData: PeopleStatsData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("People")
+            Text(LocalizedStringResource("People"))
                 .font(.headline)
                 .foregroundColor(StatsTheme.textSecondary)
             
@@ -574,7 +574,7 @@ struct EmbeddedStatsView: View {
 
 struct EmbeddedStatCard: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringKey
     let count: Int
     let color: Color
     

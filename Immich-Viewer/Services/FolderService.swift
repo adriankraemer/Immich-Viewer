@@ -291,7 +291,7 @@ class FolderService: ObservableObject {
         // Add folders without dates at the end
         if !foldersWithoutDates.isEmpty {
             let unknownGroup = FolderTimelineGroup(
-                title: "Unknown Date",
+                title: String(localized: "Unknown Date"),
                 folders: foldersWithoutDates.sorted { $0.primaryTitle < $1.primaryTitle },
                 startDate: nil
             )

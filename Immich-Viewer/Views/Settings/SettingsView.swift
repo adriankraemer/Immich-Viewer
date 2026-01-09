@@ -24,12 +24,12 @@ private enum SettingsTheme {
 
 enum SettingsCategory: String, CaseIterable, Identifiable {
     case interface = "Interface"
-    case topShelf = "Top Shelf"
-    case sorting = "Sorting"
     case slideshow = "Slideshow"
-    case statistics = "Statistics"
+    case sorting = "Sorting"
+    case topShelf = "Top Shelf"
     case account = "Account"
     case about = "About"
+    case statistics = "Statistics"
     #if DEBUG
     case cache = "Cache"
     #endif
@@ -51,18 +51,33 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         }
     }
     
+    var localizedTitle: String {
+        switch self {
+        case .interface: return String(localized: "Interface")
+        case .topShelf: return String(localized: "Top Shelf")
+        case .sorting: return String(localized: "Sorting")
+        case .slideshow: return String(localized: "Slideshow")
+        case .statistics: return String(localized: "Statistics")
+        case .account: return String(localized: "Account")
+        case .about: return String(localized: "About")
+        #if DEBUG
+        case .cache: return String(localized: "Cache")
+        #endif
+        }
+    }
+    
     var subtitle: String {
         switch self {
-        case .account: return "Server & users"
-        case .interface: return "Tabs & navigation"
-        case .topShelf: return "Home screen display"
-        case .sorting: return "Photo ordering"
-        case .slideshow: return "Timing & effects"
-        case .statistics: return "Library insights"
+        case .account: return String(localized: "Server & users")
+        case .interface: return String(localized: "Tabs & navigation")
+        case .topShelf: return String(localized: "Home screen display")
+        case .sorting: return String(localized: "Photo ordering")
+        case .slideshow: return String(localized: "Timing & effects")
+        case .statistics: return String(localized: "Library insights")
         #if DEBUG
-        case .cache: return "Storage management"
+        case .cache: return String(localized: "Storage management")
         #endif
-        case .about: return "Credits & links"
+        case .about: return String(localized: "Credits & links")
         }
     }
 }
@@ -71,12 +86,12 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
 
 struct SettingsRow: View {
     let icon: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let content: AnyView
     let isOn: Bool
     
-    init(icon: String, title: String, subtitle: String, content: AnyView, isOn: Bool = false) {
+    init(icon: String, title: LocalizedStringKey, subtitle: LocalizedStringKey, content: AnyView, isOn: Bool = false) {
         self.icon = icon
         self.title = title
         self.subtitle = subtitle
@@ -180,7 +195,7 @@ struct SidebarCategoryRow: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(category.rawValue)
+                Text(category.localizedTitle)
                     .font(.system(size: 24, weight: isHighlighted ? .semibold : .medium))
                     .foregroundColor(isHighlighted ? SettingsTheme.textPrimary : SettingsTheme.textSecondary)
                 
@@ -309,19 +324,19 @@ struct SettingsView: View {
         .fullScreenCover(isPresented: $showingSignIn) {
             SignInView(authService: authService, userManager: userManager, mode: .addUser, onUserAdded: { userManager.loadUsers() })
         }
-        .alert("Clear Cache", isPresented: $showingClearCacheAlert) {
-            Button("Cancel", role: .cancel) { }
-            Button("Clear All", role: .destructive) {
+        .alert(String(localized: "Clear Cache"), isPresented: $showingClearCacheAlert) {
+            Button(String(localized: "Cancel"), role: .cancel) { }
+            Button(String(localized: "Clear All"), role: .destructive) {
                 thumbnailCache.clearAllCaches()
             }
         } message: {
-            Text("This will remove all cached thumbnails from both memory and disk. Images will be re-downloaded when needed.")
+            Text(String(localized: "This will remove all cached thumbnails from both memory and disk. Images will be re-downloaded when needed."))
         }
-        .alert("Delete User", isPresented: $showingDeleteUserAlert) {
-            Button("Cancel", role: .cancel) {
+        .alert(String(localized: "Delete User"), isPresented: $showingDeleteUserAlert) {
+            Button(String(localized: "Cancel"), role: .cancel) {
                 userToDelete = nil
             }
-            Button("Delete", role: .destructive) {
+            Button(String(localized: "Delete"), role: .destructive) {
                 if let user = userToDelete {
                     removeUser(user)
                 }
@@ -333,14 +348,14 @@ struct SettingsView: View {
                 let isLastUser = userManager.savedUsers.count == 1
                 
                 if isCurrentUser && isLastUser {
-                    Text("Are you sure you want to delete this user? This will sign you out and you'll need to sign in again to access your photos.")
+                    Text(String(localized: "Are you sure you want to delete this user? This will sign you out and you'll need to sign in again to access your photos."))
                 } else if isCurrentUser {
-                    Text("Are you sure you want to delete the current user? You will be switched to another saved user.")
+                    Text(String(localized: "Are you sure you want to delete the current user? You will be switched to another saved user."))
                 } else {
-                    Text("Are you sure you want to delete this user account?")
+                    Text(String(localized: "Are you sure you want to delete this user account?"))
                 }
             } else {
-                Text("Are you sure you want to delete this user?")
+                Text(String(localized: "Are you sure you want to delete this user?"))
             }
         }
         .onChange(of: showAlbumsTab) { _, newValue in
@@ -370,12 +385,12 @@ struct SettingsView: View {
                         .font(.system(size: 32, weight: .medium))
                         .foregroundColor(SettingsTheme.accent)
                     
-                    Text("Settings")
+                    Text(String(localized: "Settings"))
                         .font(.system(size: 42, weight: .bold))
                         .foregroundColor(SettingsTheme.textPrimary)
                 }
                 
-                Text("Customize your experience")
+                Text(String(localized: "Customize your experience"))
                     .font(.system(size: 18))
                     .foregroundColor(SettingsTheme.textSecondary)
             }
@@ -422,7 +437,7 @@ struct SettingsView: View {
                         .font(.system(size: 28, weight: .medium))
                         .foregroundColor(SettingsTheme.accent)
                     
-                    Text(selectedCategory.rawValue)
+                    Text(selectedCategory.localizedTitle)
                         .font(.system(size: 36, weight: .bold))
                         .foregroundColor(SettingsTheme.textPrimary)
                     
@@ -494,7 +509,7 @@ struct SettingsView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Connected Server")
+                    Text(String(localized: "Connected Server"))
                         .font(.subheadline)
                         .foregroundColor(SettingsTheme.textSecondary)
                     Text(authService.baseURL)
@@ -508,7 +523,7 @@ struct SettingsView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 16, weight: .semibold))
-                    Text("Refresh")
+                    Text(String(localized: "Refresh"))
                         .font(.subheadline)
                         .fontWeight(.medium)
                 }
@@ -583,7 +598,7 @@ struct SettingsView: View {
                             .foregroundColor(SettingsTheme.accent)
                     }
                     
-                    Text("Add User")
+                    Text(String(localized: "Add User"))
                         .font(.headline)
                         .foregroundColor(SettingsTheme.textPrimary)
                     
@@ -635,7 +650,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack(spacing: 8) {
                             Badge(
-                                user.authType == .apiKey ? "API Key" : "Password",
+                                user.authType == .apiKey ? String(localized: "API Key") : String(localized: "Password"),
                                 color: accentColor
                             )
                             
@@ -662,7 +677,7 @@ struct SettingsView: View {
                             Circle()
                                 .fill(SettingsTheme.success)
                                 .frame(width: 8, height: 8)
-                            Text("Active")
+                            Text(String(localized: "Active"))
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(SettingsTheme.success)
@@ -754,10 +769,10 @@ struct SettingsView: View {
                 content: AnyView(
                     HStack(spacing: 16) {
                         if showFoldersTab {
-                            Picker("View", selection: $folderViewMode) {
-                                Text("Grid").tag("grid")
-                                Text("Tree").tag("tree")
-                                Text("Timeline").tag("timeline")
+                            Picker(String(localized: "View"), selection: $folderViewMode) {
+                                Text(String(localized: "Grid")).tag("grid")
+                                Text(String(localized: "Tree")).tag("tree")
+                                Text(String(localized: "Timeline")).tag("timeline")
                             }
                             .pickerStyle(.menu)
                             .frame(width: 180)
@@ -772,19 +787,19 @@ struct SettingsView: View {
                 title: "Default Startup Tab",
                 subtitle: "Choose which tab opens when the app starts",
                 content: AnyView(
-                    Picker("Default Tab", selection: $defaultStartupTab) {
-                        Text("All Photos").tag("photos")
+                    Picker(String(localized: "Default Tab"), selection: $defaultStartupTab) {
+                        Text(String(localized: "All Photos")).tag("photos")
                         if showAlbumsTab {
-                            Text("Albums").tag("albums")
+                            Text(String(localized: "Albums")).tag("albums")
                         }
-                        Text("People").tag("people")
+                        Text(String(localized: "People")).tag("people")
                         if showTagsTab {
-                            Text("Tags").tag("tags")
+                            Text(String(localized: "Tags")).tag("tags")
                         }
                         if showFoldersTab {
-                            Text("Folders").tag("folders")
+                            Text(String(localized: "Folders")).tag("folders")
                         }
-                        Text("Explore").tag("explore")
+                        Text(String(localized: "Explore")).tag("explore")
                     }
                         .pickerStyle(.menu)
                         .frame(width: 300, alignment: .trailing)
@@ -796,12 +811,12 @@ struct SettingsView: View {
                 title: "Navigation Style",
                 subtitle: "Choose between a classic tab bar or the adaptive sidebar layout",
                 content: AnyView(
-                    Picker("Navigation Style", selection: Binding(
+                    Picker(String(localized: "Navigation Style"), selection: Binding(
                         get: { NavigationStyle(rawValue: navigationStyle) ?? .tabs },
                         set: { navigationStyle = $0.rawValue }
                     )) {
                         ForEach(NavigationStyle.allCases, id: \.self) { style in
-                            Text(style.displayName).tag(style)
+                            Text(style.localizedDisplayName).tag(style)
                         }
                     }
                         .pickerStyle(.menu)
@@ -821,7 +836,7 @@ struct SettingsView: View {
                 title: "Top Shelf Extension",
                 subtitle: "Choose display style or disable Top Shelf entirely (Top shelf does not show portrait images)",
                 content: AnyView(
-                    Picker("Top Shelf", selection: Binding(
+                    Picker(String(localized: "Top Shelf"), selection: Binding(
                         get: { enableTopShelf ? topShelfStyle : "off" },
                         set: { newValue in
                             if newValue == "off" {
@@ -832,9 +847,9 @@ struct SettingsView: View {
                             }
                         }
                     )) {
-                        Text("Off").tag("off")
-                        Text("Compact").tag("sectioned")
-                        Text("Fullscreen").tag("carousel")
+                        Text(String(localized: "Off")).tag("off")
+                        Text(String(localized: "Compact")).tag("sectioned")
+                        Text(String(localized: "Fullscreen")).tag("carousel")
                     }
                         .pickerStyle(.menu)
                         .frame(width: 300, alignment: .trailing)
@@ -848,9 +863,9 @@ struct SettingsView: View {
                     title: "Image Selection",
                     subtitle: "Choose between recent photos or random photos from your library.",
                     content: AnyView(
-                        Picker("Image Selection", selection: $topShelfImageSelection) {
-                            Text("Recent Photos").tag("recent")
-                            Text("Random Photos").tag("random")
+                        Picker(String(localized: "Image Selection"), selection: $topShelfImageSelection) {
+                            Text(String(localized: "Recent Photos")).tag("recent")
+                            Text(String(localized: "Random Photos")).tag("random")
                         }
                             .pickerStyle(.menu)
                             .frame(width: 500, alignment: .trailing)
@@ -869,9 +884,9 @@ struct SettingsView: View {
                 title: "All Photos Sort Order",
                 subtitle: "Order photos in the All Photos tab",
                 content: AnyView(
-                    Picker("All Photos Sort Order", selection: $allPhotosSortOrder) {
-                        Text("Newest First").tag("desc")
-                        Text("Oldest First").tag("asc")
+                    Picker(String(localized: "All Photos Sort Order"), selection: $allPhotosSortOrder) {
+                        Text(String(localized: "Newest First")).tag("desc")
+                        Text(String(localized: "Oldest First")).tag("asc")
                     }
                         .pickerStyle(.menu)
                         .frame(width: 300, alignment: .trailing)
@@ -883,9 +898,9 @@ struct SettingsView: View {
                 title: "Albums & Collections Sort Order",
                 subtitle: "Order photos in Albums, People, and Tags",
                 content: AnyView(
-                    Picker("Collections Sort Order", selection: $assetSortOrder) {
-                        Text("Newest First").tag("desc")
-                        Text("Oldest First").tag("asc")
+                    Picker(String(localized: "Collections Sort Order"), selection: $assetSortOrder) {
+                        Text(String(localized: "Newest First")).tag("desc")
+                        Text(String(localized: "Oldest First")).tag("asc")
                     }
                         .pickerStyle(.menu)
                         .frame(width: 300, alignment: .trailing)

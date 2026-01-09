@@ -24,7 +24,7 @@ struct WorldMapView: View {
                 VStack(spacing: 20) {
                     ProgressView()
                         .scaleEffect(1.5)
-                    Text("Loading map data...")
+                    Text(LocalizedStringResource("Loading map data..."))
                         .font(.title3)
                         .foregroundColor(.white)
                     if !viewModel.loadingProgress.isEmpty {
@@ -38,14 +38,14 @@ struct WorldMapView: View {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 60))
                         .foregroundColor(.orange)
-                    Text("Error")
+                    Text(LocalizedStringResource("Error"))
                         .font(.title)
                         .foregroundColor(.white)
                     Text(errorMessage)
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .padding()
-                    Button("Retry") {
+                    Button(String(localized: "Retry")) {
                         Task {
                             await viewModel.refresh()
                         }
@@ -57,10 +57,10 @@ struct WorldMapView: View {
                     Image(systemName: "map")
                         .font(.system(size: 60))
                         .foregroundColor(.gray)
-                    Text("No Location Data")
+                    Text(LocalizedStringResource("No Location Data"))
                         .font(.title)
                         .foregroundColor(.white)
-                    Text("Photos with location data will appear on the map")
+                    Text(LocalizedStringResource("Photos with location data will appear on the map"))
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .padding()
@@ -91,7 +91,7 @@ struct WorldMapView: View {
                                 HStack(spacing: 8) {
                                     ProgressView()
                                         .scaleEffect(0.8)
-                                    Text("Loading details...")
+                                    Text(LocalizedStringResource("Loading details..."))
                                         .font(.caption)
                                         .foregroundColor(.white)
                                 }
@@ -116,7 +116,7 @@ struct WorldMapView: View {
                                     Image(systemName: "hand.draw")
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.8))
-                                    Text("Touchpad: Pan")
+                                    Text(LocalizedStringResource("Touchpad: Pan"))
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.8))
                                 }
@@ -124,7 +124,7 @@ struct WorldMapView: View {
                                     Image(systemName: "playpause.fill")
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.8))
-                                    Text("Play/Pause: Zoom In")
+                                    Text(LocalizedStringResource("Play/Pause: Zoom In"))
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.8))
                                 }
@@ -132,7 +132,7 @@ struct WorldMapView: View {
                                     Image(systemName: "hand.tap")
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.8))
-                                    Text("Long Press: Zoom Out")
+                                    Text(LocalizedStringResource("Long Press: Zoom Out"))
                                         .font(.caption)
                                         .foregroundColor(.white.opacity(0.8))
                                 }
@@ -501,7 +501,7 @@ struct ClusterDetailView: View {
             
             VStack {
                 HStack {
-                    Button("Close") {
+                    Button(String(localized: "Close")) {
                         dismiss()
                     }
                     .buttonStyle(.borderedProminent)
@@ -509,7 +509,7 @@ struct ClusterDetailView: View {
                     
                     Spacer()
                     
-                    Text("\(cluster.photoCount) Photos")
+                    Text("\(cluster.photoCount) \(String(localized: "Photos"))")
                         .font(.title2)
                         .foregroundColor(.white)
                         .padding()

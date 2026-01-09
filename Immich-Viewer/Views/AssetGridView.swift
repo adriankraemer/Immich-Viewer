@@ -155,7 +155,7 @@ struct AssetGridView: View {
             // Animated loading ring
             CinematicLoader()
             
-            Text("Loading photos...")
+            Text(LocalizedStringResource("Loading photos..."))
                 .font(.headline)
                 .foregroundColor(GridTheme.textSecondary)
         }
@@ -181,7 +181,7 @@ struct AssetGridView: View {
             }
             
             VStack(spacing: 12) {
-                Text("Something went wrong")
+                Text(LocalizedStringResource("Something went wrong"))
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(GridTheme.textPrimary)
@@ -196,7 +196,7 @@ struct AssetGridView: View {
             Button(action: { viewModel.loadAssets() }) {
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.clockwise")
-                    Text("Try Again")
+                    Text(LocalizedStringResource("Try Again"))
                 }
                 .font(.headline)
                 .foregroundColor(.black)
@@ -311,7 +311,7 @@ struct AssetGridView: View {
                     .rotationEffect(.degrees(loadingRotation))
             }
             
-            Text("Loading more...")
+            Text(LocalizedStringResource("Loading more..."))
                 .font(.subheadline)
                 .foregroundColor(GridTheme.textSecondary)
             

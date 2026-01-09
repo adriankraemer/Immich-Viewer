@@ -20,10 +20,10 @@ struct StatisticsSettingsView: View {
                                     .padding()
                                 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text("View Library Statistics")
+                                    Text(LocalizedStringResource("View Library Statistics"))
                                         .font(.subheadline)
                                         .foregroundColor(.primary)
-                                    Text("See detailed stats about your photos, videos, people, and locations")
+                                    Text(LocalizedStringResource("See detailed stats about your photos, videos, people, and locations"))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }

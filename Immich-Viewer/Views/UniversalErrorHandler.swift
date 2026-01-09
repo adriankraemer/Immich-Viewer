@@ -20,13 +20,13 @@ struct UniversalErrorDisplayView: View {
                             .foregroundColor(errorColor)
                         
                         // Error Title
-                        Text("Oops! Unexpected Error")
+                        Text(String(localized: "Oops! Unexpected Error"))
                             .font(.title2)
                             .foregroundColor(.white)
                             .fontWeight(.bold)
                         
                         // Context
-                        Text("Error in: \(context)")
+                        Text(String(localized: "Error in: \(context)"))
                             .font(.body)
                             .foregroundColor(.gray)
                             .fontWeight(.medium)
@@ -47,7 +47,7 @@ struct UniversalErrorDisplayView: View {
                         
                         
                             
-                            Text("Please refresh the app in settings tab")
+                            Text(String(localized: "Please refresh the app in settings tab"))
                                 .padding(.horizontal, 40)
                                 .padding(.vertical, 15)
                                 .background(Color.red)
@@ -58,7 +58,7 @@ struct UniversalErrorDisplayView: View {
                                 .scaleEffect(1.1)
 
                             
-                            Text("Report this error on reddit: https://www.reddit.com/user/iosDevAc. Please include a picture of this screen. Thanks!")
+                            Text(String(localized: "Report this error on reddit: https://www.reddit.com/user/iosDevAc. Please include a picture of this screen. Thanks!"))
                                 .lineLimit(4)
                                 .multilineTextAlignment(.center)
                         
@@ -170,17 +170,17 @@ struct UniversalErrorDisplayView: View {
         if let immichError = error as? ImmichError {
             switch immichError {
             case .notAuthenticated:
-                return "Authentication failed. Please check your login credentials and try again."
+                return String(localized: "Authentication failed. Please check your login credentials and try again.")
             case .forbidden:
-                return "Access forbidden. Please check your permissions or contact your administrator."
+                return String(localized: "Access forbidden. Please check your permissions or contact your administrator.")
             case .invalidURL:
-                return "Invalid server URL. Please check your server configuration in settings."
+                return String(localized: "Invalid server URL. Please check your server configuration in settings.")
             case .serverError(let statusCode):
-                return "Server communication error (HTTP \(statusCode)). Please check your connection and server status."
+                return String(localized: "Server communication error (HTTP \(statusCode)). Please check your connection and server status.")
             case .networkError:
-                return "Network connection error. Please check your internet connection."
+                return String(localized: "Network connection error. Please check your internet connection.")
             case .clientError(let statusCode):
-                return "Request error (HTTP \(statusCode)). Please try again or contact support if the issue persists."
+                return String(localized: "Request error (HTTP \(statusCode)). Please try again or contact support if the issue persists.")
             }
         }
         
@@ -188,19 +188,19 @@ struct UniversalErrorDisplayView: View {
         if let nsError = error as NSError?, nsError.domain == "SlideshowError" {
             switch nsError.code {
             case 1001:
-                return "Image navigation error. The slideshow encountered an issue with image ordering."
+                return String(localized: "Image navigation error. The slideshow encountered an issue with image ordering.")
             case 1002:
-                return "No images available. Please select an album with images."
+                return String(localized: "No images available. Please select an album with images.")
             case 1003:
-                return "Image loading error. The selected image could not be loaded or is corrupted."
+                return String(localized: "Image loading error. The selected image could not be loaded or is corrupted.")
             case 1004:
-                return "Reached end of slideshow. All images have been displayed."
+                return String(localized: "Reached end of slideshow. All images have been displayed.")
             case 1005:
-                return "Memory error. The image is too large to display properly."
+                return String(localized: "Memory error. The image is too large to display properly.")
             case 1006:
-                return "Timer error in slideshow automation. The automatic advance failed."
+                return String(localized: "Timer error in slideshow automation. The automatic advance failed.")
             default:
-                return "Slideshow error occurred."
+                return String(localized: "Slideshow error occurred.")
             }
         }
         
@@ -208,23 +208,23 @@ struct UniversalErrorDisplayView: View {
         let description = error.localizedDescription.lowercased()
         
         if description.contains("memory") || description.contains("out of memory") {
-            return "Memory error. The app ran out of available memory. Try closing other apps."
+            return String(localized: "Memory error. The app ran out of available memory. Try closing other apps.")
         } else if description.contains("network") || description.contains("connection") || description.contains("timeout") {
-            return "Network error. Please check your internet connection and try again."
+            return String(localized: "Network error. Please check your internet connection and try again.")
         } else if description.contains("decode") || description.contains("parse") || description.contains("json") {
-            return "Data parsing error. The server returned unexpected data format."
+            return String(localized: "Data parsing error. The server returned unexpected data format.")
         } else if description.contains("index") || description.contains("bounds") || description.contains("range") {
-            return "Data access error. The app tried to access data that doesn't exist."
+            return String(localized: "Data access error. The app tried to access data that doesn't exist.")
         } else if description.contains("nil") || description.contains("null") {
-            return "Missing data error. Required information was not available."
+            return String(localized: "Missing data error. Required information was not available.")
         } else if description.contains("permission") || description.contains("authorization") {
-            return "Permission error. The app doesn't have required permissions."
+            return String(localized: "Permission error. The app doesn't have required permissions.")
         } else if description.contains("file") || description.contains("path") {
-            return "File system error. Unable to access or save files."
+            return String(localized: "File system error. Unable to access or save files.")
         } else if description.contains("cast") || description.contains("type") {
-            return "Data type error. Unexpected data format encountered."
+            return String(localized: "Data type error. Unexpected data format encountered.")
         } else {
-            return "An unexpected error occurred. This error type is not specifically handled yet."
+            return String(localized: "An unexpected error occurred. This error type is not specifically handled yet.")
         }
     }
     

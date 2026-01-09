@@ -137,12 +137,12 @@ struct SignInView: View {
                         )
                     )
                 
-                Text("for Apple TV")
+                Text(String(localized: "for Apple TV"))
                     .font(.system(size: 28, weight: .medium, design: .rounded))
                     .foregroundColor(.white.opacity(0.7))
             }
             
-            Text("Your memories, beautifully displayed")
+            Text(String(localized: "Your memories, beautifully displayed"))
                 .font(.system(size: 22, weight: .regular, design: .rounded))
                 .foregroundColor(.white.opacity(0.5))
                 .padding(.top, 8)
@@ -174,7 +174,7 @@ struct SignInView: View {
                 VStack(spacing: 24) {
                     formField(
                         icon: "server.rack",
-                        title: "Server URL",
+                        title: String(localized: "Server URL"),
                         placeholder: "",
                         text: $viewModel.serverURL,
                         isSecure: false,
@@ -184,7 +184,7 @@ struct SignInView: View {
                     
                     formField(
                         icon: "envelope",
-                        title: "Email",
+                        title: String(localized: "Email"),
                         placeholder: "your-email@example.com",
                         text: $viewModel.email,
                         isSecure: false,
@@ -195,8 +195,8 @@ struct SignInView: View {
                     if viewModel.showApiKeyLogin {
                         formField(
                             icon: "key",
-                            title: "API Key",
-                            placeholder: "Enter your API key",
+                            title: String(localized: "API Key"),
+                            placeholder: String(localized: "Enter your API key"),
                             text: $viewModel.apiKey,
                             isSecure: true,
                             keyboardType: .default,
@@ -205,8 +205,8 @@ struct SignInView: View {
                     } else {
                         formField(
                             icon: "lock",
-                            title: "Password",
-                            placeholder: "Enter your password",
+                            title: String(localized: "Password"),
+                            placeholder: String(localized: "Enter your password"),
                             text: $viewModel.password,
                             isSecure: true,
                             keyboardType: .default,
@@ -241,14 +241,14 @@ struct SignInView: View {
             
             Spacer()
             
-            Text("Make sure your Immich server is accessible from this device")
+            Text(String(localized: "Make sure your Immich server is accessible from this device"))
                 .font(.system(size: 14))
                 .foregroundColor(.white.opacity(0.3))
                 .padding(.bottom, 40)
         }
         .padding(.horizontal, 80)
         .alert(viewModel.alertTitle, isPresented: $viewModel.showError) {
-            Button("OK") { }
+            Button(String(localized: "OK")) { }
         } message: {
             Text(viewModel.errorMessage)
         }
@@ -348,7 +348,7 @@ struct SignInView: View {
                 Image(systemName: viewModel.showApiKeyLogin ? "person.fill" : "key.fill")
                     .font(.system(size: 14))
                 
-                Text(viewModel.showApiKeyLogin ? "Use password instead" : "Use API key instead")
+                Text(viewModel.showApiKeyLogin ? String(localized: "Use password instead") : String(localized: "Use API key instead"))
                     .font(.system(size: 16, weight: .medium))
             }
             .foregroundColor(.white.opacity(0.5))

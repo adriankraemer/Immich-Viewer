@@ -40,18 +40,18 @@ class SignInViewModel: ObservableObject {
     }
     
     var headerTitle: String {
-        mode == .addUser ? "Add Account" : "Welcome Back"
+        mode == .addUser ? String(localized: "Add Account") : String(localized: "Welcome Back")
     }
     
     var headerSubtitle: String {
-        mode == .addUser ? "Connect another Immich server" : "Sign in to continue"
+        mode == .addUser ? String(localized: "Connect another Immich server") : String(localized: "Sign in to continue")
     }
     
     var buttonTitle: String {
         if isLoading {
-            return mode == .addUser ? "Adding..." : "Signing In..."
+            return mode == .addUser ? String(localized: "Adding...") : String(localized: "Signing In...")
         }
-        return mode == .addUser ? "Add Account" : "Sign In"
+        return mode == .addUser ? String(localized: "Add Account") : String(localized: "Sign In")
     }
     
     var buttonIcon: String {
@@ -59,7 +59,7 @@ class SignInViewModel: ObservableObject {
     }
     
     var alertTitle: String {
-        mode == .addUser ? "Add User Error" : "Sign In Error"
+        mode == .addUser ? String(localized: "Add User Error") : String(localized: "Sign In Error")
     }
     
     // MARK: - Initialization
@@ -104,7 +104,7 @@ class SignInViewModel: ObservableObject {
         guard URL(string: cleanURL) != nil else {
             isLoading = false
             showError = true
-            errorMessage = "Please enter a valid server URL"
+            errorMessage = String(localized: "Please enter a valid server URL")
             return
         }
         
@@ -185,7 +185,7 @@ class SignInViewModel: ObservableObject {
                     
                     if !success {
                         self.showError = true
-                        self.errorMessage = error ?? "Failed to sign in. Please check your API key and try again."
+                        self.errorMessage = error ?? String(localized: "Failed to sign in. Please check your API key and try again.")
                     }
                 }
             }
@@ -197,7 +197,7 @@ class SignInViewModel: ObservableObject {
                     
                     if !success {
                         self.showError = true
-                        self.errorMessage = error ?? "Failed to sign in. Please check your credentials and try again."
+                        self.errorMessage = error ?? String(localized: "Failed to sign in. Please check your credentials and try again.")
                     }
                 }
             }

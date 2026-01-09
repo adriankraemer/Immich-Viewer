@@ -70,7 +70,7 @@ struct SearchView: View {
                 }
             }
         }
-        .searchable(text: $viewModel.searchText, prompt: "Search by context: Mountains, sunsets, etc...")
+        .searchable(text: $viewModel.searchText, prompt: String(localized: "Search by context: Mountains, sunsets, etc..."))
         .onSubmit(of: .search) {
             viewModel.performSearch()
         }
@@ -113,7 +113,7 @@ struct SearchView: View {
                     .rotationEffect(.degrees(searchLoadingRotation))
             }
             
-            Text("Searching...")
+            Text(String(localized: "Searching..."))
                 .font(.headline)
                 .foregroundColor(SearchTheme.textSecondary)
             
@@ -149,7 +149,7 @@ struct SearchView: View {
             }
             
             VStack(spacing: 12) {
-                Text("Search Failed")
+                Text(String(localized: "Search Failed"))
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(SearchTheme.textPrimary)
@@ -164,7 +164,7 @@ struct SearchView: View {
             Button(action: { viewModel.retry() }) {
                 HStack(spacing: 10) {
                     Image(systemName: "arrow.clockwise")
-                    Text("Try Again")
+                    Text(String(localized: "Try Again"))
                 }
                 .font(.headline)
                 .foregroundColor(.black)
@@ -194,12 +194,12 @@ struct SearchView: View {
             }
             
             VStack(spacing: 12) {
-                Text("No Results Found")
+                Text(String(localized: "No Results Found"))
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(SearchTheme.textPrimary)
                 
-                Text("Try different search terms")
+                Text(String(localized: "Try different search terms"))
                     .font(.body)
                     .foregroundColor(SearchTheme.textSecondary)
             }
@@ -228,12 +228,12 @@ struct SearchView: View {
             }
             
             VStack(spacing: 12) {
-                Text("Search Your Photos")
+                Text(String(localized: "Search Your Photos"))
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(SearchTheme.textPrimary)
                 
-                Text("Use the search field to find photos by context")
+                Text(String(localized: "Use the search field to find photos by context"))
                     .font(.body)
                     .foregroundColor(SearchTheme.textSecondary)
             }

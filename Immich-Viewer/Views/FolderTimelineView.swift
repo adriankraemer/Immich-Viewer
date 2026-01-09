@@ -33,7 +33,7 @@ struct FolderTimelineView: View {
                 .scaleEffect(1.5)
                 .tint(TimelineTheme.accent)
             
-            Text("Loading folder dates...")
+            Text(LocalizedStringResource("Loading folder dates..."))
                 .font(.headline)
                 .foregroundColor(TimelineTheme.textSecondary)
         }
@@ -46,12 +46,12 @@ struct FolderTimelineView: View {
                 .font(.system(size: 60))
                 .foregroundColor(TimelineTheme.textSecondary)
             
-            Text("No Timeline Data")
+            Text(LocalizedStringResource("No Timeline Data"))
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(TimelineTheme.textPrimary)
             
-            Text("Folder dates could not be determined")
+            Text(LocalizedStringResource("Folder dates could not be determined"))
                 .font(.body)
                 .foregroundColor(TimelineTheme.textSecondary)
         }
@@ -125,7 +125,7 @@ struct TimelineGroupSection: View {
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(TimelineTheme.textPrimary)
                 
-                Text("\(group.folders.count) folder\(group.folders.count == 1 ? "" : "s")")
+                Text("\(group.folders.count) \(String(localized: "folder"))\(group.folders.count == 1 ? "" : "s")")
                     .font(.system(size: 16))
                     .foregroundColor(TimelineTheme.textSecondary)
             }
@@ -206,7 +206,7 @@ struct TimelineFolderCard: View {
                     HStack {
                         Image(systemName: "photo.stack")
                             .font(.system(size: 14))
-                        Text("\(count) items")
+                        Text("\(count) \(String(localized: "items"))")
                             .font(.system(size: 14))
                     }
                     .foregroundColor(TimelineTheme.textSecondary)

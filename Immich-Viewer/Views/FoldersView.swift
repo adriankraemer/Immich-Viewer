@@ -141,7 +141,7 @@ struct FoldersView: View {
                 .scaleEffect(1.5)
                 .tint(FolderViewTheme.accent)
             
-            Text("Loading folders...")
+            Text(LocalizedStringResource("Loading folders..."))
                 .font(.headline)
                 .foregroundColor(FolderViewTheme.textSecondary)
         }
@@ -154,7 +154,7 @@ struct FoldersView: View {
                 .font(.system(size: 50))
                 .foregroundColor(FolderViewTheme.accent)
             
-            Text("Error Loading Folders")
+            Text(LocalizedStringResource("Error Loading Folders"))
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(FolderViewTheme.textPrimary)
@@ -165,7 +165,7 @@ struct FoldersView: View {
                 .multilineTextAlignment(.center)
             
             Button(action: { viewModel.retry() }) {
-                Text("Retry")
+                Text(LocalizedStringResource("Retry"))
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, 30)
@@ -185,12 +185,12 @@ struct FoldersView: View {
                 .font(.system(size: 60))
                 .foregroundColor(FolderViewTheme.textSecondary)
             
-            Text("No Folders Found")
+            Text(LocalizedStringResource("No Folders Found"))
                 .font(.title2)
                 .fontWeight(.semibold)
                 .foregroundColor(FolderViewTheme.textPrimary)
             
-            Text("Folders with indexed assets will appear here")
+            Text(LocalizedStringResource("Folders with indexed assets will appear here"))
                 .font(.body)
                 .foregroundColor(FolderViewTheme.textSecondary)
         }
@@ -254,7 +254,7 @@ struct FolderDetailView: View {
                     Button(action: { dismiss() }) {
                         HStack(spacing: 8) {
                             Image(systemName: "xmark")
-                            Text("Close")
+                            Text(LocalizedStringResource("Close"))
                         }
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)

@@ -62,7 +62,7 @@ struct SharedGridView<Item: GridDisplayable>: View {
                     }
                     
                     VStack(spacing: 12) {
-                        Text("Something went wrong")
+                        Text(String(localized: "Something went wrong"))
                             .font(.title2)
                             .fontWeight(.semibold)
                             .foregroundColor(CinematicTheme.textPrimary)
@@ -77,7 +77,7 @@ struct SharedGridView<Item: GridDisplayable>: View {
                     Button(action: { onRetry() }) {
                         HStack(spacing: 10) {
                             Image(systemName: "arrow.clockwise")
-                            Text("Try Again")
+                            Text(String(localized: "Try Again"))
                         }
                         .font(.headline)
                         .foregroundColor(.black)

@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 /// Service responsible for fetching "On This Day" memories from the Immich API
 /// Uses Immich's native /api/memories endpoint for accurate results across all years
@@ -9,8 +10,19 @@ class MemoriesService: ObservableObject {
     private var cachedMemories: [Memory]?
     private var cacheDate: Date?
     
+    /// Cancellables for notification subscriptions
+    private var cancellables = Set<AnyCancellable>()
+    
     init(networkService: NetworkService) {
         self.networkService = networkService
+        
+        // Listen for user switch notifications to invalidate cache
+        NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))
+            .sink { [weak self] _ in
+                self?.invalidateCache()
+                debugLog("MemoriesService: Cache invalidated due to user switch")
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Public Methods

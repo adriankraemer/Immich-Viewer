@@ -145,21 +145,25 @@ struct SkeletonLoadingView: View {
     @State private var isAnimating = false
     
     var body: some View {
-        ZStack {
-            CinematicTheme.surface.opacity(0.5)
-            
-            // Shimmer effect
-            LinearGradient(
-                colors: [
-                    Color.clear,
-                    Color.white.opacity(0.08),
-                    Color.clear
-                ],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
-            .offset(x: isAnimating ? 400 : -400)
+        GeometryReader { geometry in
+            ZStack {
+                CinematicTheme.surface.opacity(0.5)
+                
+                // Shimmer effect - sized to be wider than container for animation
+                LinearGradient(
+                    colors: [
+                        Color.clear,
+                        Color.white.opacity(0.08),
+                        Color.clear
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(width: geometry.size.width)
+                .offset(x: isAnimating ? geometry.size.width : -geometry.size.width)
+            }
         }
+        .clipped()
         .onAppear {
             withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
                 isAnimating = true

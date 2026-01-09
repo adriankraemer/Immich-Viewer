@@ -163,8 +163,8 @@ class FoldersViewModel: ObservableObject {
             hasLoadedTimeline = false
             Task {
                 await folderService.clearCache()
+                loadFolders()
             }
-            loadFolders()
         }
     }
 }

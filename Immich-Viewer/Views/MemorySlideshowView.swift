@@ -103,50 +103,60 @@ struct MemorySlideshowView: View {
         }
     }
     
-    // MARK: - Top Bar View
+    // MARK: - Top Bar View (Floating Pill - Top Right)
     
     private var topBarView: some View {
-        HStack(spacing: 16) {
-            // Pause/Play button
-            Button(action: { togglePause() }) {
-                Image(systemName: isPaused ? "play.fill" : "pause.fill")
-                    .font(.system(size: 20, weight: .medium))
+        HStack {
+            Spacer()
+            
+            // Floating pill with progress and counter
+            HStack(spacing: 10) {
+                // Adaptive progress indicator
+                if assets.count < 10 {
+                    // Segmented bar for fewer images
+                    miniProgressBar
+                        .frame(width: CGFloat(assets.count * 12))
+                } else {
+                    // Circular progress ring for many images
+                    circularProgressRing
+                }
+                
+                // Position indicator
+                Text("\(currentIndex + 1)/\(assets.count)")
+                    .font(.system(size: 14, weight: .semibold, design: .rounded))
                     .foregroundColor(SlideshowTheme.textPrimary)
-                    .frame(width: 44, height: 44)
+                
+                // Pause indicator (only shown when paused)
+                if isPaused {
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(SlideshowTheme.accent)
+                }
             }
-            .buttonStyle(.plain)
-            
-            // Segmented progress bar
-            segmentedProgressBar
-            
-            // Position indicator
-            Text("\(currentIndex + 1)/\(assets.count)")
-                .font(.system(size: 16, weight: .medium, design: .rounded))
-                .foregroundColor(SlideshowTheme.textSecondary)
-                .frame(minWidth: 50)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(Color.black.opacity(0.6))
+            )
         }
         .padding(.horizontal, 40)
         .padding(.top, 30)
     }
     
-    // MARK: - Segmented Progress Bar
+    // MARK: - Mini Progress Bar (for < 10 images)
     
-    private var segmentedProgressBar: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 4) {
-                ForEach(0..<assets.count, id: \.self) { index in
-                    segmentView(for: index, totalWidth: geometry.size.width)
-                }
+    private var miniProgressBar: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<assets.count, id: \.self) { index in
+                miniSegmentView(for: index)
             }
         }
         .frame(height: 4)
     }
     
-    private func segmentView(for index: Int, totalWidth: CGFloat) -> some View {
-        let segmentCount = CGFloat(assets.count)
-        let segmentWidth = (totalWidth - (segmentCount - 1) * 4) / segmentCount
-        
-        return ZStack(alignment: .leading) {
+    private func miniSegmentView(for index: Int) -> some View {
+        ZStack(alignment: .leading) {
             // Background (inactive)
             RoundedRectangle(cornerRadius: 2)
                 .fill(SlideshowTheme.progressInactive.opacity(0.5))
@@ -166,7 +176,26 @@ struct MemorySlideshowView: View {
             }
             // Future segments stay inactive (no fill)
         }
-        .frame(width: segmentWidth, height: 4)
+        .frame(width: 9, height: 4)
+    }
+    
+    // MARK: - Circular Progress Ring (for 10+ images)
+    
+    private var circularProgressRing: some View {
+        let overallProgress = (CGFloat(currentIndex) + progress) / CGFloat(assets.count)
+        
+        return ZStack {
+            // Background ring
+            Circle()
+                .stroke(SlideshowTheme.progressInactive.opacity(0.5), lineWidth: 3)
+            
+            // Progress ring
+            Circle()
+                .trim(from: 0, to: overallProgress)
+                .stroke(SlideshowTheme.progressActive, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+        }
+        .frame(width: 20, height: 20)
     }
     
     // MARK: - Image Content View
@@ -184,7 +213,6 @@ struct MemorySlideshowView: View {
                     HStack {
                         dateOverlay
                         Spacer()
-                        actionButtons
                     }
                     .padding(.horizontal, 40)
                     .padding(.top, 80) // Below progress bar
@@ -209,29 +237,6 @@ struct MemorySlideshowView: View {
         }
     }
     
-    // MARK: - Action Buttons
-    
-    private var actionButtons: some View {
-        HStack(spacing: 16) {
-            // Favorite button
-            Button(action: { /* Toggle favorite */ }) {
-                Image(systemName: currentAsset?.isFavorite == true ? "heart.fill" : "heart")
-                    .font(.system(size: 24))
-                    .foregroundColor(currentAsset?.isFavorite == true ? .red : SlideshowTheme.textPrimary)
-                    .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-            }
-            .buttonStyle(.plain)
-            
-            // Menu button
-            Button(action: { /* Show menu */ }) {
-                Image(systemName: "ellipsis")
-                    .font(.system(size: 24))
-                    .foregroundColor(SlideshowTheme.textPrimary)
-                    .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 2)
-            }
-            .buttonStyle(.plain)
-        }
-    }
     
     // MARK: - Navigation Arrows
     

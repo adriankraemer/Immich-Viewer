@@ -10,7 +10,7 @@ struct FoldersView: View {
     @ObservedObject var authService: AuthenticationService
     
     // MARK: - Settings
-    @AppStorage("folderViewMode") private var folderViewMode = "grid"
+    @AppStorage("folderViewMode") private var folderViewMode = "timeline"
     
     // MARK: - Thumbnail Provider
     private var thumbnailProvider: FolderThumbnailProvider {

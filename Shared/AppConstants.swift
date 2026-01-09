@@ -36,6 +36,7 @@ struct UserDefaultsKeys {
     static let lastSeenVersion = "lastSeenVersion"
     static let assetSortOrder = "assetSortOrder"
     static let folderViewMode = "folderViewMode"
+    static let exploreViewMode = "exploreViewMode"
 }
 
 /// URL schemes supported by the app for deep linking

@@ -49,6 +49,19 @@
         }
       }
     },
+    "%lld years ago" : {
+
+    },
+    "%lld/%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld/%2$lld"
+          }
+        }
+      }
+    },
     "%lld%%" : {
 
     },
@@ -79,6 +92,9 @@
           }
         }
       }
+    },
+    "1 year ago" : {
+
     },
     "7 days" : {
       "localizations" : {
@@ -922,6 +938,9 @@
         }
       }
     },
+    "Choose between location-based places or on this day memories" : {
+
+    },
     "Choose between recent photos or random photos from your library." : {
       "localizations" : {
         "de" : {
@@ -1276,6 +1295,9 @@
           }
         }
       }
+    },
+    "Could not calculate memory date" : {
+
     },
     "Countries" : {
       "localizations" : {
@@ -1923,6 +1945,9 @@
           }
         }
       }
+    },
+    "Explore View" : {
+
     },
     "Failed to load image" : {
       "localizations" : {
@@ -2958,6 +2983,9 @@
         }
       }
     },
+    "Loading memories..." : {
+
+    },
     "Loading more..." : {
       "localizations" : {
         "de" : {
@@ -3199,6 +3227,9 @@
           }
         }
       }
+    },
+    "Memories" : {
+
     },
     "Memory Cache" : {
       "localizations" : {
@@ -3577,6 +3608,9 @@
         }
       }
     },
+    "No Memories Today" : {
+
+    },
     "No People Found" : {
       "localizations" : {
         "de" : {
@@ -3620,6 +3654,9 @@
           }
         }
       }
+    },
+    "No photos found for this day" : {
+
     },
     "No Photos in Album" : {
       "localizations" : {
@@ -3885,6 +3922,9 @@
         }
       }
     },
+    "On This Day" : {
+
+    },
     "Oops! Unexpected Error" : {
       "localizations" : {
         "de" : {
@@ -4127,6 +4167,9 @@
         }
       }
     },
+    "photo" : {
+
+    },
     "Photo Information" : {
       "localizations" : {
         "de" : {
@@ -4171,6 +4214,9 @@
         }
       }
     },
+    "photos" : {
+
+    },
     "Photos" : {
       "localizations" : {
         "de" : {
@@ -4192,6 +4238,9 @@
           }
         }
       }
+    },
+    "Photos taken on this day in previous years will appear here" : {
+
     },
     "Photos with location data will appear here" : {
       "localizations" : {
@@ -4236,6 +4285,9 @@
           }
         }
       }
+    },
+    "Places" : {
+
     },
     "Places Visited" : {
       "localizations" : {
@@ -5294,7 +5346,6 @@
       }
     },
     "Storage management" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

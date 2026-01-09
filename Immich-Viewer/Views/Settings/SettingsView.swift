@@ -291,6 +291,7 @@ struct SettingsView: View {
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
     @AppStorage("navigationStyle") private var navigationStyle = NavigationStyle.tabs.rawValue
     @AppStorage("folderViewMode") private var folderViewMode = "timeline"
+    @AppStorage("exploreViewMode") private var exploreViewMode = "places"
     @AppStorage("enableTopShelf", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var enableTopShelf = true
     @AppStorage("topShelfStyle", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfStyle = "carousel"
     @AppStorage("topShelfImageSelection", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfImageSelection = "recent"
@@ -781,6 +782,19 @@ struct SettingsView: View {
                     }
                 ),
                 isOn: showFoldersTab
+            )
+            SettingsRow(
+                icon: "globe",
+                title: "Explore View",
+                subtitle: "Choose between location-based places or on this day memories",
+                content: AnyView(
+                    Picker(String(localized: "View"), selection: $exploreViewMode) {
+                        Text(String(localized: "Places")).tag("places")
+                        Text(String(localized: "Memories")).tag("memories")
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 180)
+                )
             )
             SettingsRow(
                 icon: "house",

@@ -282,7 +282,7 @@ struct SettingsView: View {
     @AppStorage("showTagsTab") private var showTagsTab = false
     @AppStorage("showFoldersTab") private var showFoldersTab = false
     @AppStorage("showAlbumsTab") private var showAlbumsTab = true
-    @AppStorage("showWorldMapTab") private var showWorldMapTab = true
+    @AppStorage("showWorldMapTab") private var showWorldMapTab = false
     @AppStorage("defaultStartupTab") private var defaultStartupTab = "photos"
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("use24HourClock") private var use24HourClock = true

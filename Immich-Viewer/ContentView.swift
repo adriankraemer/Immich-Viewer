@@ -70,7 +70,7 @@ struct ContentView: View {
     @AppStorage(UserDefaultsKeys.showTagsTab) private var showTagsTab = false
     @AppStorage(UserDefaultsKeys.showFoldersTab) private var showFoldersTab = false
     @AppStorage(UserDefaultsKeys.showAlbumsTab) private var showAlbumsTab = true
-    @AppStorage(UserDefaultsKeys.showWorldMapTab) private var showWorldMapTab = true
+    @AppStorage(UserDefaultsKeys.showWorldMapTab) private var showWorldMapTab = false
     @AppStorage(UserDefaultsKeys.defaultStartupTab) private var defaultStartupTab = "photos"
     @State private var searchTabHighlighted = false
     /// Asset ID from deep link to highlight when opening Photos tab

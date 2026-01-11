@@ -119,5 +119,5 @@ GPL-3.0 — See [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- Built for [Immich](https://immich.app) — the self-hosted Google Photos alternative
+- Built for [Immich](https://immich.app) — the Self-hosted photo and video management solution
 - Forked from [mensadilabs/Immich-Gallery](https://github.com/mensadilabs/Immich-Gallery)

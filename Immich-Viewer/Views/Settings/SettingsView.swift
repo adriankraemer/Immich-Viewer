@@ -289,7 +289,6 @@ struct SettingsView: View {
     @AppStorage("enableKenBurnsEffect") private var enableKenBurnsEffect = false
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
-    @AppStorage("navigationStyle") private var navigationStyle = NavigationStyle.tabs.rawValue
     @AppStorage("folderViewMode") private var folderViewMode = "timeline"
     @AppStorage("exploreViewMode") private var exploreViewMode = "places"
     @AppStorage("enableTopShelf", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var enableTopShelf = true
@@ -814,24 +813,6 @@ struct SettingsView: View {
                             Text(String(localized: "Folders")).tag("folders")
                         }
                         Text(String(localized: "Explore")).tag("explore")
-                    }
-                        .pickerStyle(.menu)
-                        .frame(width: 300, alignment: .trailing)
-                )
-            )
-            
-            SettingsRow(
-                icon: "rectangle.split.3x1",
-                title: "Navigation Style",
-                subtitle: "Choose between a classic tab bar or the adaptive sidebar layout",
-                content: AnyView(
-                    Picker(String(localized: "Navigation Style"), selection: Binding(
-                        get: { NavigationStyle(rawValue: navigationStyle) ?? .tabs },
-                        set: { navigationStyle = $0.rawValue }
-                    )) {
-                        ForEach(NavigationStyle.allCases, id: \.self) { style in
-                            Text(style.localizedDisplayName).tag(style)
-                        }
                     }
                         .pickerStyle(.menu)
                         .frame(width: 300, alignment: .trailing)

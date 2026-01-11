@@ -28,7 +28,6 @@ struct UserDefaultsKeys {
     static let enableKenBurnsEffect = "enableKenBurnsEffect"
     static let enableSlideshowShuffle = "enableSlideshowShuffle"
     static let allPhotosSortOrder = "allPhotosSortOrder"
-    static let navigationStyle = "navigationStyle"
     static let enableTopShelf = "enableTopShelf"
     static let topShelfStyle = "topShelfStyle"
     static let topShelfImageSelection = "topShelfImageSelection"

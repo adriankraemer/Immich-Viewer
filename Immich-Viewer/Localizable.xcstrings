@@ -955,6 +955,7 @@
       }
     },
     "Choose between a classic tab bar or the adaptive sidebar layout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -3544,6 +3545,7 @@
       }
     },
     "Navigation Style" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5304,6 +5306,7 @@
       }
     },
     "Sidebar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5700,6 +5703,7 @@
       }
     },
     "Tabs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

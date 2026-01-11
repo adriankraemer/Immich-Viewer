@@ -7,7 +7,6 @@ struct DisplaySettingsView: View {
     @AppStorage("defaultStartupTab") private var defaultStartupTab = "photos"
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
-    @AppStorage("navigationStyle") private var navigationStyle = NavigationStyle.tabs.rawValue
     @AppStorage("folderViewMode") private var folderViewMode = "timeline"
     
     var body: some View {
@@ -54,24 +53,6 @@ struct DisplaySettingsView: View {
                                         Text("Folders").tag("folders")
                                     }
                                     Text("Explore").tag("explore")
-                                }
-                                    .pickerStyle(.menu)
-                                    .frame(width: 300, alignment: .trailing)
-                            )
-                        )
-                        
-                        SettingsRow(
-                            icon: "rectangle.split.3x1",
-                            title: "Navigation Style",
-                            subtitle: "Choose between a classic tab bar or the adaptive sidebar layout",
-                            content: AnyView(
-                                Picker("Navigation Style", selection: Binding(
-                                    get: { NavigationStyle(rawValue: navigationStyle) ?? .tabs },
-                                    set: { navigationStyle = $0.rawValue }
-                                )) {
-                                    ForEach(NavigationStyle.allCases, id: \.self) { style in
-                                        Text(style.localizedDisplayName).tag(style)
-                                    }
                                 }
                                     .pickerStyle(.menu)
                                     .frame(width: 300, alignment: .trailing)

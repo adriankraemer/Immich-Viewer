@@ -813,6 +813,7 @@ struct SettingsView: View {
                             Text(String(localized: "Folders")).tag("folders")
                         }
                         Text(String(localized: "Explore")).tag("explore")
+                        Text(String(localized: "World Map")).tag("worldmap")
                     }
                         .pickerStyle(.menu)
                         .frame(width: 300, alignment: .trailing)

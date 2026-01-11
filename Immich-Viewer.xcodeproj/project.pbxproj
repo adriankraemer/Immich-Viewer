@@ -693,7 +693,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.11.5;
+				MARKETING_VERSION = 1.11.6;
 				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -720,7 +720,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.11.5;
+				MARKETING_VERSION = 1.11.6;
 				PRODUCT_BUNDLE_IDENTIFIER = app.immich.photo.TopShelfExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;

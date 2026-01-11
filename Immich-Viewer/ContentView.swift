@@ -70,8 +70,8 @@ struct ContentView: View {
     @AppStorage(UserDefaultsKeys.showTagsTab) private var showTagsTab = false
     @AppStorage(UserDefaultsKeys.showFoldersTab) private var showFoldersTab = false
     @AppStorage(UserDefaultsKeys.showAlbumsTab) private var showAlbumsTab = true
+    @AppStorage(UserDefaultsKeys.showWorldMapTab) private var showWorldMapTab = false
     @AppStorage(UserDefaultsKeys.defaultStartupTab) private var defaultStartupTab = "photos"
-    @AppStorage(UserDefaultsKeys.navigationStyle) private var navigationStyle = NavigationStyle.tabs.rawValue
     @State private var searchTabHighlighted = false
     /// Asset ID from deep link to highlight when opening Photos tab
     @State private var deepLinkAssetId: String?
@@ -91,10 +91,6 @@ struct ContentView: View {
         _mapService = StateObject(wrappedValue: MapService(networkService: networkService))
         _searchService = StateObject(wrappedValue: SearchService(networkService: networkService))
         _memoriesService = StateObject(wrappedValue: MemoriesService(networkService: networkService))
-    }
-    
-    private var currentNavigationStyle: NavigationStyle {
-        NavigationStyle(rawValue: navigationStyle) ?? .tabs
     }
     
     var body: some View {
@@ -171,13 +167,15 @@ struct ContentView: View {
                             }
                             .tag(TabName.explore.rawValue)
                         
-                        WorldMapView(mapService: mapService, assetService: assetService, authService: authService)
-                            .errorBoundary(context: "WorldMap Tab")
-                            .tabItem {
-                                Image(systemName: TabName.worldMap.iconName)
-                                Text(TabName.worldMap.title)
-                            }
-                            .tag(TabName.worldMap.rawValue)
+                        if showWorldMapTab {
+                            WorldMapView(mapService: mapService, assetService: assetService, authService: authService)
+                                .errorBoundary(context: "WorldMap Tab")
+                                .tabItem {
+                                    Image(systemName: TabName.worldMap.iconName)
+                                    Text(TabName.worldMap.title)
+                                }
+                                .tag(TabName.worldMap.rawValue)
+                        }
                         
                         SearchView(searchService: searchService, assetService: assetService, authService: authService)
                             .errorBoundary(context: "Search Tab")
@@ -195,7 +193,6 @@ struct ContentView: View {
                             }
                             .tag(TabName.settings.rawValue)
                     }
-                    .tabNavigationStyle(currentNavigationStyle)
                     .onAppear {
                         setDefaultTab()
                         startInactivityTimer()
@@ -216,6 +213,12 @@ struct ContentView: View {
                     .onChange(of: showFoldersTab) { _, enabled in
                         // Switch to Photos tab if Folders tab is disabled while user is viewing it
                         if !enabled && selectedTab == TabName.folders.rawValue {
+                            selectedTab = TabName.photos.rawValue
+                        }
+                    }
+                    .onChange(of: showWorldMapTab) { _, enabled in
+                        // Switch to Photos tab if World Map tab is disabled while user is viewing it
+                        if !enabled && selectedTab == TabName.worldMap.rawValue {
                             selectedTab = TabName.photos.rawValue
                         }
                     }
@@ -327,7 +330,11 @@ struct ContentView: View {
         case "explore":
             selectedTab = TabName.explore.rawValue
         case "worldmap":
-            selectedTab = TabName.worldMap.rawValue
+            if showWorldMapTab {
+                selectedTab = TabName.worldMap.rawValue
+            } else {
+                selectedTab = TabName.photos.rawValue
+            }
         case "search":
             selectedTab = TabName.search.rawValue
         case "settings":
@@ -335,28 +342,6 @@ struct ContentView: View {
         default:
             selectedTab = TabName.photos.rawValue
         }
-    }
-}
-
-/// View modifier to apply different navigation styles to TabView
-private struct TabNavigationStyleModifier: ViewModifier {
-    let style: NavigationStyle
-    
-    func body(content: Content) -> some View {
-        switch style {
-        case .sidebar:
-            // Use sidebar style for Apple TV (more traditional navigation)
-            content.tabViewStyle(.sidebarAdaptable)
-        case .tabs:
-            // Use default tab style
-            content
-        }
-    }
-}
-
-private extension View {
-    func tabNavigationStyle(_ style: NavigationStyle) -> some View {
-        modifier(TabNavigationStyleModifier(style: style))
     }
 }
 

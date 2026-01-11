@@ -41,6 +41,11 @@ extension UserDefaults {
         set { set(newValue, forKey: UserDefaultsKeys.showAlbumsTab) }
     }
     
+    var showWorldMapTab: Bool {
+        get { bool(forKey: UserDefaultsKeys.showWorldMapTab) }
+        set { set(newValue, forKey: UserDefaultsKeys.showWorldMapTab) }
+    }
+    
     var use24HourClock: Bool {
         get { bool(forKey: UserDefaultsKeys.use24HourClock) }
         set { set(newValue, forKey: UserDefaultsKeys.use24HourClock) }
@@ -59,11 +64,6 @@ extension UserDefaults {
     var enableSlideshowShuffle: Bool {
         get { bool(forKey: UserDefaultsKeys.enableSlideshowShuffle) }
         set { set(newValue, forKey: UserDefaultsKeys.enableSlideshowShuffle) }
-    }
-    
-    var navigationStyle: String {
-        get { string(forKey: UserDefaultsKeys.navigationStyle) ?? NavigationStyle.tabs.rawValue }
-        set { set(newValue, forKey: UserDefaultsKeys.navigationStyle) }
     }
     
     var allPhotosSortOrder: String {

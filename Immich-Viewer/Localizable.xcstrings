@@ -955,6 +955,7 @@
       }
     },
     "Choose between a classic tab bar or the adaptive sidebar layout" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1839,6 +1840,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activer l'onglet tags dans la navigation principale"
+          }
+        }
+      }
+    },
+    "Enable the world map tab in the main navigation" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weltkarten-Tab in der Hauptnavigation aktivieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar la pestaña del mapa mundial en la navegación principal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer l'onglet carte du monde dans la navigation principale"
           }
         }
       }
@@ -3544,6 +3567,7 @@
       }
     },
     "Navigation Style" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5237,6 +5261,28 @@
         }
       }
     },
+    "Show World Map Tab" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weltkarten-Tab anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar pestaña del mapa mundial"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher l'onglet Carte du monde"
+          }
+        }
+      }
+    },
     "Shuffle Images" : {
       "localizations" : {
         "de" : {
@@ -5304,6 +5350,7 @@
       }
     },
     "Sidebar" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5612,7 +5659,6 @@
       }
     },
     "Storage management" : {
-      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5701,6 +5747,7 @@
       }
     },
     "Tabs" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -321,7 +321,7 @@ Immich_ViewerApp
         ├── ExploreView
         │   ├── Places (continents → countries → cities)
         │   └── Memories (On This Day)
-        ├── WorldMapView
+        ├── WorldMapView (optional)
         ├── SearchView
         └── SettingsView
             ├── Interface

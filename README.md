@@ -1,7 +1,7 @@
 # Immich for Apple TV
 
 <p align="center">
-  <img src="Immich-Viewer/icon.svg" alt="Immich AppleTV" width="200"/>
+  <img src="Immich-Viewer/icon.svg" alt="Immich Viewer" width="200"/>
 </p>
 
 **Turn your Apple TV into a beautiful digital photo frame** — browse, explore, and enjoy your self-hosted [Immich](https://immich.app) photo library on the big screen.
@@ -9,6 +9,8 @@
 ---
 
 ## 🎬 Get Started
+**Download the App from the Apple App Store**  
+https://apps.apple.com/us/app/immich-viewer/id6757225201
 
 **Join the Beta on TestFlight:**  
 [https://testflight.apple.com/join/7nGMT7cz](https://testflight.apple.com/join/7nGMT7cz)

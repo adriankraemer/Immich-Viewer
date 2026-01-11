@@ -9,7 +9,8 @@
 ---
 
 ## 🎬 Get Started
-**Download the App from the Apple App Store**  
+
+**Download from the App Store**  
 https://apps.apple.com/us/app/immich-viewer/id6757225201
 
 **Join the Beta on TestFlight:**  
@@ -19,7 +20,7 @@ https://apps.apple.com/us/app/immich-viewer/id6757225201
 
 ## ✨ Features
 
-### 📸 Browse Your Memories
+### 📸 Browse Your Library
 
 | Feature | Description |
 |---------|-------------|
@@ -27,40 +28,54 @@ https://apps.apple.com/us/app/immich-viewer/id6757225201
 | **Albums** | Access personal and shared albums with beautiful cover images |
 | **People** | Browse photos by person using Immich's smart face recognition |
 | **Tags** | Find photos organized by your custom tags |
-| **Folders** | Navigate your library using your original folder structure |
-| **Favorites** | Quick access to your favorite moments |
+| **Folders** | Navigate your library using your original folder structure (grid, tree, or timeline view) |
+| **Favorites** | Quick access to your starred photos |
 
 ### 🗺️ Explore & Discover
 
 | Feature | Description |
 |---------|-------------|
-| **World Map** | See where your photos were taken on an interactive globe |
-| **Explore** | Discover your library through cities, statistics, and highlights |
-| **Search** | Find any photo or album instantly with powerful search |
+| **World Map** | See where your photos were taken on an interactive globe with photo clusters |
+| **Places** | Explore your library by continent, country, and city |
+| **Memories** | Relive "On This Day" moments from previous years |
+| **Search** | Find any photo instantly with AI-powered contextual search (mountains, sunsets, etc.) |
+| **Statistics** | View insights about your library — total photos, videos, and storage |
 
 ### 🖼️ Slideshow — Your Digital Photo Frame
 
 Transform your TV into an elegant photo frame with the built-in slideshow:
 
-- **Ken Burns Effect** — Cinematic pan and zoom animations bring your photos to life
-- **Auto-Start** — Automatically begins after a period of inactivity (configurable)
-- **Shuffle Mode** — Randomize the order for variety
-- **Customizable Timing** — Set how long each photo displays
-- **Reflection Effects** — Optional elegant reflections beneath photos
-- **Custom Backgrounds** — Choose your preferred backdrop color
+| Setting | Options |
+|---------|---------|
+| **Ken Burns Effect** | Cinematic pan and zoom animations (or disable for static display) |
+| **Ambilight Background** | Dynamic background that matches your photo's colors |
+| **Reflections** | Optional elegant reflections beneath photos |
+| **Custom Backgrounds** | Choose black, white, gray, blue, or purple backdrops |
+| **Slide Timing** | 3 seconds to 2 minutes per photo |
+| **Shuffle Mode** | Randomize the order for variety |
+| **Auto-Start** | Automatically begins after a period of inactivity (configurable) |
+| **Info Overlay** | Show or hide date, time, and location on photos |
+| **Clock Format** | 12-hour or 24-hour time display |
+
+**Tip:** Press Play/Pause on your remote to pause the slideshow. Tap anywhere to exit.
 
 ### 🎥 Media Playback
 
-- **High-Quality Viewing** — Full-resolution photos on your big screen
-- **Video Support** — Watch your videos with the native player
-- **RAW Support** — View RAW photos (automatically converted for display)
-- **EXIF Details** — See camera info, date, location, and more with a single click
+| Feature | Description |
+|---------|-------------|
+| **High-Quality Viewing** | Full-resolution photos on your big screen |
+| **Video Support** | Watch your videos with the native tvOS player |
+| **RAW Support** | View RAW photos (DNG, CR2, NEF, ARW, ORF, RAF, and more) |
+| **EXIF Details** | Swipe up to see camera info, date, location, and more |
+| **Navigation** | Swipe left/right to browse through photos |
 
 ### 👥 Multi-Account Support
 
-- **Multiple Users** — Add accounts for different family members or servers
-- **Easy Switching** — Quickly switch between accounts
-- **Flexible Login** — Sign in with email/password or API key
+| Feature | Description |
+|---------|-------------|
+| **Multiple Users** | Add accounts for different family members or servers |
+| **Easy Switching** | Quickly switch between accounts from Settings |
+| **Flexible Login** | Sign in with email/password or API key |
 
 ### 🎨 Customization
 
@@ -69,18 +84,21 @@ Transform your TV into an elegant photo frame with the built-in slideshow:
 | **Navigation Style** | Choose between tab bar or sidebar layout |
 | **Visible Tabs** | Show or hide Albums, Tags, and Folders |
 | **Default Tab** | Pick which view opens when you launch the app |
-| **Top Shelf** | Display recent or random photos on your Apple TV home screen |
-| **Clock Format** | 12-hour or 24-hour time display |
-| **Slideshow Settings** | Timing, effects, background, and more |
+| **Explore Mode** | Switch between Places (location-based) or Memories (On This Day) |
+| **Sort Order** | Newest first or oldest first for photos and collections |
+| **Folder View** | Grid, tree, or timeline layout |
 
 ### 📺 Top Shelf Integration
 
 Your photos appear right on the Apple TV home screen:
 
-- **Recent Photos** — Show your latest memories
-- **Random Selection** — Surprise yourself with random picks
-- **Two Styles** — Carousel (scrolling) or sectioned (grid) layout
-- **Quick Access** — Click any photo to open it directly in the app
+| Setting | Options |
+|---------|---------|
+| **Display Style** | Fullscreen carousel or compact grid |
+| **Image Selection** | Recent photos or random picks from your library |
+| **Quick Access** | Click any photo to open it directly in the app |
+
+**Note:** Top Shelf only displays landscape-oriented photos for optimal display.
 
 ---
 
@@ -96,12 +114,27 @@ Your photos appear right on the Apple TV home screen:
 
 ## 🚀 Quick Setup
 
-1. **Install** the app from TestFlight on your Apple TV
+1. **Install** the app from the App Store on your Apple TV
 2. **Open** the app and enter your Immich server URL
 3. **Sign in** with your email/password or API key
 4. **Enjoy** your photos on the big screen!
 
 > 💡 **Tip:** Your server URL typically looks like `http://192.168.1.x:2283` or `https://photos.yourdomain.com`
+
+---
+
+## 🎮 Remote Controls
+
+| Action | How To |
+|--------|--------|
+| **Navigate** | Swipe on touchpad |
+| **Select** | Click touchpad |
+| **Go Back** | Press Menu button |
+| **Pause Slideshow** | Press Play/Pause button |
+| **Exit Slideshow** | Tap touchpad |
+| **View Photo Details** | Swipe up on photo |
+| **Hide Photo Details** | Swipe down |
+| **Zoom Map** | Play/Pause to zoom in, long press to zoom out |
 
 ---
 
@@ -119,5 +152,5 @@ GPL-3.0 — See [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- Built for [Immich](https://immich.app) — the Self-hosted photo and video management solution
+- Built for [Immich](https://immich.app) — the self-hosted photo and video management solution
 - Forked from [mensadilabs/Immich-Gallery](https://github.com/mensadilabs/Immich-Gallery)

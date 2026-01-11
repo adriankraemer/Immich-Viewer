@@ -1,6 +1,6 @@
 # Architecture Documentation
 
-This document provides a detailed overview of the Immich-Viewer architecture, design patterns, and implementation details.
+This document provides a technical overview of the Immich-Viewer architecture for developers and contributors.
 
 ## Table of Contents
 
@@ -13,16 +13,20 @@ This document provides a detailed overview of the Immich-Viewer architecture, de
 7. [Network Layer](#network-layer)
 8. [UI Architecture](#ui-architecture)
 9. [Top Shelf Extension](#top-shelf-extension)
-10. [Error Handling](#error-handling)
-11. [Performance Considerations](#performance-considerations)
+10. [Performance Considerations](#performance-considerations)
+
+---
 
 ## Overview
 
-Immich-Viewer follows a **service-oriented architecture** with clear separation between:
-- **Presentation Layer**: SwiftUI views
+Immich-Viewer follows a **service-oriented MVVM architecture** with clear separation between:
+
+- **Presentation Layer**: SwiftUI views and view models
 - **Business Logic Layer**: Service classes
 - **Data Layer**: Storage and network abstractions
-- **Infrastructure Layer**: Network, caching, persistence
+- **Infrastructure Layer**: Caching, persistence, and utilities
+
+---
 
 ## Architecture Patterns
 
@@ -30,198 +34,131 @@ Immich-Viewer follows a **service-oriented architecture** with clear separation 
 
 All services are initialized in `ContentView` and passed down to child views:
 
-```swift
+```
 ContentView
-├── UserManager (singleton-like, shared across app)
+├── UserManager (centralized user management)
 ├── NetworkService (depends on UserManager)
 ├── AuthenticationService (depends on NetworkService + UserManager)
 └── Feature Services (depend on NetworkService)
     ├── AssetService
     ├── AlbumService
     ├── PeopleService
-    └── ...
+    ├── TagService
+    ├── FolderService
+    ├── ExploreService
+    ├── MapService
+    ├── SearchService
+    ├── MemoriesService
+    └── StatsService
 ```
 
 ### Observable Pattern
 
-Services use `@Published` properties and `ObservableObject` to notify views of state changes:
+Services and view models use `@Published` properties and `ObservableObject` to notify views of state changes:
 
 - `UserManager`: `@Published var savedUsers`, `@Published var currentUser`
 - `AuthenticationService`: `@Published var isAuthenticated`, `@Published var currentUser`
-- Services are injected as `@StateObject` in views
+- View models: Loading states, error messages, data collections
 
 ### Protocol-Oriented Design
 
-Storage abstraction via protocols enables:
-- Easy testing with mock implementations
-- Future migration paths (e.g., UserDefaults → Keychain)
-- Clear contracts between layers
+Storage abstraction via protocols enables testing and future migration:
 
 ```swift
 protocol UserStorage {
     func saveUser(_ user: SavedUser) throws
     func loadUsers() -> [SavedUser]
     func removeUser(withId id: String) throws
-    // ...
 }
 ```
+
+---
 
 ## Service Layer
 
 ### UserManager
 
-**Purpose**: Centralized user account management
+Centralized user account management.
 
-**Responsibilities**:
+**Responsibilities:**
 - Managing multiple user accounts
 - Authentication (password and API key)
 - User switching and persistence
-- Token management
-
-**Key Methods**:
-- `authenticateWithCredentials()` - Password-based login
-- `authenticateWithApiKey()` - API key-based login
-- `switchToUser()` - Change active user
-- `removeUser()` - Delete user account
-
-**Storage**:
-- User data: UserDefaults (App Group)
-- Tokens: Keychain (secure storage)
+- Token management via Keychain
 
 ### NetworkService
 
-**Purpose**: HTTP client for Immich API
+HTTP client for Immich API.
 
-**Responsibilities**:
-- Building authenticated requests
-- Handling different auth types (JWT vs API key)
-- Error classification and handling
-- Response processing
-
-**Key Features**:
-- Dynamic header switching based on auth type
+**Key Features:**
+- Dynamic header switching (JWT vs API key)
 - Automatic credential loading from UserManager
-- Comprehensive error handling
-
-**Auth Header Logic**:
-```swift
-if currentAuthType == .apiKey {
-    request.setValue(accessToken, forHTTPHeaderField: "x-api-key")
-} else {
-    request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
-}
-```
+- Comprehensive error handling and classification
 
 ### AuthenticationService
 
-**Purpose**: Authentication state management
+Authentication state management.
 
-**Responsibilities**:
+**Responsibilities:**
 - Tracking authentication status
-- User info fetching
-- Token validation
-- Logout handling
-
-**State Management**:
-- `isAuthenticated`: Boolean flag for UI state
-- `currentUser`: Owner object with user details
-- Automatic token validation on init
+- User info fetching and validation
+- Token validation and logout handling
 
 ### AssetService
 
-**Purpose**: Photo and video operations
+Photo and video operations.
 
-**Key Methods**:
-- `fetchAssets()` - Search with filters (album, person, tag, city, folder)
-- `fetchRandomAssets()` - Random selection for slideshows
-- `loadImage()` - Thumbnail loading
-- `loadFullImage()` - Full-size image with RAW support
-- `loadVideoURL()` - Video playback URL
+**Key Methods:**
+- `fetchAssets()` — Search with filters (album, person, tag, city, folder)
+- `fetchRandomAssets()` — Random selection for slideshows
+- `loadImage()` — Thumbnail loading with caching
+- `loadFullImage()` — Full-size image with RAW support
+- `loadVideoURL()` — Video playback URL construction
 
-**RAW Image Handling**:
-- Detects RAW formats by MIME type
-- Falls back to server-provided preview size
-- Handles formats: DNG, CR2, NEF, ARW, ORF, RAF, etc.
+**RAW Support:** Detects RAW formats (DNG, CR2, NEF, ARW, ORF, RAF) and uses server-provided previews.
 
 ### AlbumService
 
-**Purpose**: Album operations
-
-**Key Methods**:
-- `fetchAlbums()` - Get all albums (personal + shared)
-- `getAlbumInfo()` - Detailed album information
-- `loadAlbumThumbnail()` - Album cover image
+Album operations including personal and shared albums.
 
 ### PeopleService
 
-**Purpose**: Face recognition and people management
-
-**Features**:
-- Fetch all recognized people
-- Get photos for specific person
-- Animated thumbnail previews
+Face recognition and people management with animated thumbnail previews.
 
 ### TagService
 
-**Purpose**: Tag management
-
-**Features**:
-- Fetch all tags
-- Get photos for specific tag
-- Animated thumbnail previews
+Tag management and tag-based photo retrieval.
 
 ### FolderService
 
-**Purpose**: Folder operations
-
-**Features**:
-- Fetch all folders
-- Get photos for specific folder
-- Animated thumbnail previews
+Folder navigation with grid, tree, and timeline view support.
 
 ### ExploreService
 
-**Purpose**: Discovery and statistics
-
-**Features**:
-- Library statistics (total photos, videos)
-- City-based photo grouping
-- Highlights and recommendations
+Discovery features including city-based grouping and statistics.
 
 ### MapService
 
-**Purpose**: Geographic data and map operations
+Geographic data and map operations.
 
-**Features**:
-- Fetch lightweight map markers for fast initial load
-- On-demand asset loading for specific regions
-- Cache management for map data
-- Support for `/api/map/markers` endpoint with fallback to metadata search
-- Geographic region filtering
+**Key Methods:**
+- `fetchMapMarkers()` — Lightweight markers for fast initial load
+- `fetchAssetsInRegion()` — On-demand asset loading for specific regions
+- 5-minute cache for map data
 
-**Key Methods**:
-- `fetchMapMarkers()` - Fast initial marker load with caching
-- `fetchAssetsInRegion()` - Load assets within geographic bounds
-- `fetchAssetsById()` - Batch fetch assets by ID
-- `fetchGeodata()` - Legacy full data fetch (heavyweight)
+### MemoriesService
 
-### StatsService
-
-**Purpose**: Library statistics and analytics
-
-**Features**:
-- Total photo and video counts
-- Storage statistics
-- Cached statistics for performance
+"On This Day" memories feature, fetching photos from previous years on the current date.
 
 ### SearchService
 
-**Purpose**: Full-text search
+AI-powered contextual search across assets using Immich's CLIP integration.
 
-**Features**:
-- Search across assets and albums
-- Faceted search results
-- Pagination support
+### StatsService
+
+Library statistics including photo/video counts and storage usage.
+
+---
 
 ## Data Models
 
@@ -251,14 +188,27 @@ struct SavedUser: Codable, Identifiable {
     let name: String
     let serverURL: String
     let authType: AuthType  // .jwt or .apiKey
-    let createdAt: Date
     let profileImageData: Data?
+}
+```
+
+### Memory
+
+"On This Day" memory model:
+
+```swift
+struct Memory: Identifiable {
+    let id: String
+    let title: String
+    let date: Date
+    let assets: [ImmichAsset]
+    var coverAsset: ImmichAsset?
 }
 ```
 
 ### GridDisplayable Protocol
 
-Unified interface for grid items (albums, people, tags, folders):
+Unified interface for grid items (albums, people, tags, folders, continents):
 
 ```swift
 protocol GridDisplayable: Identifiable {
@@ -266,9 +216,10 @@ protocol GridDisplayable: Identifiable {
     var secondaryTitle: String? { get }
     var thumbnailId: String? { get }
     var itemCount: Int? { get }
-    // ...
 }
 ```
+
+---
 
 ## Storage Architecture
 
@@ -277,77 +228,56 @@ protocol GridDisplayable: Identifiable {
 Combines two storage mechanisms:
 
 1. **UserDefaults** (App Group)
-   - User account data
-   - Settings and preferences
+   - User account data and settings
    - Shared with TopShelf extension
 
 2. **Keychain**
    - Authentication tokens (JWT or API keys)
    - Secure, encrypted storage
-   - Accessible by app and extension
 
 ### Storage Keys
 
-**User Data**:
-- `immich_user_{userID}` → JSON-encoded SavedUser
-
-**Tokens**:
-- Keychain key: `immich_token_{userID}` → Token string
-
-**Current User**:
-- `currentActiveUserId` → String (in shared UserDefaults)
+- User data: `immich_user_{userID}` → JSON-encoded SavedUser
+- Tokens: Keychain key `immich_token_{userID}` → Token string
+- Current user: `currentActiveUserId` in shared UserDefaults
 
 ### Migration System
 
-`StorageMigration.swift` handles:
-- One-time migration from standard UserDefaults to App Group
-- Legacy key cleanup
-- Backward compatibility
+`StorageMigration.swift` handles one-time migration from standard UserDefaults to App Group for backward compatibility.
+
+---
 
 ## Authentication Flow
 
 ### Password Authentication
 
-```
 1. User enters email + password
-2. POST /api/auth/login
-   → Returns AuthResponse with JWT token
+2. POST `/api/auth/login` → Returns JWT token
 3. Fetch user profile image
-4. Create SavedUser object
-5. Save user to UserDefaults
-6. Save token to Keychain
-7. Set as current user
-8. Update NetworkService credentials
-9. Fetch user info from server
-10. Set isAuthenticated = true
-```
+4. Create and save SavedUser
+5. Save token to Keychain
+6. Set as current user
+7. Update NetworkService credentials
 
 ### API Key Authentication
 
-```
 1. User enters email + API key
-2. GET /api/users/me (with x-api-key header)
-   → Validates key and returns User object
+2. GET `/api/users/me` (with `x-api-key` header) → Validates key
 3. Fetch user profile image
-4. Create SavedUser object (authType: .apiKey)
-5. Save user to UserDefaults
-6. Save API key to Keychain
-7. Set as current user
-8. Update NetworkService credentials
-9. Set isAuthenticated = true
-```
+4. Create SavedUser with `authType: .apiKey`
+5. Save API key to Keychain
+6. Set as current user
 
 ### User Switching
 
-```
-1. User selects different account
-2. Load token from Keychain for selected user
-3. Clear HTTP cookies for previous server
-4. Update currentUser in UserManager
-5. Update NetworkService credentials
-6. Refresh all tabs (via NotificationCenter)
-7. Fetch new user info
-```
+1. Load token from Keychain for selected user
+2. Clear HTTP cookies for previous server
+3. Update currentUser in UserManager
+4. Update NetworkService credentials
+5. Post `refreshAllTabs` notification
+6. Fetch new user info
+
+---
 
 ## Network Layer
 
@@ -356,34 +286,23 @@ Combines two storage mechanisms:
 `NetworkService.buildAuthenticatedRequest()`:
 1. Validates credentials exist
 2. Constructs full URL (baseURL + endpoint)
-3. Sets HTTP method
-4. Adds auth header (JWT or API key)
-5. Adds JSON body if provided
-
-### Response Processing
-
-`NetworkService.processResponse()`:
-1. Validates HTTP response
-2. Checks status code
-3. Maps to ImmichError types:
-   - 401 → `notAuthenticated` (triggers logout)
-   - 403 → `forbidden` (triggers logout)
-   - 5xx → `serverError` (preserves auth)
-   - 4xx → `clientError`
-   - Network failures → `networkError`
+3. Sets HTTP method and auth header
+4. Adds JSON body if provided
 
 ### Error Classification
 
 ```swift
 enum ImmichError: Error {
-    case notAuthenticated  // 401 - logout
-    case forbidden         // 403 - logout
-    case serverError(Int)  // 5xx - preserve auth
+    case notAuthenticated  // 401 - triggers logout
+    case forbidden         // 403 - triggers logout
+    case serverError(Int)  // 5xx - preserves auth
     case networkError      // Connection issues
     case clientError(Int)  // 4xx - request error
     case invalidURL        // Malformed URL
 }
 ```
+
+---
 
 ## UI Architecture
 
@@ -400,41 +319,49 @@ Immich_ViewerApp
         ├── TagsGridView (optional)
         ├── FoldersView (optional)
         ├── ExploreView
+        │   ├── Places (continents → countries → cities)
+        │   └── Memories (On This Day)
         ├── WorldMapView
         ├── SearchView
         └── SettingsView
+            ├── Interface
+            ├── Slideshow
+            ├── Sorting
+            ├── Top Shelf
+            ├── Account
+            ├── Statistics
+            └── About
 ```
 
 ### Navigation Styles
 
-Two navigation styles supported:
+Two navigation styles supported via `NavigationStyle` enum:
 - **Tabs**: Traditional tab bar navigation
 - **Sidebar**: Sidebar-style navigation (tvOS 15+)
-
-### State Management
-
-- **@StateObject**: For service instances (created once)
-- **@State**: For local view state
-- **@AppStorage**: For UserDefaults-backed settings
-- **NotificationCenter**: For cross-view communication
 
 ### View Models
 
 View models bridge services and views:
-- **AssetGridViewModel**: Manages asset grid state and pagination
-- **SlideshowViewModel**: Handles slideshow logic, Ken Burns effect, timing
-- **WorldMapViewModel**: Manages map markers, region loading, asset selection
-- **ExploreViewModel**: Handles statistics and city-based exploration
-- **SearchViewModel**: Manages search queries and results
-- **FullScreenImageViewModel**: Controls full-screen image viewing and navigation
-- **StatsViewModel**: Manages library statistics display
 
-### Error Handling
+| ViewModel | Purpose |
+|-----------|---------|
+| `AssetGridViewModel` | Asset grid state and pagination |
+| `SlideshowViewModel` | Slideshow logic, Ken Burns effect, timing |
+| `WorldMapViewModel` | Map markers, region loading, clustering |
+| `ExploreViewModel` | Statistics and continent-based exploration |
+| `MemoriesViewModel` | "On This Day" memories loading |
+| `SearchViewModel` | Search queries and results |
+| `FullScreenImageViewModel` | Full-screen image viewing and navigation |
+| `SignInViewModel` | Authentication form logic |
 
-`UniversalErrorHandler` view modifier:
-- Catches errors from async operations
-- Displays user-friendly error messages
-- Handles authentication failures gracefully
+### State Management
+
+- `@StateObject`: For service instances (created once)
+- `@State`: For local view state
+- `@AppStorage`: For UserDefaults-backed settings
+- `NotificationCenter`: For cross-view communication (tab refresh, slideshow triggers)
+
+---
 
 ## Top Shelf Extension
 
@@ -445,76 +372,43 @@ Separate process that:
 2. Retrieves token from Keychain
 3. Fetches photos from Immich API
 4. Downloads and processes images
-5. Creates TVTopShelfContent
+5. Creates `TVTopShelfContent`
 
 ### Content Types
 
-- **Carousel**: Horizontal scrolling carousel
-- **Sectioned**: Grid-style sections
+- **Carousel**: Horizontal scrolling fullscreen carousel
+- **Sectioned**: Compact grid-style sections
 
 ### Image Selection
 
-- **Recent**: Latest photos (landscape only)
-- **Random**: Random selection (landscape only)
-
-### Configuration
-
-Top Shelf settings stored in UserDefaults:
-- `enableTopShelf`: Enable/disable Top Shelf
-- `topShelfStyle`: Carousel or sectioned style
-- `topShelfImageSelection`: Recent or random photos
+- **Recent**: Latest landscape photos
+- **Random**: Random landscape selection
 
 ### Deep Linking
 
 Photos link to: `immichgallery://asset/{assetId}`
 - Opens app and navigates to specific photo
-- Handled in `ContentView.onOpenURL()`
+- Handled in `Immich_ViewerApp.onOpenURL()`
 
-## Error Handling
-
-### Error Propagation
-
-```
-Network Request
-    ↓ (throws ImmichError)
-Service Method
-    ↓ (re-throws or converts)
-View Async Task
-    ↓ (caught by errorBoundary)
-UniversalErrorHandler
-    ↓ (displays to user)
-```
-
-### Error Recovery
-
-- **Authentication Errors**: Automatic logout and sign-in prompt
-- **Network Errors**: Retry with user notification
-- **Server Errors**: Preserve auth state, show error message
-- **Client Errors**: Display specific error message
-
-### Logging
-
-Comprehensive logging throughout:
-- Network requests/responses
-- Authentication state changes
-- User operations
-- Error conditions
+---
 
 ## Performance Considerations
 
 ### Image Loading
 
-- **Thumbnails**: WebP format, cached in memory
-- **Full Images**: Progressive loading
+- **Thumbnails**: WebP format, cached in memory and disk
+- **Full Images**: Progressive loading with fallback
 - **RAW Images**: Server-converted previews
-- **Video Thumbnails**: Cached video preview images
+- **Video Thumbnails**: Cached preview images
 
 ### Caching Strategy
 
-- **ThumbnailCache**: In-memory cache for frequently accessed thumbnails
-- **StatsCache**: Cached library statistics
-- **MapService Cache**: 5-minute cache for map markers
-- **TopShelf**: Temporary file cache (cleared on each update)
+| Cache | Purpose | Duration |
+|-------|---------|----------|
+| `ThumbnailCache` | In-memory + disk cache for thumbnails | Session + persistent |
+| `StatsCache` | Library statistics | Session |
+| `MapService` | Map markers | 5 minutes |
+| TopShelf | Temporary file cache | Cleared on each update |
 
 ### Memory Management
 
@@ -527,7 +421,7 @@ Comprehensive logging throughout:
 ### Background Processing
 
 - Network requests on background threads
-- UI updates on main thread (MainActor)
+- UI updates on main thread (`@MainActor`)
 - Async/await for concurrent operations
 - Background image processing and color extraction
 
@@ -535,14 +429,17 @@ Comprehensive logging throughout:
 
 - Lightweight marker loading for fast initial render
 - On-demand asset loading when zooming into regions
-- Batch fetching to minimize API calls
+- Clustering to reduce annotation count
 - Coordinate validation to prevent invalid markers
+
+---
 
 ## Thread Safety
 
 ### Main Thread Requirements
 
 All UI updates must be on main thread:
+
 ```swift
 await MainActor.run {
     self.isAuthenticated = true
@@ -552,7 +449,8 @@ await MainActor.run {
 
 ### Background Operations
 
-Network and storage operations on background:
+Network and storage operations run on background threads:
+
 ```swift
 Task {
     let result = try await service.fetchData()
@@ -562,6 +460,8 @@ Task {
 }
 ```
 
+---
+
 ## Additional Features
 
 ### Auto-Slideshow
@@ -569,9 +469,8 @@ Task {
 Automatic slideshow activation after user inactivity:
 - Configurable timeout (in minutes, 0 = disabled)
 - Switches to Photos tab automatically
-- Starts slideshow after tab transition
 - Timer resets on any user interaction
-- Controlled via `NotificationCenter` for pause/resume
+- Controlled via `NotificationCenter`
 
 ### Deep Linking
 
@@ -579,22 +478,22 @@ URL scheme support for opening specific assets:
 - Format: `immichgallery://asset/{assetId}`
 - Handled in `Immich_ViewerApp.onOpenURL()`
 - Posts notification to `ContentView` for asset navigation
-- Automatically switches to Photos tab and highlights asset
 
 ### Slideshow Features
 
-- **Ken Burns Effect**: Pan and zoom animations with configurable enable/disable
+- **Ken Burns Effect**: Pan and zoom animations
+- **Ambilight Background**: Dynamic color-matched background
 - **Shuffle Mode**: Randomize photo order
 - **Reflections**: Optional reflection effects
-- **Custom Intervals**: User-configurable timing
-- **Background Colors**: Customizable slideshow background
-- **Pause/Resume**: User control during slideshow
+- **Custom Intervals**: 3 seconds to 2 minutes
+- **Pause/Resume**: Play/Pause button control
 
 ### Location Hierarchy
 
 Hierarchical location browsing:
-- **World Map**: Global view with all photo locations
+- **World Map**: Global view with clustered photo locations
 - **Continent View**: Photos grouped by continent
 - **Country View**: Photos within a specific country
 - **City View**: Photos within a specific city
-- Location data extracted from EXIF metadata
+
+Location data is extracted from EXIF metadata.

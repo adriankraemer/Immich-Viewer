@@ -47,7 +47,7 @@ struct AboutSettingsView: View {
             // Generate QR codes asynchronously on a background thread
             async let website = generateQRCodeAsync(from: "https://immich.adriank.app")
             async let immich = generateQRCodeAsync(from: "https://immich.app")
-            async let appStore = generateQRCodeAsync(from: "https://apps.apple.com/app/id6738990599")
+            async let appStore = generateQRCodeAsync(from: "https://apps.apple.com/us/app/immich-viewer/id6757225201")
             
             let (websiteResult, immichResult, appStoreResult) = await (website, immich, appStore)
             
@@ -163,7 +163,7 @@ struct AboutSettingsView: View {
                 qrCodeCard(
                     title: String(localized: "App Store"),
                     icon: "star.fill",
-                    url: "https://apps.apple.com/app/id6738990599",
+                    url: "https://apps.apple.com/us/app/immich-viewer/id6757225201",
                     gradient: [AboutTheme.immichBlue, AboutTheme.immichGreen],
                     qrImage: appStoreQRCode
                 )

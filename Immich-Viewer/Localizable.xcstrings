@@ -1844,6 +1844,28 @@
         }
       }
     },
+    "Enable the world map tab in the main navigation" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weltkarten-Tab in der Hauptnavigation aktivieren"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar la pestaña del mapa mundial en la navegación principal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activer l'onglet carte du monde dans la navigation principale"
+          }
+        }
+      }
+    },
     "Enter your API key" : {
       "localizations" : {
         "de" : {
@@ -5235,6 +5257,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Afficher l'onglet Tags"
+          }
+        }
+      }
+    },
+    "Show World Map Tab" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weltkarten-Tab anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar pestaña del mapa mundial"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher l'onglet Carte du monde"
           }
         }
       }

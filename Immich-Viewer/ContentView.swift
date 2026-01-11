@@ -70,6 +70,7 @@ struct ContentView: View {
     @AppStorage(UserDefaultsKeys.showTagsTab) private var showTagsTab = false
     @AppStorage(UserDefaultsKeys.showFoldersTab) private var showFoldersTab = false
     @AppStorage(UserDefaultsKeys.showAlbumsTab) private var showAlbumsTab = true
+    @AppStorage(UserDefaultsKeys.showWorldMapTab) private var showWorldMapTab = true
     @AppStorage(UserDefaultsKeys.defaultStartupTab) private var defaultStartupTab = "photos"
     @State private var searchTabHighlighted = false
     /// Asset ID from deep link to highlight when opening Photos tab
@@ -166,13 +167,15 @@ struct ContentView: View {
                             }
                             .tag(TabName.explore.rawValue)
                         
-                        WorldMapView(mapService: mapService, assetService: assetService, authService: authService)
-                            .errorBoundary(context: "WorldMap Tab")
-                            .tabItem {
-                                Image(systemName: TabName.worldMap.iconName)
-                                Text(TabName.worldMap.title)
-                            }
-                            .tag(TabName.worldMap.rawValue)
+                        if showWorldMapTab {
+                            WorldMapView(mapService: mapService, assetService: assetService, authService: authService)
+                                .errorBoundary(context: "WorldMap Tab")
+                                .tabItem {
+                                    Image(systemName: TabName.worldMap.iconName)
+                                    Text(TabName.worldMap.title)
+                                }
+                                .tag(TabName.worldMap.rawValue)
+                        }
                         
                         SearchView(searchService: searchService, assetService: assetService, authService: authService)
                             .errorBoundary(context: "Search Tab")
@@ -210,6 +213,12 @@ struct ContentView: View {
                     .onChange(of: showFoldersTab) { _, enabled in
                         // Switch to Photos tab if Folders tab is disabled while user is viewing it
                         if !enabled && selectedTab == TabName.folders.rawValue {
+                            selectedTab = TabName.photos.rawValue
+                        }
+                    }
+                    .onChange(of: showWorldMapTab) { _, enabled in
+                        // Switch to Photos tab if World Map tab is disabled while user is viewing it
+                        if !enabled && selectedTab == TabName.worldMap.rawValue {
                             selectedTab = TabName.photos.rawValue
                         }
                     }
@@ -321,7 +330,11 @@ struct ContentView: View {
         case "explore":
             selectedTab = TabName.explore.rawValue
         case "worldmap":
-            selectedTab = TabName.worldMap.rawValue
+            if showWorldMapTab {
+                selectedTab = TabName.worldMap.rawValue
+            } else {
+                selectedTab = TabName.photos.rawValue
+            }
         case "search":
             selectedTab = TabName.search.rawValue
         case "settings":

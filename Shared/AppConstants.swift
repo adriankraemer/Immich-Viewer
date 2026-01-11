@@ -23,6 +23,7 @@ struct UserDefaultsKeys {
     static let showTagsTab = "showTagsTab"
     static let showFoldersTab = "showFoldersTab"
     static let showAlbumsTab = "showAlbumsTab"
+    static let showWorldMapTab = "showWorldMapTab"
     static let use24HourClock = "use24HourClock"
     static let enableReflectionsInSlideshow = "enableReflectionsInSlideshow"
     static let enableKenBurnsEffect = "enableKenBurnsEffect"

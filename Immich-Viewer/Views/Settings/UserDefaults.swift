@@ -41,6 +41,11 @@ extension UserDefaults {
         set { set(newValue, forKey: UserDefaultsKeys.showAlbumsTab) }
     }
     
+    var showWorldMapTab: Bool {
+        get { bool(forKey: UserDefaultsKeys.showWorldMapTab) }
+        set { set(newValue, forKey: UserDefaultsKeys.showWorldMapTab) }
+    }
+    
     var use24HourClock: Bool {
         get { bool(forKey: UserDefaultsKeys.use24HourClock) }
         set { set(newValue, forKey: UserDefaultsKeys.use24HourClock) }

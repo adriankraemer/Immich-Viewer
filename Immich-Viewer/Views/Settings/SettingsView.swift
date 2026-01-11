@@ -282,6 +282,7 @@ struct SettingsView: View {
     @AppStorage("showTagsTab") private var showTagsTab = false
     @AppStorage("showFoldersTab") private var showFoldersTab = false
     @AppStorage("showAlbumsTab") private var showAlbumsTab = true
+    @AppStorage("showWorldMapTab") private var showWorldMapTab = true
     @AppStorage("defaultStartupTab") private var defaultStartupTab = "photos"
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("use24HourClock") private var use24HourClock = true
@@ -365,6 +366,11 @@ struct SettingsView: View {
         }
         .onChange(of: showFoldersTab) { _, newValue in
             if !newValue && defaultStartupTab == "folders" {
+                defaultStartupTab = "photos"
+            }
+        }
+        .onChange(of: showWorldMapTab) { _, newValue in
+            if !newValue && defaultStartupTab == "worldmap" {
                 defaultStartupTab = "photos"
             }
         }
@@ -796,6 +802,13 @@ struct SettingsView: View {
                 )
             )
             SettingsRow(
+                icon: "map",
+                title: "Show World Map Tab",
+                subtitle: "Enable the world map tab in the main navigation",
+                content: AnyView(Toggle("", isOn: $showWorldMapTab).labelsHidden()),
+                isOn: showWorldMapTab
+            )
+            SettingsRow(
                 icon: "house",
                 title: "Default Startup Tab",
                 subtitle: "Choose which tab opens when the app starts",
@@ -813,7 +826,9 @@ struct SettingsView: View {
                             Text(String(localized: "Folders")).tag("folders")
                         }
                         Text(String(localized: "Explore")).tag("explore")
-                        Text(String(localized: "World Map")).tag("worldmap")
+                        if showWorldMapTab {
+                            Text(String(localized: "World Map")).tag("worldmap")
+                        }
                     }
                         .pickerStyle(.menu)
                         .frame(width: 300, alignment: .trailing)

@@ -81,9 +81,6 @@
         }
       }
     },
-    "%lld%%" : {
-
-    },
     "%llds" : {
 
     },
@@ -845,6 +842,7 @@
       }
     },
     "Buffering" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -6213,6 +6211,7 @@
       }
     },
     "Try Different Auth Method" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

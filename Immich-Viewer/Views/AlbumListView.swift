@@ -92,7 +92,8 @@ struct AlbumDetailView: View {
                     isAllPhotos: false,
                     isFavorite: album.id.hasPrefix("smart_") ? true : false,
                     onAssetsLoaded: nil,
-                    deepLinkAssetId: nil
+                    deepLinkAssetId: nil,
+                    albumService: albumService
                 )
             }
             .navigationTitle(album.albumName)

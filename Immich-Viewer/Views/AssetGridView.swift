@@ -21,6 +21,7 @@ struct AssetGridView: View {
     // MARK: - Configuration
     let deepLinkAssetId: String?
     let externalSlideshowTrigger: Binding<Bool>?
+    let albumService: AlbumService?
     
     // MARK: - Local State
     @State private var showingFullScreen = false
@@ -56,12 +57,14 @@ struct AssetGridView: View {
         exploreService: ExploreService? = nil,
         onAssetsLoaded: (([ImmichAsset]) -> Void)?,
         deepLinkAssetId: String?,
-        externalSlideshowTrigger: Binding<Bool>? = nil
+        externalSlideshowTrigger: Binding<Bool>? = nil,
+        albumService: AlbumService? = nil
     ) {
         self.assetService = assetService
         self.authService = authService
         self.deepLinkAssetId = deepLinkAssetId
         self.externalSlideshowTrigger = externalSlideshowTrigger
+        self.albumService = albumService
         
         _viewModel = StateObject(wrappedValue: AssetGridViewModel(
             assetService: assetService,
@@ -112,7 +115,7 @@ struct AssetGridView: View {
             if !viewModel.imageAssets.isEmpty {
                 SlideshowView(
                     assetService: assetService,
-                    albumService: nil,
+                    albumService: albumService,
                     albumId: viewModel.albumId,
                     personId: viewModel.personId,
                     tagId: viewModel.tagId,

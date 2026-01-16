@@ -10,6 +10,7 @@ struct SlideshowSettings: View {
     @Binding var hideOverlay: Bool
     @Binding var enableReflections: Bool
     @Binding var enableKenBurns: Bool
+    @Binding var enableFadeOnly: Bool
     @Binding var enableShuffle: Bool
     @Binding var autoSlideshowTimeout: Int
     @Binding var slideshowAlbumId: String
@@ -149,6 +150,8 @@ struct SlideshowSettings: View {
                                 return "kenBurns"
                             } else if enableReflections {
                                 return "reflections"
+                            } else if enableFadeOnly {
+                                return "fadeOnly"
                             } else {
                                 return "none"
                             }
@@ -158,16 +161,24 @@ struct SlideshowSettings: View {
                             case "kenBurns":
                                 enableKenBurns = true
                                 enableReflections = false
+                                enableFadeOnly = false
                             case "reflections":
                                 enableKenBurns = false
                                 enableReflections = true
+                                enableFadeOnly = false
+                            case "fadeOnly":
+                                enableKenBurns = false
+                                enableReflections = false
+                                enableFadeOnly = true
                             default: // "none"
                                 enableKenBurns = false
                                 enableReflections = false
+                                enableFadeOnly = false
                             }
                         }
                     )) {
                         Text("None").tag("none")
+                        Text("Fade Only").tag("fadeOnly")
                         Text("Reflections").tag("reflections")
                         Text("Pan and Zoom").tag("kenBurns")
                     }
@@ -261,6 +272,7 @@ struct SlideshowSettings: View {
     @Previewable @State var hideOverlay = true
     @Previewable @State var enableReflections = true
     @Previewable @State var enableKenBurns = false
+    @Previewable @State var enableFadeOnly = false
     @Previewable @State var enableShuffle = false
     @Previewable @State var autoSlideshowTimeout = 5
     @Previewable @State var slideshowAlbumId = ""
@@ -276,6 +288,7 @@ struct SlideshowSettings: View {
         hideOverlay: $hideOverlay,
         enableReflections: $enableReflections,
         enableKenBurns: $enableKenBurns,
+        enableFadeOnly: $enableFadeOnly,
         enableShuffle: $enableShuffle,
         autoSlideshowTimeout: $autoSlideshowTimeout,
         slideshowAlbumId: $slideshowAlbumId,

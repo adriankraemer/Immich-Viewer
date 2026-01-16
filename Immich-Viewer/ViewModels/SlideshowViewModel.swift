@@ -9,6 +9,7 @@ enum SlideDirection: CaseIterable {
     case diagonal_up_left, diagonal_up_right
     case diagonal_down_left, diagonal_down_right
     case zoom_out
+    case fade_only
     
     func offset(for size: CGSize) -> CGSize {
         let w = size.width * 1.2
@@ -23,6 +24,7 @@ enum SlideDirection: CaseIterable {
         case .diagonal_down_left: return CGSize(width: -w, height: h)
         case .diagonal_down_right: return CGSize(width: w, height: h)
         case .zoom_out: return CGSize.zero
+        case .fade_only: return CGSize.zero
         }
     }
     
@@ -36,12 +38,20 @@ enum SlideDirection: CaseIterable {
     var opacity: Double {
         switch self {
         case .zoom_out: return 0.0
+        case .fade_only: return 0.0
         default: return 1.0
         }
     }
     
+    /// Returns a random direction excluding fade_only (which is only used explicitly)
     static func random() -> SlideDirection {
-        SlideDirection.allCases.randomElement() ?? .right
+        let movementDirections: [SlideDirection] = [
+            .left, .right, .up, .down,
+            .diagonal_up_left, .diagonal_up_right,
+            .diagonal_down_left, .diagonal_down_right,
+            .zoom_out
+        ]
+        return movementDirections.randomElement() ?? .right
     }
 }
 
@@ -62,6 +72,7 @@ struct SlideshowConfiguration {
     var hideOverlay: Bool
     var enableReflections: Bool
     var enableKenBurns: Bool
+    var enableFadeOnly: Bool
     var enableShuffle: Bool
     
     static func load() -> SlideshowConfiguration {
@@ -71,6 +82,7 @@ struct SlideshowConfiguration {
             hideOverlay: UserDefaults.standard.hideImageOverlay,
             enableReflections: UserDefaults.standard.enableReflectionsInSlideshow,
             enableKenBurns: UserDefaults.standard.enableKenBurnsEffect,
+            enableFadeOnly: UserDefaults.standard.enableFadeOnlyEffect,
             enableShuffle: UserDefaults.standard.enableSlideshowShuffle
         )
     }
@@ -81,6 +93,7 @@ struct SlideshowConfiguration {
         hideOverlay = UserDefaults.standard.hideImageOverlay
         enableReflections = UserDefaults.standard.enableReflectionsInSlideshow
         enableKenBurns = UserDefaults.standard.enableKenBurnsEffect
+        enableFadeOnly = UserDefaults.standard.enableFadeOnlyEffect
         enableShuffle = UserDefaults.standard.enableSlideshowShuffle
     }
     
@@ -230,6 +243,14 @@ class SlideshowViewModel: ObservableObject {
         
         debugLog("SlideshowViewModel: Starting slide out animation")
         
+        // Set slide direction before transition starts
+        // Use fade_only direction when fade only effect is enabled
+        if settings.enableFadeOnly {
+            slideDirection = .fade_only
+        } else {
+            slideDirection = SlideDirection.random()
+        }
+        
         withAnimation(.easeInOut(duration: slideAnimationDuration)) {
             isTransitioning = true
         }
@@ -247,9 +268,6 @@ class SlideshowViewModel: ObservableObject {
             }
             
             self.currentImageData = self.imageQueue.removeFirst()
-            
-            // Set new slide direction for the incoming image
-            self.slideDirection = SlideDirection.random()
             
             withAnimation(.easeInOut(duration: self.slideAnimationDuration)) {
                 self.isTransitioning = false

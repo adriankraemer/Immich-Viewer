@@ -291,6 +291,7 @@ struct SettingsView: View {
     @AppStorage("use24HourClock") private var use24HourClock = true
     @AppStorage("enableReflectionsInSlideshow") private var enableReflectionsInSlideshow = true
     @AppStorage("enableKenBurnsEffect") private var enableKenBurnsEffect = false
+    @AppStorage("enableFadeOnlyEffect") private var enableFadeOnlyEffect = false
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
     @AppStorage("folderViewMode") private var folderViewMode = "timeline"
@@ -941,6 +942,7 @@ struct SettingsView: View {
                 hideOverlay: $hideImageOverlay,
                 enableReflections: $enableReflectionsInSlideshow,
                 enableKenBurns: $enableKenBurnsEffect,
+                enableFadeOnly: $enableFadeOnlyEffect,
                 enableShuffle: $enableSlideshowShuffle,
                 autoSlideshowTimeout: $autoSlideshowTimeout,
                 slideshowAlbumId: $slideshowAlbumId,

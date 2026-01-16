@@ -61,6 +61,11 @@ extension UserDefaults {
         set { set(newValue, forKey: UserDefaultsKeys.enableKenBurnsEffect) }
     }
     
+    var enableFadeOnlyEffect: Bool {
+        get { bool(forKey: UserDefaultsKeys.enableFadeOnlyEffect) }
+        set { set(newValue, forKey: UserDefaultsKeys.enableFadeOnlyEffect) }
+    }
+    
     var enableSlideshowShuffle: Bool {
         get { bool(forKey: UserDefaultsKeys.enableSlideshowShuffle) }
         set { set(newValue, forKey: UserDefaultsKeys.enableSlideshowShuffle) }

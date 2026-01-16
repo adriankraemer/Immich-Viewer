@@ -13,6 +13,7 @@ struct SlideshowSettingsView: View {
     @AppStorage("use24HourClock") private var use24HourClock = true
     @AppStorage("enableReflectionsInSlideshow") private var enableReflectionsInSlideshow = true
     @AppStorage("enableKenBurnsEffect") private var enableKenBurnsEffect = false
+    @AppStorage("enableFadeOnlyEffect") private var enableFadeOnlyEffect = false
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0
     @AppStorage(UserDefaultsKeys.slideshowAlbumId) private var slideshowAlbumId: String = ""
@@ -38,6 +39,7 @@ struct SlideshowSettingsView: View {
                             hideOverlay: $hideImageOverlay,
                             enableReflections: $enableReflectionsInSlideshow,
                             enableKenBurns: $enableKenBurnsEffect,
+                            enableFadeOnly: $enableFadeOnlyEffect,
                             enableShuffle: $enableSlideshowShuffle,
                             autoSlideshowTimeout: $autoSlideshowTimeout,
                             slideshowAlbumId: $slideshowAlbumId,

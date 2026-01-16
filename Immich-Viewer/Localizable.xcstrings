@@ -4470,6 +4470,28 @@
         }
       }
     },
+    "Fade Only": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur Überblendung"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo fundido"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fondu uniquement"
+          }
+        }
+      }
+    },
     "Pan and Zoom": {
       "localizations": {
         "de": {

@@ -174,8 +174,8 @@ struct SlideshowSettings: View {
             
             SettingsRow(
                 icon: "shuffle",
-                title: "Shuffle Images (beta)",
-                subtitle: "Randomly shuffle image order during slideshow",
+                title: "Shuffle Images",
+                subtitle: "Randomly shuffle image order during slideshow.",
                 content: AnyView(
                     Picker("Shuffle Images", selection: $enableShuffle) {
                         Text("Off").tag(false)

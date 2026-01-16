@@ -15,7 +15,7 @@ struct AutoSlideshowTimeoutPicker: View {
             }
         }
         .pickerStyle(.menu)
-        .frame(width: 300, alignment: .trailing)
+        .frame(width: 170, alignment: .trailing)
     }
 }
 

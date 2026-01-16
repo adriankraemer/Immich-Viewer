@@ -5096,9 +5096,6 @@
         }
       }
     },
-    "Select album for auto-slideshow" : {
-
-    },
     "Select Slideshow Album" : {
 
     },
@@ -5499,9 +5496,6 @@
           }
         }
       }
-    },
-    "Slideshow Album" : {
-
     },
     "Slideshow Background" : {
       "localizations" : {

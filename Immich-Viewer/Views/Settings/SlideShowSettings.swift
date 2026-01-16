@@ -211,39 +211,31 @@ struct SlideshowSettings: View {
                  icon: "clock.arrow.circlepath",
                  title: "Auto-Start Slideshow",
                  subtitle: "Start slideshow after inactivity",
-                 content: AnyView(AutoSlideshowTimeoutPicker(timeout: $autoSlideshowTimeout)),
+                 content: AnyView(
+                     HStack(spacing: 16) {
+                         // Album selection button (only visible when auto-slideshow is enabled)
+                         if autoSlideshowTimeout > 0 {
+                             Button(action: {
+                                 onShowAlbumPicker?()
+                             }) {
+                                 HStack(spacing: 6) {
+                                     Text(slideshowAlbumName.isEmpty ? String(localized: "All Photos") : slideshowAlbumName)
+                                         .foregroundColor(.primary)
+                                         .lineLimit(1)
+                                     
+                                     Image(systemName: "chevron.right")
+                                         .font(.caption2)
+                                         .foregroundColor(.secondary)
+                                 }
+                             }
+                             .buttonStyle(.plain)
+                         }
+                         
+                         AutoSlideshowTimeoutPicker(timeout: $autoSlideshowTimeout)
+                     }
+                 ),
                  isOn: autoSlideshowTimeout > 0
              )
-            
-            // Slideshow Album Setting
-            SettingsRow(
-                icon: "rectangle.stack",
-                title: "Slideshow Album",
-                subtitle: "Select album for auto-slideshow",
-                content: AnyView(
-                    Button(action: {
-                        onShowAlbumPicker?()
-                    }) {
-                        HStack(spacing: 8) {
-                            Text(slideshowAlbumName.isEmpty ? String(localized: "All Photos") : slideshowAlbumName)
-                                .foregroundColor(.primary)
-                                .lineLimit(1)
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color.gray.opacity(0.2))
-                        )
-                    }
-                    .buttonStyle(.plain)
-                ),
-                isOn: !slideshowAlbumId.isEmpty
-            )
              
         }
     }

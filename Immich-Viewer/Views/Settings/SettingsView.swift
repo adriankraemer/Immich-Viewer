@@ -289,9 +289,9 @@ struct SettingsView: View {
     @AppStorage("defaultStartupTab") private var defaultStartupTab = "photos"
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("use24HourClock") private var use24HourClock = true
-    @AppStorage("enableReflectionsInSlideshow") private var enableReflectionsInSlideshow = true
+    @AppStorage("enableReflectionsInSlideshow") private var enableReflectionsInSlideshow = false
     @AppStorage("enableKenBurnsEffect") private var enableKenBurnsEffect = false
-    @AppStorage("enableFadeOnlyEffect") private var enableFadeOnlyEffect = false
+    @AppStorage("enableFadeOnlyEffect") private var enableFadeOnlyEffect = true
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
     @AppStorage("folderViewMode") private var folderViewMode = "timeline"

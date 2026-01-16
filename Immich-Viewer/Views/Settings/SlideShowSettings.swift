@@ -177,8 +177,8 @@ struct SlideshowSettings: View {
                             }
                         }
                     )) {
-                        Text("None").tag("none")
-                        Text("Fade Only").tag("fadeOnly")
+                        Text("Fade").tag("fadeOnly")
+                        Text("Movement").tag("none")
                         Text("Reflections").tag("reflections")
                         Text("Pan and Zoom").tag("kenBurns")
                     }
@@ -270,9 +270,9 @@ struct SlideshowSettings: View {
     @Previewable @State var slideshowBackgroundColor = "ambilight"
     @Previewable @State var use24HourClock = true
     @Previewable @State var hideOverlay = true
-    @Previewable @State var enableReflections = true
+    @Previewable @State var enableReflections = false
     @Previewable @State var enableKenBurns = false
-    @Previewable @State var enableFadeOnly = false
+    @Previewable @State var enableFadeOnly = true
     @Previewable @State var enableShuffle = false
     @Previewable @State var autoSlideshowTimeout = 5
     @Previewable @State var slideshowAlbumId = ""

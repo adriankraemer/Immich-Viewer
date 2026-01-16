@@ -11,9 +11,9 @@ struct SlideshowSettingsView: View {
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "ambilight"
     @AppStorage("use24HourClock") private var use24HourClock = true
-    @AppStorage("enableReflectionsInSlideshow") private var enableReflectionsInSlideshow = true
+    @AppStorage("enableReflectionsInSlideshow") private var enableReflectionsInSlideshow = false
     @AppStorage("enableKenBurnsEffect") private var enableKenBurnsEffect = false
-    @AppStorage("enableFadeOnlyEffect") private var enableFadeOnlyEffect = false
+    @AppStorage("enableFadeOnlyEffect") private var enableFadeOnlyEffect = true
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0
     @AppStorage(UserDefaultsKeys.slideshowAlbumId) private var slideshowAlbumId: String = ""

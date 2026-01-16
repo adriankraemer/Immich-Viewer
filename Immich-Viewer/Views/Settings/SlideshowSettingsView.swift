@@ -67,6 +67,11 @@ struct SlideshowSettingsView: View {
                 selectedAlbumName: $slideshowAlbumName
             )
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))) { _ in
+            // Clear slideshow album selection on user switch (falls back to "All Photos")
+            slideshowAlbumId = ""
+            slideshowAlbumName = ""
+        }
     }
 }
 

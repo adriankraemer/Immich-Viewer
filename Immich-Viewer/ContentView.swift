@@ -49,8 +49,10 @@ struct ContentView: View {
     // MARK: - Auto Slideshow State
     /// Timeout in minutes before auto-slideshow starts (0 = disabled)
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0
+    @AppStorage(UserDefaultsKeys.slideshowAlbumId) private var slideshowAlbumId: String = ""
     @State private var inactivityTimer: Timer? = nil
     @State private var lastInteractionDate = Date()
+    @State private var showingAutoSlideshow = false
     @StateObject private var userManager = UserManager()
     @StateObject private var networkService: NetworkService
     @StateObject private var authService: AuthenticationService
@@ -185,7 +187,12 @@ struct ContentView: View {
                             }
                             .tag(TabName.search.rawValue)
                         
-                        SettingsView(authService: authService, userManager: userManager)
+                        SettingsView(
+                            authService: authService,
+                            userManager: userManager,
+                            albumService: albumService,
+                            assetService: assetService
+                        )
                             .errorBoundary(context: "Settings Tab")
                             .tabItem {
                                 Image(systemName: TabName.settings.iconName)
@@ -263,6 +270,20 @@ struct ContentView: View {
             debugLog("ContentView: Restarting auto-slideshow timer")
             resetInactivityTimer()
         }
+        .fullScreenCover(isPresented: $showingAutoSlideshow) {
+            SlideshowView(
+                assetService: assetService,
+                albumService: albumService,
+                albumId: slideshowAlbumId.isEmpty ? nil : slideshowAlbumId,
+                personId: nil,
+                tagId: nil,
+                city: nil,
+                folderPath: nil,
+                startingAssetId: nil,
+                isFavorite: false,
+                isAllPhotos: slideshowAlbumId.isEmpty
+            )
+        }
     }
     
     // MARK: - Inactivity Timer Logic
@@ -280,11 +301,19 @@ struct ContentView: View {
                     debugLog("ContentView: Auto-slideshow timeout reached! Elapsed: \(elapsed) seconds")
                     inactivityTimer?.invalidate()
                     inactivityTimer = nil
-                    // Switch to Photos tab and start auto slideshow
-                    selectedTab = TabName.photos.rawValue
-                    // Wait 5 seconds for tab switch animation to complete before starting slideshow
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                        NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.startAutoSlideshow), object: nil)
+                    
+                    // Check if a specific album is selected for slideshow
+                    if !slideshowAlbumId.isEmpty {
+                        // Start slideshow directly with the selected album
+                        debugLog("ContentView: Starting auto-slideshow with album: \(slideshowAlbumId)")
+                        showingAutoSlideshow = true
+                    } else {
+                        // Default behavior: Switch to Photos tab and start auto slideshow
+                        selectedTab = TabName.photos.rawValue
+                        // Wait 5 seconds for tab switch animation to complete before starting slideshow
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                            NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.startAutoSlideshow), object: nil)
+                        }
                     }
                 }
             }

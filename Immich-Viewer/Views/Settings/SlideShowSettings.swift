@@ -12,10 +12,14 @@ struct SlideshowSettings: View {
     @Binding var enableKenBurns: Bool
     @Binding var enableShuffle: Bool
     @Binding var autoSlideshowTimeout: Int
+    @Binding var slideshowAlbumId: String
+    @Binding var slideshowAlbumName: String
     @FocusState.Binding var isMinusFocused: Bool
     @FocusState.Binding var isPlusFocused: Bool
     @FocusState.Binding var focusedColor: String?
     
+    // Callback to show album picker (handled by parent view that has access to services)
+    var onShowAlbumPicker: (() -> Void)?
     
     var body: some View {
         VStack(spacing: 12) {
@@ -211,6 +215,35 @@ struct SlideshowSettings: View {
                  isOn: autoSlideshowTimeout > 0
              )
             
+            // Slideshow Album Setting
+            SettingsRow(
+                icon: "rectangle.stack",
+                title: "Slideshow Album",
+                subtitle: "Select album for auto-slideshow",
+                content: AnyView(
+                    Button(action: {
+                        onShowAlbumPicker?()
+                    }) {
+                        HStack(spacing: 8) {
+                            Text(slideshowAlbumName.isEmpty ? String(localized: "All Photos") : slideshowAlbumName)
+                                .foregroundColor(.primary)
+                                .lineLimit(1)
+                            
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.gray.opacity(0.2))
+                        )
+                    }
+                    .buttonStyle(.plain)
+                ),
+                isOn: !slideshowAlbumId.isEmpty
+            )
              
         }
     }
@@ -238,6 +271,8 @@ struct SlideshowSettings: View {
     @Previewable @State var enableKenBurns = false
     @Previewable @State var enableShuffle = false
     @Previewable @State var autoSlideshowTimeout = 5
+    @Previewable @State var slideshowAlbumId = ""
+    @Previewable @State var slideshowAlbumName = ""
     @Previewable @FocusState var isMinusFocused: Bool
     @Previewable @FocusState var isPlusFocused: Bool
     @Previewable @FocusState var focusedColor: String?
@@ -251,9 +286,12 @@ struct SlideshowSettings: View {
         enableKenBurns: $enableKenBurns,
         enableShuffle: $enableShuffle,
         autoSlideshowTimeout: $autoSlideshowTimeout,
+        slideshowAlbumId: $slideshowAlbumId,
+        slideshowAlbumName: $slideshowAlbumName,
         isMinusFocused: $isMinusFocused,
         isPlusFocused: $isPlusFocused,
-        focusedColor: $focusedColor
+        focusedColor: $focusedColor,
+        onShowAlbumPicker: nil
     )
     .preferredColorScheme(.light)
     .padding()

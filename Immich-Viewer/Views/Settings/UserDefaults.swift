@@ -80,4 +80,14 @@ extension UserDefaults {
         get { string(forKey: UserDefaultsKeys.exploreViewMode) ?? "places" }
         set { set(newValue, forKey: UserDefaultsKeys.exploreViewMode) }
     }
+    
+    var slideshowAlbumId: String? {
+        get { string(forKey: UserDefaultsKeys.slideshowAlbumId) }
+        set { set(newValue, forKey: UserDefaultsKeys.slideshowAlbumId) }
+    }
+    
+    var slideshowAlbumName: String? {
+        get { string(forKey: UserDefaultsKeys.slideshowAlbumName) }
+        set { set(newValue, forKey: UserDefaultsKeys.slideshowAlbumName) }
+    }
 }

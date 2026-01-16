@@ -1,6 +1,12 @@
 import SwiftUI
 
 struct SlideshowSettingsView: View {
+    // MARK: - Services
+    @ObservedObject var albumService: AlbumService
+    @ObservedObject var assetService: AssetService
+    @ObservedObject var authService: AuthenticationService
+    
+    // MARK: - Settings Storage
     @AppStorage("hideImageOverlay") private var hideImageOverlay = true
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "ambilight"
@@ -9,9 +15,16 @@ struct SlideshowSettingsView: View {
     @AppStorage("enableKenBurnsEffect") private var enableKenBurnsEffect = false
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0
+    @AppStorage(UserDefaultsKeys.slideshowAlbumId) private var slideshowAlbumId: String = ""
+    @AppStorage(UserDefaultsKeys.slideshowAlbumName) private var slideshowAlbumName: String = ""
+    
+    // MARK: - Focus State
     @FocusState private var isMinusFocused: Bool
     @FocusState private var isPlusFocused: Bool
     @FocusState private var focusedColor: String?
+    
+    // MARK: - Sheet State
+    @State private var showingAlbumPicker = false
     
     var body: some View {
         ScrollView {
@@ -27,9 +40,14 @@ struct SlideshowSettingsView: View {
                             enableKenBurns: $enableKenBurnsEffect,
                             enableShuffle: $enableSlideshowShuffle,
                             autoSlideshowTimeout: $autoSlideshowTimeout,
+                            slideshowAlbumId: $slideshowAlbumId,
+                            slideshowAlbumName: $slideshowAlbumName,
                             isMinusFocused: $isMinusFocused,
                             isPlusFocused: $isPlusFocused,
-                            focusedColor: $focusedColor
+                            focusedColor: $focusedColor,
+                            onShowAlbumPicker: {
+                                showingAlbumPicker = true
+                            }
                         )
                         .onChange(of: slideshowInterval) { _, newValue in
                             UserDefaults.standard.set(newValue, forKey: "slideshowInterval")
@@ -39,6 +57,15 @@ struct SlideshowSettingsView: View {
             }
             .padding(.horizontal, 40)
             .padding(.vertical, 20)
+        }
+        .fullScreenCover(isPresented: $showingAlbumPicker) {
+            SlideshowAlbumPicker(
+                albumService: albumService,
+                assetService: assetService,
+                authService: authService,
+                selectedAlbumId: $slideshowAlbumId,
+                selectedAlbumName: $slideshowAlbumName
+            )
         }
     }
 }

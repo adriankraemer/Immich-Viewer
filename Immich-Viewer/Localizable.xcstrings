@@ -1572,6 +1572,9 @@
         }
       }
     },
+    "Default - Random from all photos" : {
+
+    },
     "Default Startup Tab" : {
       "localizations" : {
         "de" : {
@@ -2064,6 +2067,9 @@
           }
         }
       }
+    },
+    "Failed to load albums" : {
+
     },
     "Failed to load image" : {
       "localizations" : {
@@ -4776,6 +4782,7 @@
       }
     },
     "Randomly shuffle image order during slideshow" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -4796,6 +4803,9 @@
           }
         }
       }
+    },
+    "Randomly shuffle image order during slideshow." : {
+
     },
     "Reached end of slideshow. All images have been displayed." : {
       "localizations" : {
@@ -4973,6 +4983,9 @@
         }
       }
     },
+    "Search albums..." : {
+
+    },
     "Search by context: Mountains, sunsets, etc..." : {
       "localizations" : {
         "de" : {
@@ -5082,6 +5095,12 @@
           }
         }
       }
+    },
+    "Select album for auto-slideshow" : {
+
+    },
+    "Select Slideshow Album" : {
+
     },
     "Server & users" : {
       "localizations" : {
@@ -5304,6 +5323,7 @@
       }
     },
     "Shuffle Images (beta)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -5479,6 +5499,9 @@
           }
         }
       }
+    },
+    "Slideshow Album" : {
+
     },
     "Slideshow Background" : {
       "localizations" : {

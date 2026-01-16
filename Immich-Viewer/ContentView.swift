@@ -241,6 +241,9 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: .refreshAllTabs)) { _ in
             // Refresh all tabs by generating a new UUID (triggers view refresh via .id modifier)
             refreshTrigger = UUID()
+            
+            // Clear slideshow album selection on user switch (falls back to "All Photos")
+            slideshowAlbumId = ""
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.openAsset))) { notification in
             // Handle deep link to open a specific asset

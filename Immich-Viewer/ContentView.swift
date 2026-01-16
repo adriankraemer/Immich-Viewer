@@ -50,6 +50,7 @@ struct ContentView: View {
     /// Timeout in minutes before auto-slideshow starts (0 = disabled)
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0
     @AppStorage(UserDefaultsKeys.slideshowAlbumId) private var slideshowAlbumId: String = ""
+    @AppStorage(UserDefaultsKeys.slideshowAlbumName) private var slideshowAlbumName: String = ""
     @State private var inactivityTimer: Timer? = nil
     @State private var lastInteractionDate = Date()
     @State private var showingAutoSlideshow = false
@@ -244,6 +245,7 @@ struct ContentView: View {
             
             // Clear slideshow album selection on user switch (falls back to "All Photos")
             slideshowAlbumId = ""
+            slideshowAlbumName = ""
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.openAsset))) { notification in
             // Handle deep link to open a specific asset

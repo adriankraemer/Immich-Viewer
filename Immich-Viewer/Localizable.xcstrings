@@ -1551,28 +1551,6 @@
         }
       }
     },
-    "Customize your experience" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Passe dein Erlebnis an"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personaliza tu experiencia"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personnalisez votre expérience"
-          }
-        }
-      }
-    },
     "Data access error. The app tried to access data that doesn't exist." : {
       "localizations" : {
         "de" : {

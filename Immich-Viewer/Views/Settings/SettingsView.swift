@@ -406,10 +406,6 @@ struct SettingsView: View {
                         .font(.system(size: 42, weight: .bold))
                         .foregroundColor(SettingsTheme.textPrimary)
                 }
-                
-                Text(String(localized: "Customize your experience"))
-                    .font(.system(size: 18))
-                    .foregroundColor(SettingsTheme.textSecondary)
             }
             .padding(.horizontal, 24)
             .padding(.top, 40)

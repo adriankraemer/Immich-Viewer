@@ -471,6 +471,28 @@
         }
       }
     },
+    "Album List Sort Order" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Albumlisten-Sortierung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orden de la lista de álbumes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordre de tri des albums"
+          }
+        }
+      }
+    },
     "Albums" : {
       "localizations" : {
         "de" : {
@@ -555,6 +577,28 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ordre de toutes les photos"
+          }
+        }
+      }
+    },
+    "Alphabetical" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alphabetisch"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alfabético"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alphabétique"
           }
         }
       }
@@ -1547,28 +1591,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilisation actuelle"
-          }
-        }
-      }
-    },
-    "Customize your experience" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Passe dein Erlebnis an"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personaliza tu experiencia"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Personnalisez votre expérience"
           }
         }
       }
@@ -4482,6 +4504,9 @@
           }
         }
       }
+    },
+    "Order albums in the Albums tab" : {
+
     },
     "Order photos in Albums, People, and Tags" : {
       "localizations" : {

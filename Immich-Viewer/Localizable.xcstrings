@@ -471,6 +471,9 @@
         }
       }
     },
+    "Album List Sort Order" : {
+
+    },
     "Albums" : {
       "localizations" : {
         "de" : {
@@ -558,6 +561,9 @@
           }
         }
       }
+    },
+    "Alphabetical" : {
+
     },
     "Ambilight" : {
       "localizations" : {
@@ -4460,6 +4466,9 @@
           }
         }
       }
+    },
+    "Order albums in the Albums tab" : {
+
     },
     "Order photos in Albums, People, and Tags" : {
       "localizations" : {

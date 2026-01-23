@@ -36,6 +36,7 @@ struct UserDefaultsKeys {
     static let defaultStartupTab = "defaultStartupTab"
     static let lastSeenVersion = "lastSeenVersion"
     static let assetSortOrder = "assetSortOrder"
+    static let albumListSortOrder = "albumListSortOrder"
     static let folderViewMode = "folderViewMode"
     static let exploreViewMode = "exploreViewMode"
     static let slideshowAlbumId = "slideshowAlbumId"

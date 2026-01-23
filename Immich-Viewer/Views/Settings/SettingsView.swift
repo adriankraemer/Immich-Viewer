@@ -294,6 +294,7 @@ struct SettingsView: View {
     @AppStorage("enableFadeOnlyEffect") private var enableFadeOnlyEffect = true
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
+    @AppStorage("albumListSortOrder") private var albumListSortOrder = "alphabetical"
     @AppStorage("folderViewMode") private var folderViewMode = "timeline"
     @AppStorage("exploreViewMode") private var exploreViewMode = "places"
     @AppStorage("enableTopShelf", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var enableTopShelf = true
@@ -379,6 +380,9 @@ struct SettingsView: View {
             if !newValue && defaultStartupTab == "worldmap" {
                 defaultStartupTab = "photos"
             }
+        }
+        .onChange(of: albumListSortOrder) { _, _ in
+            NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
         }
         .onAppear {
             userManager.loadUsers()
@@ -919,6 +923,21 @@ struct SettingsView: View {
                     Picker(String(localized: "Collections Sort Order"), selection: $assetSortOrder) {
                         Text(String(localized: "Newest First")).tag("desc")
                         Text(String(localized: "Oldest First")).tag("asc")
+                    }
+                        .pickerStyle(.menu)
+                        .frame(width: 300, alignment: .trailing)
+                )
+            )
+            
+            SettingsRow(
+                icon: "folder",
+                title: "Album List Sort Order",
+                subtitle: "Order albums in the Albums tab",
+                content: AnyView(
+                    Picker(String(localized: "Album List Sort Order"), selection: $albumListSortOrder) {
+                        Text(String(localized: "Alphabetical")).tag("alphabetical")
+                        Text(String(localized: "Newest First")).tag("newestFirst")
+                        Text(String(localized: "Oldest First")).tag("oldestFirst")
                     }
                         .pickerStyle(.menu)
                         .frame(width: 300, alignment: .trailing)

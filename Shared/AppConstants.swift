@@ -27,6 +27,7 @@ struct UserDefaultsKeys {
     static let use24HourClock = "use24HourClock"
     static let enableReflectionsInSlideshow = "enableReflectionsInSlideshow"
     static let enableKenBurnsEffect = "enableKenBurnsEffect"
+    static let enableFadeOnlyEffect = "enableFadeOnlyEffect"
     static let enableSlideshowShuffle = "enableSlideshowShuffle"
     static let allPhotosSortOrder = "allPhotosSortOrder"
     static let enableTopShelf = "enableTopShelf"
@@ -37,6 +38,8 @@ struct UserDefaultsKeys {
     static let assetSortOrder = "assetSortOrder"
     static let folderViewMode = "folderViewMode"
     static let exploreViewMode = "exploreViewMode"
+    static let slideshowAlbumId = "slideshowAlbumId"
+    static let slideshowAlbumName = "slideshowAlbumName"
 }
 
 /// URL schemes supported by the app for deep linking

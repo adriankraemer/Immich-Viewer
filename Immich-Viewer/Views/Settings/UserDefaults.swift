@@ -61,6 +61,16 @@ extension UserDefaults {
         set { set(newValue, forKey: UserDefaultsKeys.enableKenBurnsEffect) }
     }
     
+    var enableFadeOnlyEffect: Bool {
+        get { 
+            if object(forKey: UserDefaultsKeys.enableFadeOnlyEffect) == nil {
+                return true // Default to true for fresh installs
+            }
+            return bool(forKey: UserDefaultsKeys.enableFadeOnlyEffect)
+        }
+        set { set(newValue, forKey: UserDefaultsKeys.enableFadeOnlyEffect) }
+    }
+    
     var enableSlideshowShuffle: Bool {
         get { bool(forKey: UserDefaultsKeys.enableSlideshowShuffle) }
         set { set(newValue, forKey: UserDefaultsKeys.enableSlideshowShuffle) }
@@ -79,5 +89,15 @@ extension UserDefaults {
     var exploreViewMode: String {
         get { string(forKey: UserDefaultsKeys.exploreViewMode) ?? "places" }
         set { set(newValue, forKey: UserDefaultsKeys.exploreViewMode) }
+    }
+    
+    var slideshowAlbumId: String? {
+        get { string(forKey: UserDefaultsKeys.slideshowAlbumId) }
+        set { set(newValue, forKey: UserDefaultsKeys.slideshowAlbumId) }
+    }
+    
+    var slideshowAlbumName: String? {
+        get { string(forKey: UserDefaultsKeys.slideshowAlbumName) }
+        set { set(newValue, forKey: UserDefaultsKeys.slideshowAlbumName) }
     }
 }

@@ -179,7 +179,8 @@ struct SignInView: View {
                         text: $viewModel.serverURL,
                         isSecure: false,
                         keyboardType: .URL,
-                        field: .serverURL
+                        field: .serverURL,
+                        nextField: .email
                     )
                     
                     formField(
@@ -189,7 +190,8 @@ struct SignInView: View {
                         text: $viewModel.email,
                         isSecure: false,
                         keyboardType: .emailAddress,
-                        field: .email
+                        field: .email,
+                        nextField: viewModel.showApiKeyLogin ? .apiKey : .password
                     )
                     
                     if viewModel.showApiKeyLogin {
@@ -200,7 +202,8 @@ struct SignInView: View {
                             text: $viewModel.apiKey,
                             isSecure: true,
                             keyboardType: .default,
-                            field: .apiKey
+                            field: .apiKey,
+                            nextField: .signInButton
                         )
                     } else {
                         formField(
@@ -210,7 +213,8 @@ struct SignInView: View {
                             text: $viewModel.password,
                             isSecure: true,
                             keyboardType: .default,
-                            field: .password
+                            field: .password,
+                            nextField: .signInButton
                         )
                     }
                 }
@@ -263,27 +267,40 @@ struct SignInView: View {
         text: Binding<String>,
         isSecure: Bool,
         keyboardType: UIKeyboardType,
-        field: Field
+        field: Field,
+        nextField: Field?
     ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        let isFocused = focusedField == field
+        
+        return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(brandBlue)
+                    .foregroundColor(isFocused ? brandBlue : brandBlue.opacity(0.7))
                 
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(isFocused ? .white : .white.opacity(0.8))
             }
             
             Group {
                 if isSecure {
                     SecureField(placeholder, text: text)
+                        .onSubmit {
+                            DispatchQueue.main.async {
+                                focusedField = nextField
+                            }
+                        }
                 } else {
                     TextField(placeholder, text: text)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
                         .keyboardType(keyboardType)
+                        .onSubmit {
+                            DispatchQueue.main.async {
+                                focusedField = nextField
+                            }
+                        }
                 }
             }
             .font(.system(size: 24, weight: .regular))
@@ -291,12 +308,22 @@ struct SignInView: View {
             .padding(.vertical, 20)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(0.05))
+                    .fill(Color.white.opacity(isFocused ? 0.15 : 0.10))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16)
-                            .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+                            .strokeBorder(
+                                isFocused ? brandBlue.opacity(0.6) : Color.white.opacity(0.15),
+                                lineWidth: isFocused ? 2 : 1
+                            )
                     )
             )
+            .shadow(
+                color: isFocused ? brandBlue.opacity(0.3) : Color.clear,
+                radius: isFocused ? 12 : 0,
+                x: 0,
+                y: isFocused ? 4 : 0
+            )
+            .animation(.easeInOut(duration: 0.2), value: isFocused)
             .focused($focusedField, equals: field)
         }
     }
@@ -332,7 +359,6 @@ struct SignInView: View {
             .shadow(color: viewModel.canSignIn ? brandBlue.opacity(0.4) : .clear, radius: 20, x: 0, y: 10)
         }
         .buttonStyle(CardButtonStyle())
-        .disabled(!viewModel.canSignIn)
         .focused($focusedField, equals: .signInButton)
     }
     

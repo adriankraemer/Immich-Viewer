@@ -17,6 +17,19 @@ class AlbumListViewModel: ObservableObject {
     private let authService: AuthenticationService
     private let userManager: UserManager
     
+    // MARK: - Date Formatters
+    private static let isoFormatterWithFractional: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+    
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+    
     // MARK: - Computed Properties
     
     /// Returns all albums including the synthetic favorites album
@@ -59,7 +72,7 @@ class AlbumListViewModel: ObservableObject {
             do {
                 let fetchedAlbums = try await albumService.fetchAlbums()
                 debugLog("AlbumListViewModel: Successfully fetched \(fetchedAlbums.count) albums")
-                self.albums = fetchedAlbums
+                self.albums = sortAlbums(fetchedAlbums)
                 self.isLoading = false
             } catch {
                 debugLog("AlbumListViewModel: Error fetching albums: \(error)")
@@ -144,6 +157,46 @@ class AlbumListViewModel: ObservableObject {
             startDate: nil,
             endDate: nil
         )
+    }
+    
+    /// Sorts albums based on the user's albumListSortOrder setting
+    private func sortAlbums(_ albums: [ImmichAlbum]) -> [ImmichAlbum] {
+        let sortOrder = UserDefaults.standard.albumListSortOrder
+        
+        switch sortOrder {
+        case "newestFirst":
+            // Sort by endDate (newest photo in album) descending
+            return albums.sorted { lhs, rhs in
+                let lhsDate = parseDate(lhs.endDate) ?? .distantPast
+                let rhsDate = parseDate(rhs.endDate) ?? .distantPast
+                if lhsDate == rhsDate {
+                    return lhs.albumName.localizedCaseInsensitiveCompare(rhs.albumName) == .orderedAscending
+                }
+                return lhsDate > rhsDate
+            }
+        case "oldestFirst":
+            // Sort by startDate (oldest photo in album) ascending
+            return albums.sorted { lhs, rhs in
+                let lhsDate = parseDate(lhs.startDate) ?? .distantFuture
+                let rhsDate = parseDate(rhs.startDate) ?? .distantFuture
+                if lhsDate == rhsDate {
+                    return lhs.albumName.localizedCaseInsensitiveCompare(rhs.albumName) == .orderedAscending
+                }
+                return lhsDate < rhsDate
+            }
+        default:
+            // "alphabetical" - Sort by album name A-Z
+            return albums.sorted { $0.albumName.localizedCaseInsensitiveCompare($1.albumName) == .orderedAscending }
+        }
+    }
+    
+    /// Parses ISO8601 date strings
+    private func parseDate(_ value: String?) -> Date? {
+        guard let value = value else { return nil }
+        if let date = Self.isoFormatterWithFractional.date(from: value) {
+            return date
+        }
+        return Self.isoFormatter.date(from: value)
     }
 }
 

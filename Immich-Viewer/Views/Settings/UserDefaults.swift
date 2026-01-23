@@ -100,4 +100,9 @@ extension UserDefaults {
         get { string(forKey: UserDefaultsKeys.slideshowAlbumName) }
         set { set(newValue, forKey: UserDefaultsKeys.slideshowAlbumName) }
     }
+    
+    var albumListSortOrder: String {
+        get { string(forKey: UserDefaultsKeys.albumListSortOrder) ?? "alphabetical" }
+        set { set(newValue, forKey: UserDefaultsKeys.albumListSortOrder) }
+    }
 }

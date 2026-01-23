@@ -61,15 +61,6 @@ struct SignInView: View {
             // Set up dismiss callback
             viewModel.onDismiss = { dismiss() }
         }
-        .onChange(of: viewModel.canSignIn) { _, canSignIn in
-            // Auto-focus sign-in button when form becomes valid and user is in a credential field
-            if canSignIn {
-                let credentialFields: [Field] = [.password, .apiKey]
-                if let currentField = focusedField, credentialFields.contains(currentField) {
-                    focusedField = .signInButton
-                }
-            }
-        }
     }
     
     // MARK: - Background
@@ -296,7 +287,9 @@ struct SignInView: View {
                 if isSecure {
                     SecureField(placeholder, text: text)
                         .onSubmit {
-                            focusedField = nextField
+                            DispatchQueue.main.async {
+                                focusedField = nextField
+                            }
                         }
                 } else {
                     TextField(placeholder, text: text)
@@ -304,7 +297,9 @@ struct SignInView: View {
                         .disableAutocorrection(true)
                         .keyboardType(keyboardType)
                         .onSubmit {
-                            focusedField = nextField
+                            DispatchQueue.main.async {
+                                focusedField = nextField
+                            }
                         }
                 }
             }
@@ -364,7 +359,6 @@ struct SignInView: View {
             .shadow(color: viewModel.canSignIn ? brandBlue.opacity(0.4) : .clear, radius: 20, x: 0, y: 10)
         }
         .buttonStyle(CardButtonStyle())
-        .disabled(!viewModel.canSignIn)
         .focused($focusedField, equals: .signInButton)
     }
     

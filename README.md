@@ -4,17 +4,19 @@
   <img src="Immich-Viewer/icon.svg" alt="Immich Viewer" width="200"/>
 </p>
 
-**Turn your Apple TV into a beautiful digital photo frame** — browse, explore, and enjoy your self-hosted [Immich](https://immich.app) photo library on the big screen.
+**Relive your favorite memories on the big screen.** Transform your Apple TV into a stunning digital photo frame that brings your self-hosted [Immich](https://immich.app) photo library to life in your living room.
 
 ---
 
 ## 🎬 Get Started
 
-**Download from the App Store**  
+**Ready to see your photos on the big screen?**
+
+Download from the App Store:  
 https://apps.apple.com/us/app/immich-viewer/id6757225201
 
-**Join the Beta on TestFlight:**  
-[https://testflight.apple.com/join/7nGMT7cz](https://testflight.apple.com/join/7nGMT7cz)
+Or try the latest features in beta:  
+[Join the TestFlight Beta](https://testflight.apple.com/join/7nGMT7cz)
 
 ---
 
@@ -24,117 +26,121 @@ https://apps.apple.com/us/app/immich-viewer/id6757225201
 
 | Feature | Description |
 |---------|-------------|
-| **Photos** | View all your photos and videos in a stunning grid layout |
-| **Albums** | Access personal and shared albums with beautiful cover images |
-| **People** | Browse photos by person using Immich's smart face recognition |
-| **Tags** | Find photos organized by your custom tags |
-| **Folders** | Navigate your library using your original folder structure (grid, tree, or timeline view) |
-| **Favorites** | Quick access to your starred photos |
+| **Photos** | Scroll through all your memories in a beautiful grid that showcases every moment |
+| **Albums** | Jump straight to your vacation photos, family gatherings, or any collection you've created |
+| **People** | See all the photos of your loved ones, automatically grouped by face |
+| **Tags** | Find exactly what you're looking for using the tags you've added to organize your photos |
+| **Folders** | Browse your photos the way you organized them originally — your structure, your way |
+| **Favorites** | Instantly access the photos you've starred as your absolute favorites |
 
 ### 🗺️ Explore & Discover
 
 | Feature | Description |
 |---------|-------------|
-| **World Map** | See where your photos were taken on an interactive globe with photo clusters |
-| **Places** | Explore your library by continent, country, and city |
-| **Memories** | Relive "On This Day" moments from previous years |
-| **Search** | Find any photo instantly with AI-powered contextual search (mountains, sunsets, etc.) |
-| **Statistics** | View insights about your library — total photos, videos, and storage |
+| **World Map** | Travel back through your adventures on an interactive globe showing everywhere you've been |
+| **Places** | Relive your trips by exploring photos from specific continents, countries, and cities |
+| **Memories** | Rediscover what you were doing on this day in years past — a delightful trip down memory lane |
+| **Search** | Simply describe what you're looking for — "beach sunset" or "birthday cake" — and find it instantly |
+| **Statistics** | See your photo collection at a glance with totals and insights about your memories |
 
 ### 🖼️ Slideshow — Your Digital Photo Frame
 
-Transform your TV into an elegant photo frame with the built-in slideshow:
+Create the perfect ambiance in your home with a continuous slideshow of your memories. Whether you're hosting guests or relaxing with family, your TV becomes a window into your favorite moments:
 
-| Setting | Options |
+| Setting | What You Can Do |
 |---------|---------|
-| **Ken Burns Effect** | Cinematic pan and zoom animations (or disable for static display) |
-| **Ambilight Background** | Dynamic background that matches your photo's colors |
-| **Reflections** | Optional elegant reflections beneath photos |
-| **Custom Backgrounds** | Choose black, white, gray, blue, or purple backdrops |
-| **Slide Timing** | 3 seconds to 2 minutes per photo |
-| **Shuffle Mode** | Randomize the order for variety |
-| **Auto-Start** | Automatically begins after a period of inactivity (configurable) |
-| **Info Overlay** | Show or hide date, time, and location on photos |
-| **Clock Format** | 12-hour or 24-hour time display |
+| **Ken Burns Effect** | Add gentle, cinematic motion to your photos, or keep them perfectly still |
+| **Ambilight Background** | Let each photo's colors glow softly around the edges for a stunning effect |
+| **Reflections** | Add an elegant mirror reflection beneath your photos |
+| **Custom Backgrounds** | Choose the backdrop that matches your room's mood — from classic black to soft purple |
+| **Slide Timing** | Control how long you linger on each memory, from 3 seconds to 2 minutes |
+| **Shuffle Mode** | Keep things fresh with photos appearing in random order |
+| **Auto-Start** | Let the slideshow begin automatically when you're not actively browsing |
+| **Info Overlay** | See (or hide) when and where each photo was taken, plus the current time |
+| **Clock Format** | Display time in your preferred 12-hour or 24-hour format |
 
-**Tip:** Press Play/Pause on your remote to pause the slideshow. Tap anywhere to exit.
+**Tip:** Press Play/Pause on your remote to pause and admire a moment. Tap anywhere to exit and browse your library.
 
 ### 🎥 Media Playback
 
 | Feature | Description |
 |---------|-------------|
-| **High-Quality Viewing** | Full-resolution photos on your big screen |
-| **Video Support** | Watch your videos with the native tvOS player |
-| **RAW Support** | View RAW photos (DNG, CR2, NEF, ARW, ORF, RAF, and more) |
-| **EXIF Details** | Swipe up to see camera info, date, location, and more |
-| **Navigation** | Swipe left/right to browse through photos |
+| **Crystal Clear Quality** | See every detail with full-resolution photos on your big screen |
+| **Video Support** | Watch your video memories with smooth, native playback |
+| **Professional Photo Formats** | Even if you shoot in RAW format with a professional camera, your photos display beautifully |
+| **Photo Information** | Swipe up to see when and where each photo was taken, plus camera settings if you're curious |
+| **Easy Navigation** | Simply swipe left or right to move between photos — it's that intuitive |
 
 ### 👥 Multi-Account Support
 
 | Feature | Description |
 |---------|-------------|
-| **Multiple Users** | Add accounts for different family members or servers |
-| **Easy Switching** | Quickly switch between accounts from Settings |
-| **Flexible Login** | Sign in with email/password or API key |
+| **Multiple Users** | Everyone in your household can view their own photo library — just add their accounts |
+| **Easy Switching** | Switch between family members' libraries in seconds from Settings |
+| **Flexible Login** | Sign in with your regular email and password, or use an API key for advanced setups |
 
 ### 🎨 Customization
 
-| Setting | Options |
+| Setting | What You Can Do |
 |---------|---------|
-| **Navigation Style** | Choose between tab bar or sidebar layout |
-| **Visible Tabs** | Show or hide Albums, Tags, and Folders |
-| **Default Tab** | Pick which view opens when you launch the app |
-| **Explore Mode** | Switch between Places (location-based) or Memories (On This Day) |
-| **Sort Order** | Newest first or oldest first for photos and collections |
-| **Folder View** | Grid, tree, or timeline layout |
+| **Navigation Style** | Choose the layout that feels most comfortable — tabs at the top or a sidebar |
+| **Visible Tabs** | Simplify your view by hiding sections you don't use, like Albums, Tags, or Folders |
+| **Default Tab** | Start where you want — pick which view greets you when you open the app |
+| **Explore Mode** | Prefer browsing by location (Places) or by date (Memories)? You decide |
+| **Sort Order** | See your newest memories first, or start from the beginning with oldest first |
+| **Folder View** | Browse folders your way — as a grid, a tree structure, or a timeline |
 
-### 📺 Top Shelf Integration
+### 📺 Home Screen Integration
 
-Your photos appear right on the Apple TV home screen:
+Your photos greet you right on your Apple TV home screen — before you even open the app:
 
-| Setting | Options |
+| Setting | What You Can Do |
 |---------|---------|
-| **Display Style** | Fullscreen carousel or compact grid |
-| **Image Selection** | Recent photos or random picks from your library |
-| **Quick Access** | Click any photo to open it directly in the app |
+| **Display Style** | Show your photos in a fullscreen carousel or a compact grid |
+| **Image Selection** | Display your most recent photos or surprise yourself with random picks |
+| **Quick Access** | Tap any photo on your home screen to jump straight into the app |
 
-**Note:** Top Shelf only displays landscape-oriented photos for optimal display.
+**Note:** For the best look on your TV, only landscape-oriented photos appear on the home screen.
 
 ---
 
-## 📋 Requirements
+## 📋 What You Need
 
-| Requirement | Details |
+| What | Details |
 |-------------|---------|
-| **Apple TV** | 4th generation or newer |
+| **Apple TV** | 4th generation or newer (any recent Apple TV will work) |
 | **tvOS** | Version 15.0 or later |
-| **Immich Server** | Any version accessible on your network |
+| **Immich Server** | Your self-hosted Immich server, accessible on your home network |
 
 ---
 
 ## 🚀 Quick Setup
 
-1. **Install** the app from the App Store on your Apple TV
-2. **Open** the app and enter your Immich server URL
-3. **Sign in** with your email/password or API key
-4. **Enjoy** your photos on the big screen!
+Getting started takes just a few minutes:
 
-> 💡 **Tip:** Your server URL typically looks like `http://192.168.1.x:2283` or `https://photos.yourdomain.com`
+1. **Install** the app from the App Store on your Apple TV
+2. **Open** the app and enter where your Immich server lives (usually something like `http://192.168.1.x:2283` or `https://photos.yourdomain.com`)
+3. **Sign in** with the same email and password you use on Immich (or an API key if you prefer)
+4. **Start exploring** — your entire photo library is now on your TV!
+
+> 💡 **Need help finding your server address?** It's the same URL you use to access Immich on your computer or phone.
 
 ---
 
-## 🎮 Remote Controls
+## 🎮 Using Your Remote
 
-| Action | How To |
+The app works naturally with your Apple TV remote — if you can navigate Apple TV, you already know how to use this app:
+
+| What You Want to Do | How to Do It |
 |--------|--------|
-| **Navigate** | Swipe on touchpad |
-| **Select** | Click touchpad |
-| **Go Back** | Press Menu button |
-| **Pause Slideshow** | Press Play/Pause button |
-| **Exit Slideshow** | Tap touchpad |
-| **View Photo Details** | Swipe up on photo |
-| **Hide Photo Details** | Swipe down |
-| **Zoom Map** | Play/Pause to zoom in, long press to zoom out |
+| **Browse around** | Swipe on the touchpad |
+| **Open something** | Click the touchpad |
+| **Go back** | Press the Menu button |
+| **Pause the slideshow** | Press Play/Pause |
+| **Stop the slideshow** | Tap the touchpad |
+| **See photo details** | Swipe up while viewing a photo |
+| **Hide photo details** | Swipe down |
+| **Zoom the map** | Play/Pause to zoom in, long press to zoom out |
 
 ---
 

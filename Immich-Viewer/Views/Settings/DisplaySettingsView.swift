@@ -7,6 +7,7 @@ struct DisplaySettingsView: View {
     @AppStorage("defaultStartupTab") private var defaultStartupTab = "photos"
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
+    @AppStorage("albumListSortOrder") private var albumListSortOrder = "alphabetical"
     @AppStorage("folderViewMode") private var folderViewMode = "timeline"
     
     var body: some View {
@@ -99,9 +100,24 @@ struct DisplaySettingsView: View {
                             title: "Albums & Collections Sort Order",
                             subtitle: "Order photos in Albums, People, and Tags",
                             content: AnyView(
-                                Picker("Collections Sort Order", selection: $assetSortOrder) {
-                                    Text("Newest First").tag("desc")
-                                    Text("Oldest First").tag("asc")
+                                Picker(String(localized: "Collections Sort Order"), selection: $assetSortOrder) {
+                                    Text(String(localized: "Newest First")).tag("desc")
+                                    Text(String(localized: "Oldest First")).tag("asc")
+                                }
+                                    .pickerStyle(.menu)
+                                    .frame(width: 300, alignment: .trailing)
+                            )
+                        )
+                        
+                        SettingsRow(
+                            icon: "folder",
+                            title: "Album List Sort Order",
+                            subtitle: "Order albums in the Albums tab",
+                            content: AnyView(
+                                Picker(String(localized: "Album List Sort Order"), selection: $albumListSortOrder) {
+                                    Text(String(localized: "Alphabetical")).tag("alphabetical")
+                                    Text(String(localized: "Newest First")).tag("newestFirst")
+                                    Text(String(localized: "Oldest First")).tag("oldestFirst")
                                 }
                                     .pickerStyle(.menu)
                                     .frame(width: 300, alignment: .trailing)
@@ -122,6 +138,9 @@ struct DisplaySettingsView: View {
             if !newValue && defaultStartupTab == "folders" {
                 defaultStartupTab = "photos"
             }
+        }
+        .onChange(of: albumListSortOrder) { _, _ in
+            NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
         }
     }
 }

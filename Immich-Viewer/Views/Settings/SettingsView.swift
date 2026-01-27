@@ -271,11 +271,14 @@ struct SettingsView: View {
     @ObservedObject private var thumbnailCache = ThumbnailCache.shared
     @ObservedObject var authService: AuthenticationService
     @ObservedObject var userManager: UserManager
+    @ObservedObject var albumService: AlbumService
+    @ObservedObject var assetService: AssetService
     @State private var selectedCategory: SettingsCategory = .interface
     @State private var showingClearCacheAlert = false
     @State private var showingDeleteUserAlert = false
     @State private var userToDelete: SavedUser?
     @State private var showingSignIn = false
+    @State private var showingAlbumPicker = false
     @AppStorage("hideImageOverlay") private var hideImageOverlay = true
     @State private var slideshowInterval: Double = UserDefaults.standard.object(forKey: "slideshowInterval") as? Double ?? 8.0
     @AppStorage("slideshowBackgroundColor") private var slideshowBackgroundColor = "ambilight"
@@ -286,16 +289,20 @@ struct SettingsView: View {
     @AppStorage("defaultStartupTab") private var defaultStartupTab = "photos"
     @AppStorage("assetSortOrder") private var assetSortOrder = "desc"
     @AppStorage("use24HourClock") private var use24HourClock = true
-    @AppStorage("enableReflectionsInSlideshow") private var enableReflectionsInSlideshow = true
+    @AppStorage("enableReflectionsInSlideshow") private var enableReflectionsInSlideshow = false
     @AppStorage("enableKenBurnsEffect") private var enableKenBurnsEffect = false
+    @AppStorage("enableFadeOnlyEffect") private var enableFadeOnlyEffect = true
     @AppStorage("enableSlideshowShuffle") private var enableSlideshowShuffle = false
     @AppStorage("allPhotosSortOrder") private var allPhotosSortOrder = "desc"
+    @AppStorage("albumListSortOrder") private var albumListSortOrder = "alphabetical"
     @AppStorage("folderViewMode") private var folderViewMode = "timeline"
     @AppStorage("exploreViewMode") private var exploreViewMode = "places"
     @AppStorage("enableTopShelf", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var enableTopShelf = true
     @AppStorage("topShelfStyle", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfStyle = "carousel"
     @AppStorage("topShelfImageSelection", store: UserDefaults(suiteName: AppConstants.appGroupIdentifier)) private var topShelfImageSelection = "recent"
     @AppStorage(UserDefaultsKeys.autoSlideshowTimeout) private var autoSlideshowTimeout: Int = 0 // 0 = off
+    @AppStorage(UserDefaultsKeys.slideshowAlbumId) private var slideshowAlbumId: String = ""
+    @AppStorage(UserDefaultsKeys.slideshowAlbumName) private var slideshowAlbumName: String = ""
     @FocusState private var isMinusFocused: Bool
     @FocusState private var isPlusFocused: Bool
     @FocusState private var focusedColor: String?
@@ -374,9 +381,17 @@ struct SettingsView: View {
                 defaultStartupTab = "photos"
             }
         }
+        .onChange(of: albumListSortOrder) { _, _ in
+            NotificationCenter.default.post(name: NSNotification.Name(NotificationNames.refreshAllTabs), object: nil)
+        }
         .onAppear {
             userManager.loadUsers()
             thumbnailCache.refreshCacheStatistics()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))) { _ in
+            // Clear slideshow album selection on user switch (falls back to "All Photos")
+            slideshowAlbumId = ""
+            slideshowAlbumName = ""
         }
     }
     
@@ -395,10 +410,6 @@ struct SettingsView: View {
                         .font(.system(size: 42, weight: .bold))
                         .foregroundColor(SettingsTheme.textPrimary)
                 }
-                
-                Text(String(localized: "Customize your experience"))
-                    .font(.system(size: 18))
-                    .foregroundColor(SettingsTheme.textSecondary)
             }
             .padding(.horizontal, 24)
             .padding(.top, 40)
@@ -917,6 +928,21 @@ struct SettingsView: View {
                         .frame(width: 300, alignment: .trailing)
                 )
             )
+            
+            SettingsRow(
+                icon: "folder",
+                title: "Album List Sort Order",
+                subtitle: "Order albums in the Albums tab",
+                content: AnyView(
+                    Picker(String(localized: "Album List Sort Order"), selection: $albumListSortOrder) {
+                        Text(String(localized: "Alphabetical")).tag("alphabetical")
+                        Text(String(localized: "Newest First")).tag("newestFirst")
+                        Text(String(localized: "Oldest First")).tag("oldestFirst")
+                    }
+                        .pickerStyle(.menu)
+                        .frame(width: 300, alignment: .trailing)
+                )
+            )
         }
     }
     
@@ -931,15 +957,30 @@ struct SettingsView: View {
                 hideOverlay: $hideImageOverlay,
                 enableReflections: $enableReflectionsInSlideshow,
                 enableKenBurns: $enableKenBurnsEffect,
+                enableFadeOnly: $enableFadeOnlyEffect,
                 enableShuffle: $enableSlideshowShuffle,
                 autoSlideshowTimeout: $autoSlideshowTimeout,
+                slideshowAlbumId: $slideshowAlbumId,
+                slideshowAlbumName: $slideshowAlbumName,
                 isMinusFocused: $isMinusFocused,
                 isPlusFocused: $isPlusFocused,
-                focusedColor: $focusedColor
+                focusedColor: $focusedColor,
+                onShowAlbumPicker: {
+                    showingAlbumPicker = true
+                }
             )
             .onChange(of: slideshowInterval) { _, newValue in
                 UserDefaults.standard.set(newValue, forKey: "slideshowInterval")
             }
+        }
+        .fullScreenCover(isPresented: $showingAlbumPicker) {
+            SlideshowAlbumPicker(
+                albumService: albumService,
+                assetService: assetService,
+                authService: authService,
+                selectedAlbumId: $slideshowAlbumId,
+                selectedAlbumName: $slideshowAlbumName
+            )
         }
     }
     
@@ -1114,7 +1155,14 @@ struct SidebarButtonStyle: ButtonStyle {
     
     let networkService = NetworkService(userManager: userManager)
     let authService = AuthenticationService(networkService: networkService, userManager: userManager)
+    let albumService = AlbumService(networkService: networkService)
+    let assetService = AssetService(networkService: networkService)
     
-    return SettingsView(authService: authService, userManager: userManager)
+    return SettingsView(
+        authService: authService,
+        userManager: userManager,
+        albumService: albumService,
+        assetService: assetService
+    )
 }
 

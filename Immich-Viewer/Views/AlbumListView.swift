@@ -63,6 +63,10 @@ struct AlbumListView: View {
         .onAppear {
             viewModel.loadAlbumsIfNeeded()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name(NotificationNames.refreshAllTabs))) { _ in
+            viewModel.loadAlbums()
+            viewModel.loadFavoritesCount()
+        }
     }
 }
 

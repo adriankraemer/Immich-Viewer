@@ -10,12 +10,17 @@ struct SlideshowSettings: View {
     @Binding var hideOverlay: Bool
     @Binding var enableReflections: Bool
     @Binding var enableKenBurns: Bool
+    @Binding var enableFadeOnly: Bool
     @Binding var enableShuffle: Bool
     @Binding var autoSlideshowTimeout: Int
+    @Binding var slideshowAlbumId: String
+    @Binding var slideshowAlbumName: String
     @FocusState.Binding var isMinusFocused: Bool
     @FocusState.Binding var isPlusFocused: Bool
     @FocusState.Binding var focusedColor: String?
     
+    // Callback to show album picker (handled by parent view that has access to services)
+    var onShowAlbumPicker: (() -> Void)?
     
     var body: some View {
         VStack(spacing: 12) {
@@ -145,6 +150,8 @@ struct SlideshowSettings: View {
                                 return "kenBurns"
                             } else if enableReflections {
                                 return "reflections"
+                            } else if enableFadeOnly {
+                                return "fadeOnly"
                             } else {
                                 return "none"
                             }
@@ -154,16 +161,24 @@ struct SlideshowSettings: View {
                             case "kenBurns":
                                 enableKenBurns = true
                                 enableReflections = false
+                                enableFadeOnly = false
                             case "reflections":
                                 enableKenBurns = false
                                 enableReflections = true
+                                enableFadeOnly = false
+                            case "fadeOnly":
+                                enableKenBurns = false
+                                enableReflections = false
+                                enableFadeOnly = true
                             default: // "none"
                                 enableKenBurns = false
                                 enableReflections = false
+                                enableFadeOnly = false
                             }
                         }
                     )) {
-                        Text("None").tag("none")
+                        Text("Fade").tag("fadeOnly")
+                        Text("Movement").tag("none")
                         Text("Reflections").tag("reflections")
                         Text("Pan and Zoom").tag("kenBurns")
                     }
@@ -174,8 +189,8 @@ struct SlideshowSettings: View {
             
             SettingsRow(
                 icon: "shuffle",
-                title: "Shuffle Images (beta)",
-                subtitle: "Randomly shuffle image order during slideshow",
+                title: "Shuffle Images",
+                subtitle: "Randomly shuffle image order during slideshow.",
                 content: AnyView(
                     Picker("Shuffle Images", selection: $enableShuffle) {
                         Text("Off").tag(false)
@@ -207,10 +222,31 @@ struct SlideshowSettings: View {
                  icon: "clock.arrow.circlepath",
                  title: "Auto-Start Slideshow",
                  subtitle: "Start slideshow after inactivity",
-                 content: AnyView(AutoSlideshowTimeoutPicker(timeout: $autoSlideshowTimeout)),
+                 content: AnyView(
+                     HStack(spacing: 16) {
+                         // Album selection button (only visible when auto-slideshow is enabled)
+                         if autoSlideshowTimeout > 0 {
+                             Button(action: {
+                                 onShowAlbumPicker?()
+                             }) {
+                                 HStack(spacing: 6) {
+                                     Text(slideshowAlbumName.isEmpty ? String(localized: "All Photos") : slideshowAlbumName)
+                                         .foregroundColor(.primary)
+                                         .lineLimit(1)
+                                     
+                                     Image(systemName: "chevron.right")
+                                         .font(.caption2)
+                                         .foregroundColor(.secondary)
+                                 }
+                             }
+                             .buttonStyle(.plain)
+                         }
+                         
+                         AutoSlideshowTimeoutPicker(timeout: $autoSlideshowTimeout)
+                     }
+                 ),
                  isOn: autoSlideshowTimeout > 0
              )
-            
              
         }
     }
@@ -234,10 +270,13 @@ struct SlideshowSettings: View {
     @Previewable @State var slideshowBackgroundColor = "ambilight"
     @Previewable @State var use24HourClock = true
     @Previewable @State var hideOverlay = true
-    @Previewable @State var enableReflections = true
+    @Previewable @State var enableReflections = false
     @Previewable @State var enableKenBurns = false
+    @Previewable @State var enableFadeOnly = true
     @Previewable @State var enableShuffle = false
     @Previewable @State var autoSlideshowTimeout = 5
+    @Previewable @State var slideshowAlbumId = ""
+    @Previewable @State var slideshowAlbumName = ""
     @Previewable @FocusState var isMinusFocused: Bool
     @Previewable @FocusState var isPlusFocused: Bool
     @Previewable @FocusState var focusedColor: String?
@@ -249,11 +288,15 @@ struct SlideshowSettings: View {
         hideOverlay: $hideOverlay,
         enableReflections: $enableReflections,
         enableKenBurns: $enableKenBurns,
+        enableFadeOnly: $enableFadeOnly,
         enableShuffle: $enableShuffle,
         autoSlideshowTimeout: $autoSlideshowTimeout,
+        slideshowAlbumId: $slideshowAlbumId,
+        slideshowAlbumName: $slideshowAlbumName,
         isMinusFocused: $isMinusFocused,
         isPlusFocused: $isPlusFocused,
-        focusedColor: $focusedColor
+        focusedColor: $focusedColor,
+        onShowAlbumPicker: nil
     )
     .preferredColorScheme(.light)
     .padding()

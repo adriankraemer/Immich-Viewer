@@ -10,6 +10,7 @@ struct FullScreenImageView: View {
     
     // MARK: - Bindings
     @Binding var currentAssetIndex: Int
+    @Binding var liveAssets: [ImmichAsset]
     
     // MARK: - Environment
     @Environment(\.dismiss) private var dismiss
@@ -19,22 +20,28 @@ struct FullScreenImageView: View {
     
     // MARK: - Initialization
     
+    // MARK: - Callbacks
+    private let onNeedMoreAssets: (() -> Void)?
+    
     init(
         asset: ImmichAsset,
-        assets: [ImmichAsset],
+        assets: Binding<[ImmichAsset]>,
         currentIndex: Int,
         assetService: AssetService,
         authenticationService: AuthenticationService,
-        currentAssetIndex: Binding<Int>
+        currentAssetIndex: Binding<Int>,
+        onNeedMoreAssets: (() -> Void)? = nil
     ) {
         debugLog("FullScreenImageView: Initializing with currentIndex: \(currentIndex)")
         self.assetService = assetService
         self.authenticationService = authenticationService
         self._currentAssetIndex = currentAssetIndex
+        self._liveAssets = assets
+        self.onNeedMoreAssets = onNeedMoreAssets
         
         _viewModel = StateObject(wrappedValue: FullScreenImageViewModel(
             asset: asset,
-            assets: assets,
+            assets: assets.wrappedValue,
             currentIndex: currentIndex,
             assetService: assetService
         ))
@@ -74,10 +81,13 @@ struct FullScreenImageView: View {
             onDismiss: { dismiss() }
         ))
         .onAppear {
-            // Set up the callback to sync currentAssetIndex binding
             viewModel.onCurrentIndexChanged = { [self] newIndex in
                 self.currentAssetIndex = newIndex
             }
+            viewModel.onNeedMoreAssets = onNeedMoreAssets
+        }
+        .onChange(of: liveAssets.count) { _, _ in
+            viewModel.updateAssets(liveAssets)
         }
     }
     
@@ -488,7 +498,7 @@ struct VideoThumbnailView: View {
     
     FullScreenImageView(
         asset: sampleAsset,
-        assets: sampleAssets,
+        assets: .constant(sampleAssets),
         currentIndex: 0,
         assetService: assetService,
         authenticationService: authenticationService,

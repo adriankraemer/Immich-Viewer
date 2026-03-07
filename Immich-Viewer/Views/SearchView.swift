@@ -78,7 +78,7 @@ struct SearchView: View {
             if let selectedAsset = viewModel.selectedAsset {
                 FullScreenImageView(
                     asset: selectedAsset,
-                    assets: viewModel.assets,
+                    assets: $viewModel.assets,
                     currentIndex: viewModel.assets.firstIndex(of: selectedAsset) ?? 0,
                     assetService: assetService,
                     authenticationService: authService,

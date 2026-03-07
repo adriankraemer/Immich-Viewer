@@ -18,11 +18,12 @@ class FullScreenImageViewModel: ObservableObject {
     
     // MARK: - Configuration
     let initialAsset: ImmichAsset
-    let assets: [ImmichAsset]
+    private(set) var assets: [ImmichAsset]
     let initialIndex: Int
     
     // MARK: - Callbacks
     var onCurrentIndexChanged: ((Int) -> Void)?
+    var onNeedMoreAssets: (() -> Void)?
     
     // MARK: - Internal State
     private var currentIndex: Int
@@ -130,9 +131,21 @@ class FullScreenImageViewModel: ObservableObject {
         debugLog("FullScreenImageViewModel: Right navigation triggered (current: \(currentIndex), total: \(assets.count))")
         if canNavigateRight {
             navigateToImage(at: currentIndex + 1)
+            if currentIndex >= assets.count - 5 {
+                onNeedMoreAssets?()
+            }
         } else {
-            debugLog("FullScreenImageViewModel: Already at last photo, cannot navigate further")
+            debugLog("FullScreenImageViewModel: At last loaded photo, requesting more assets")
+            onNeedMoreAssets?()
         }
+    }
+    
+    /// Updates the asset list with newly loaded assets from the grid,
+    /// preserving the current navigation position
+    func updateAssets(_ newAssets: [ImmichAsset]) {
+        guard newAssets.count > assets.count else { return }
+        debugLog("FullScreenImageViewModel: Updating assets from \(assets.count) to \(newAssets.count)")
+        assets = newAssets
     }
     
     /// Toggles the EXIF info overlay

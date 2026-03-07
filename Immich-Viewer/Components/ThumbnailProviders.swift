@@ -41,15 +41,30 @@ class AlbumThumbnailProvider: ThumbnailProvider {
 // MARK: - People Thumbnail Provider
 @MainActor
 class PeopleThumbnailProvider: ThumbnailProvider {
+    private let peopleService: PeopleService
     private let assetService: AssetService
     private var thumbnailCache: ThumbnailCache { ThumbnailCache.shared }
     
-    init(assetService: AssetService) {
+    init(peopleService: PeopleService, assetService: AssetService) {
+        self.peopleService = peopleService
         self.assetService = assetService
     }
     
     func loadThumbnails(for item: any GridDisplayable) async -> [UIImage] {
         guard let person = item as? Person else { return [] }
+        
+        let cacheKey = "person-\(person.id)"
+        
+        do {
+            let thumbnail = try await thumbnailCache.getThumbnail(for: cacheKey, size: "thumbnail") {
+                try await self.peopleService.loadPersonThumbnail(personId: person.id)
+            }
+            if let thumbnail = thumbnail {
+                return [thumbnail]
+            }
+        } catch {
+            debugLog("Failed to load person thumbnail for \(person.id), falling back to asset thumbnail: \(error)")
+        }
         
         do {
             let searchResult = try await assetService.fetchAssets(page: 1, limit: 1, personId: person.id)
@@ -62,7 +77,7 @@ class PeopleThumbnailProvider: ThumbnailProvider {
                 return [thumbnail]
             }
         } catch {
-            debugLog("Failed to fetch assets for person \(person.id): \(error)")
+            debugLog("Failed to fetch fallback asset for person \(person.id): \(error)")
         }
         return []
     }

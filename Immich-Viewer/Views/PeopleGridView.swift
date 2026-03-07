@@ -11,7 +11,7 @@ struct PeopleGridView: View {
     
     // MARK: - Thumbnail Provider
     private var thumbnailProvider: PeopleThumbnailProvider {
-        PeopleThumbnailProvider(assetService: assetService)
+        PeopleThumbnailProvider(peopleService: peopleService, assetService: assetService)
     }
     
     // MARK: - Initialization

@@ -545,7 +545,7 @@ struct ClusterDetailView: View {
             if let asset = selectedAsset {
                 FullScreenImageView(
                     asset: asset,
-                    assets: cluster.assets,
+                    assets: .constant(cluster.assets),
                     currentIndex: currentAssetIndex,
                     assetService: assetService,
                     authenticationService: authService,

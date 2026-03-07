@@ -13,7 +13,7 @@ struct LockScreenStyleOverlay: View {
     
     @State private var currentTime = Date()
     @State private var timeUpdateTimer: Timer?
-    @AppStorage("use24HourClock") private var use24HourClock = false
+    @AppStorage("use24HourClock") private var use24HourClock = true
     
     init(asset: ImmichAsset, isSlideshowMode: Bool = false) {
         self.asset = asset

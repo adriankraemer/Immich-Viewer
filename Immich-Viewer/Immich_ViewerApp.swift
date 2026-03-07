@@ -2,6 +2,28 @@ import SwiftUI
 
 @main
 struct Immich_ViewerApp: App {
+    init() {
+        UserDefaults.standard.register(defaults: [
+            UserDefaultsKeys.hideImageOverlay: true,
+            UserDefaultsKeys.showAlbumsTab: true,
+            UserDefaultsKeys.use24HourClock: true,
+            UserDefaultsKeys.enableFadeOnlyEffect: true,
+            UserDefaultsKeys.slideshowInterval: 8.0,
+            UserDefaultsKeys.slideshowBackgroundColor: "ambilight",
+            UserDefaultsKeys.allPhotosSortOrder: "desc",
+            UserDefaultsKeys.albumListSortOrder: "alphabetical",
+            UserDefaultsKeys.folderViewMode: "timeline",
+            UserDefaultsKeys.exploreViewMode: "places",
+            UserDefaultsKeys.defaultStartupTab: "photos"
+        ])
+        
+        UserDefaults(suiteName: AppConstants.appGroupIdentifier)?.register(defaults: [
+            UserDefaultsKeys.enableTopShelf: true,
+            UserDefaultsKeys.topShelfStyle: "carousel",
+            UserDefaultsKeys.topShelfImageSelection: "recent"
+        ])
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()

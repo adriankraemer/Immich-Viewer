@@ -62,12 +62,7 @@ extension UserDefaults {
     }
     
     var enableFadeOnlyEffect: Bool {
-        get { 
-            if object(forKey: UserDefaultsKeys.enableFadeOnlyEffect) == nil {
-                return true // Default to true for fresh installs
-            }
-            return bool(forKey: UserDefaultsKeys.enableFadeOnlyEffect)
-        }
+        get { bool(forKey: UserDefaultsKeys.enableFadeOnlyEffect) }
         set { set(newValue, forKey: UserDefaultsKeys.enableFadeOnlyEffect) }
     }
     

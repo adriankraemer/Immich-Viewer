@@ -11,17 +11,21 @@ class AlbumService: ObservableObject {
 
     func fetchAlbums() async throws -> [ImmichAlbum] {
         debugLog("AlbumService: Fetching albums from /api/albums")
+        // v2 uses `shared`, v3 renamed it to `isShared`; each version ignores the unknown parameter
         let albums = try await networkService.makeRequest(
-            endpoint: "/api/albums?shared=false",
+            endpoint: "/api/albums?shared=false&isShared=false",
             responseType: [ImmichAlbum].self
         )
 
         let sharedAlbums = try await networkService.makeRequest(
-            endpoint: "/api/albums?shared=true",
+            endpoint: "/api/albums?shared=true&isShared=true",
             responseType: [ImmichAlbum].self
         )
         debugLog("AlbumService: Received \(albums.count) albums")
-        return [albums, sharedAlbums].flatMap { $0 }
+
+        // Deduplicate by id in case both requests return overlapping results
+        var seenIds = Set<String>()
+        return (albums + sharedAlbums).filter { seenIds.insert($0.id).inserted }
     }
 
     func getAlbumInfo(albumId: String, withoutAssets: Bool = false) async throws -> ImmichAlbum {

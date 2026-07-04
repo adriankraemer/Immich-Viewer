@@ -41,6 +41,8 @@ class AssetService: ObservableObject {
             "withPeople": true,
             "order": sortOrder,
             "withExif": true,
+            // v3 defaults to all visibilities when omitted; request timeline explicitly (v2's default)
+            "visibility": "timeline",
         ]
 
         if let limit = limit {
@@ -196,6 +198,8 @@ class AssetService: ObservableObject {
             "size": limit,
             "withPeople": true,
             "withExif": true,
+            // v3 defaults to all visibilities when omitted; request timeline explicitly (v2's default)
+            "visibility": "timeline",
         ]
         
         if let albumIds = albumIds {

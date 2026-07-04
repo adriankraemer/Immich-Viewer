@@ -14,7 +14,7 @@ extension ImmichAlbum: GridDisplayable {
     var sharingText: String? { 
         // Show owner name for shared albums
         if shared {
-            return owner.name
+            return albumOwner?.name
         }
         return nil
     }

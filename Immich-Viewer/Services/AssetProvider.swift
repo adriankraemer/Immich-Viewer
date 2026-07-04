@@ -19,8 +19,8 @@ struct AssetProviderFactory {
     ) -> AssetProvider {
         
         // Use specialized provider for albums (handles caching and sorting)
-        if let albumId = albumId, let albumService = albumService {
-            return AlbumAssetProvider(albumService: albumService, albumId: albumId)
+        if let albumId = albumId, albumService != nil {
+            return AlbumAssetProvider(assetService: assetService, albumId: albumId)
         }
         
         // Use specialized provider for country-based filtering
@@ -51,7 +51,7 @@ protocol AssetProvider {
 /// Asset provider for album assets with client-side pagination and caching
 /// Fetches full album once, then paginates locally for better performance
 class AlbumAssetProvider: AssetProvider {
-    private let albumService: AlbumService
+    private let assetService: AssetService
     private let albumId: String
     /// Cached album assets to avoid refetching on pagination
     private var cachedAssets: [ImmichAsset]?
@@ -73,22 +73,34 @@ class AlbumAssetProvider: AssetProvider {
         return formatter
     }()
 
-    init(albumService: AlbumService, albumId: String) {
-        self.albumService = albumService
+    init(assetService: AssetService, albumId: String) {
+        self.assetService = assetService
         self.albumId = albumId
     }
 
     /// Loads album assets, using cache if available
-    /// Fetches full album once and caches for subsequent pagination requests
+    /// Pages through search/metadata filtered by album and caches the full list.
+    /// (Immich v3 removed the assets array from album responses; this works on v2 and v3.)
     private func loadAlbumAssets() async throws -> [ImmichAsset] {
         if let cachedAssets {
             return cachedAssets
         }
 
-        // Fetch the album with full asset list (Immich includes assets unless withoutAssets is true)
-        let album = try await albumService.getAlbumInfo(albumId: albumId, withoutAssets: false)
-        cachedAssets = album.assets
-        return album.assets
+        var allAssets: [ImmichAsset] = []
+        var page = 1
+        let pageSize = 500
+
+        while true {
+            let result = try await assetService.fetchAssets(page: page, limit: pageSize, albumId: albumId)
+            allAssets.append(contentsOf: result.assets)
+            if result.nextPage == nil || result.assets.isEmpty {
+                break
+            }
+            page += 1
+        }
+
+        cachedAssets = allAssets
+        return allAssets
     }
     
     /// Fetches a page of assets from the album with client-side pagination

@@ -7,8 +7,8 @@ import SwiftUI
 /// Conforms to Identifiable for SwiftUI lists and Equatable for comparison
 struct ImmichAsset: Codable, Identifiable, Equatable {
     let id: String
-    let deviceAssetId: String
-    let deviceId: String
+    let deviceAssetId: String? // Removed in Immich v3, still sent by v2 servers
+    let deviceId: String? // Removed in Immich v3, still sent by v2 servers
     let ownerId: String
     let libraryId: String?
     let type: AssetType
@@ -26,7 +26,7 @@ struct ImmichAsset: Codable, Identifiable, Equatable {
     let isOffline: Bool
     let isTrashed: Bool
     let checksum: String
-    let duration: String? // For video assets
+    let duration: String? // For video assets, normalized to "HH:mm:ss"
     let hasMetadata: Bool
     let livePhotoVideoId: String? // For Live Photos
     let people: [Person] // Detected faces/people
@@ -44,6 +44,59 @@ struct ImmichAsset: Codable, Identifiable, Equatable {
     // Equatable conformance - compare by id since it should be unique
     static func == (lhs: ImmichAsset, rhs: ImmichAsset) -> Bool {
         return lhs.id == rhs.id
+    }
+}
+
+// Custom decoding to support both Immich v2 and v3 servers.
+// Defined in an extension so the memberwise initializer stays available for previews/tests.
+extension ImmichAsset {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try container.decode(String.self, forKey: .id)
+        deviceAssetId = try container.decodeIfPresent(String.self, forKey: .deviceAssetId)
+        deviceId = try container.decodeIfPresent(String.self, forKey: .deviceId)
+        ownerId = try container.decode(String.self, forKey: .ownerId)
+        libraryId = try container.decodeIfPresent(String.self, forKey: .libraryId)
+        type = try container.decode(AssetType.self, forKey: .type)
+        originalPath = try container.decode(String.self, forKey: .originalPath)
+        originalFileName = try container.decode(String.self, forKey: .originalFileName)
+        originalMimeType = try container.decodeIfPresent(String.self, forKey: .originalMimeType)
+        resized = try container.decodeIfPresent(Bool.self, forKey: .resized)
+        thumbhash = try container.decodeIfPresent(String.self, forKey: .thumbhash)
+        fileModifiedAt = try container.decode(String.self, forKey: .fileModifiedAt)
+        fileCreatedAt = try container.decode(String.self, forKey: .fileCreatedAt)
+        localDateTime = try container.decode(String.self, forKey: .localDateTime)
+        updatedAt = try container.decode(String.self, forKey: .updatedAt)
+        isFavorite = try container.decode(Bool.self, forKey: .isFavorite)
+        isArchived = try container.decode(Bool.self, forKey: .isArchived)
+        isOffline = try container.decode(Bool.self, forKey: .isOffline)
+        isTrashed = try container.decode(Bool.self, forKey: .isTrashed)
+        checksum = try container.decode(String.self, forKey: .checksum)
+        hasMetadata = try container.decode(Bool.self, forKey: .hasMetadata)
+        livePhotoVideoId = try container.decodeIfPresent(String.self, forKey: .livePhotoVideoId)
+        people = try container.decodeIfPresent([Person].self, forKey: .people) ?? []
+        visibility = try container.decode(String.self, forKey: .visibility)
+        duplicateId = try container.decodeIfPresent(String.self, forKey: .duplicateId)
+        exifInfo = try container.decodeIfPresent(ExifInfo.self, forKey: .exifInfo)
+        
+        // v2 sends duration as a string ("00:01:30.000"), v3 as milliseconds (90000) or null
+        if let durationString = try? container.decode(String.self, forKey: .duration) {
+            duration = durationString
+        } else if let durationMs = try? container.decode(Int.self, forKey: .duration) {
+            duration = ImmichAsset.formatDuration(milliseconds: durationMs)
+        } else {
+            duration = nil
+        }
+    }
+    
+    /// Formats a millisecond duration (Immich v3) into the "HH:mm:ss" style string used by v2
+    static func formatDuration(milliseconds: Int) -> String {
+        let totalSeconds = milliseconds / 1000
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
 }
 
@@ -180,10 +233,10 @@ struct ImmichAlbum: Codable, Identifiable {
     let createdAt: String
     let updatedAt: String
     let albumUsers: [AlbumUser]
-    let assets: [ImmichAsset]
+    let assets: [ImmichAsset] // Removed in Immich v3 (always empty); still populated by v2 servers
     let assetCount: Int
-    let ownerId: String
-    let owner: Owner
+    let ownerId: String? // Removed in Immich v3, still sent by v2 servers
+    let owner: Owner? // Removed in Immich v3, still sent by v2 servers
     let shared: Bool
     let hasSharedLink: Bool
     let isActivityEnabled: Bool
@@ -191,6 +244,48 @@ struct ImmichAlbum: Codable, Identifiable {
     let order: String?
     let startDate: String?
     let endDate: String?
+    
+    /// Album owner, resolved across server versions:
+    /// v2 provides `owner` directly; v3 moved it into `albumUsers` with the "owner" role (always the first entry)
+    var albumOwner: Owner? {
+        if let owner {
+            return owner
+        }
+        return albumUsers.first(where: { $0.role.lowercased() == "owner" })?.user ?? albumUsers.first?.user
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case id, albumName, description, albumThumbnailAssetId, createdAt, updatedAt
+        case albumUsers, assets, assetCount, ownerId, owner, shared, hasSharedLink
+        case isActivityEnabled, lastModifiedAssetTimestamp, order, startDate, endDate
+    }
+}
+
+// Custom decoding to support both Immich v2 and v3 servers.
+// Defined in an extension so the memberwise initializer stays available for previews/tests.
+extension ImmichAlbum {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try container.decode(String.self, forKey: .id)
+        albumName = try container.decode(String.self, forKey: .albumName)
+        description = try container.decodeIfPresent(String.self, forKey: .description)
+        albumThumbnailAssetId = try container.decodeIfPresent(String.self, forKey: .albumThumbnailAssetId)
+        createdAt = try container.decode(String.self, forKey: .createdAt)
+        updatedAt = try container.decode(String.self, forKey: .updatedAt)
+        albumUsers = try container.decodeIfPresent([AlbumUser].self, forKey: .albumUsers) ?? []
+        assets = try container.decodeIfPresent([ImmichAsset].self, forKey: .assets) ?? []
+        assetCount = try container.decode(Int.self, forKey: .assetCount)
+        ownerId = try container.decodeIfPresent(String.self, forKey: .ownerId)
+        owner = try container.decodeIfPresent(Owner.self, forKey: .owner)
+        shared = try container.decode(Bool.self, forKey: .shared)
+        hasSharedLink = try container.decode(Bool.self, forKey: .hasSharedLink)
+        isActivityEnabled = try container.decode(Bool.self, forKey: .isActivityEnabled)
+        lastModifiedAssetTimestamp = try container.decodeIfPresent(String.self, forKey: .lastModifiedAssetTimestamp)
+        order = try container.decodeIfPresent(String.self, forKey: .order)
+        startDate = try container.decodeIfPresent(String.self, forKey: .startDate)
+        endDate = try container.decodeIfPresent(String.self, forKey: .endDate)
+    }
 }
 
 struct AlbumUser: Codable {

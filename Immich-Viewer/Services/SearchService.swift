@@ -14,7 +14,9 @@ class SearchService: ObservableObject {
             "withExif": true,
             "isVisible": true,
             "language": "en-CA",
-            "query": query
+            "query": query,
+            // v3 defaults to all visibilities when omitted; request timeline explicitly (v2's default)
+            "visibility": "timeline",
         ]
         
         let result: SearchResponse = try await networkService.makeRequest(

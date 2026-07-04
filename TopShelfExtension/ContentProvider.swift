@@ -286,25 +286,22 @@ class ContentProvider: TVTopShelfContentProvider {
     }
     
     private func fetchRandomPhotos(serverURL: String, accessToken: String, authType: SavedUser.AuthType) async throws -> [SimpleAsset] {
-        let urlString = "\(serverURL)/api/assets/random"
+        // POST /api/search/random works on both Immich v2 and v3
+        // (GET /api/assets/random was removed in v3)
+        let urlString = "\(serverURL)/api/search/random"
         debugLog("TopShelf: Making request to: \(urlString)")
         guard let url = URL(string: urlString) else {
             debugLog("TopShelf: Invalid URL: \(urlString)")
             throw TopShelfError.invalidURL
         }
         
-        var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "count", value: String(TOTAL_ITEMS_COUNT))
+        let searchRequest: [String: Any] = [
+            "size": TOTAL_ITEMS_COUNT,
+            "withExif": true,
         ]
         
-        guard let finalURL = urlComponents?.url else {
-            debugLog("TopShelf: Failed to construct URL with query parameters")
-            throw TopShelfError.invalidURL
-        }
-        
-        var request = URLRequest(url: finalURL)
-        request.httpMethod = "GET"
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
         
         // Set authentication header based on auth type
         if authType == .apiKey {
@@ -312,6 +309,9 @@ class ContentProvider: TVTopShelfContentProvider {
         } else {
             request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
+        
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: searchRequest)
         
         debugLog("TopShelf: Sending random API request...")
         let (data, response) = try await URLSession.shared.data(for: request)
